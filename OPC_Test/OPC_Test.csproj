@@ -42,7 +42,7 @@
     <Reference Include="System" />
     <Reference Include="TBN20, Version=4.22.5.2294, Culture=neutral, PublicKeyToken=c5e0259e5ccbaac4, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Program Files\Softing\OPCToolbox\V42x\Windows\bin\TBN20.dll</HintPath>
+      <HintPath>C:\Program Files\Softing\OPCToolbox\V42x\Windows\bin\TBN20.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
