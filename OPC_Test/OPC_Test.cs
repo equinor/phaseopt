@@ -62,7 +62,7 @@ namespace OPC_Test
             Int32[] IDs = new Int32[0];
             double[] Scale_Factors = new double[0];
             double Temperature = 250;
-            double Pressure = 100;
+            double Pressure = 110;
             ValueQT[] Values;
             int[] Results;
             string Log_File_Path = @"cri.log";
@@ -164,6 +164,7 @@ namespace OPC_Test
                     if (V.Quality == EnumQuality.GOOD)
                     {
                         double Value = System.Convert.ToDouble(V.Data) * Scale_Factors[i];
+                        System.Console.WriteLine(V.TimeStamp.ToLocalTime().ToString());
                         Component_Values[i] = Value;
                         Sum += Value;
                         i += 1;
@@ -210,8 +211,8 @@ namespace OPC_Test
                         double T = System.Convert.ToDouble(Values[1].Data);
                         if (System.Math.Abs(P - Pressure) < 50 && System.Math.Abs(T - Temperature) < 50)
                         {
-                            Pressure = P;
-                            Temperature = T;
+                            Pressure = P - 30.0;
+                            Temperature = T - 30.0;
                             System.Console.WriteLine("Read initial values from OPC");
                         }
                     }
@@ -223,13 +224,12 @@ namespace OPC_Test
                 }
 
                 // Write all data to the log file before attempting to calculate.
-                SW.WriteLine(Pressure.ToString()); Log_File_Lines += 1;
+                SW.WriteLine("Initial pressure: {0}", Pressure.ToString()); Log_File_Lines += 1;
                 System.Console.WriteLine("Initial pressure: {0}", Pressure.ToString());
-                SW.WriteLine(Temperature.ToString()); Log_File_Lines += 1;
+                SW.WriteLine("Initial temperature: {0}", Temperature.ToString()); Log_File_Lines += 1;
                 System.Console.WriteLine("Initial temperature: {0}", Temperature.ToString());
-                SW.WriteLine(); Log_File_Lines += 1;
                 SW.Flush();
-                SW.Close();
+                //SW.Close();
 
                 UMR_DLL.Criconden_Bar(ref Components, IDs, Component_Values,
                  ref Temperature, ref Pressure);
@@ -237,15 +237,20 @@ namespace OPC_Test
                 System.Console.WriteLine("Calculated");
                 // After a successfull calculation we can remove the most recent data
                 // from the log file.
-                string[] Log_File = System.IO.File.ReadAllLines(Log_File_Path);
+                /*string[] Log_File = System.IO.File.ReadAllLines(Log_File_Path);
                 string[] New_Log_File = new string[Log_File.Length - Log_File_Lines];
 
                 Array.Copy(Log_File, 0, New_Log_File, 0, New_Log_File.Length);
 
-                System.IO.File.WriteAllLines(Log_File_Path, New_Log_File);
+                System.IO.File.WriteAllLines(Log_File_Path, New_Log_File); */
 
                 System.Console.WriteLine("Calculated pressure: {0}", Pressure.ToString());
+                SW.WriteLine("Calculated pressure: {0}", Pressure.ToString()); Log_File_Lines += 1;
                 System.Console.WriteLine("Calculated temperature: {0}", Temperature.ToString());
+                SW.WriteLine("Calculated temperature: {0}", Temperature.ToString()); Log_File_Lines += 1;
+                SW.WriteLine(); Log_File_Lines += 1;
+                SW.Flush();
+                SW.Close();
 
                 // Write results to OPC server.
                 ValueQT[] Out_Values = new ValueQT[2];
@@ -263,6 +268,7 @@ namespace OPC_Test
 
             OPC_Application.Terminate();
             DateTime End_Time_Stamp = System.DateTime.Now;
+            System.Console.WriteLine(End_Time_Stamp.ToString());
             System.Console.WriteLine("Time used: {0}", (End_Time_Stamp - Start_Time_Stamp).ToString());
 
             //Thread.Sleep(10000);
