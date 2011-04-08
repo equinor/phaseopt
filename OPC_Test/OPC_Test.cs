@@ -70,27 +70,34 @@ namespace OPC_Test
             string Config_File_Path = @"cri.conf";
 
             // Read config file.
-            string[] Config_File = System.IO.File.ReadAllLines(Config_File_Path);
-            string Pattern = @"^\s*(\d+?)\s*;\s*([^#]+)\s*;\s*([\d\.^#]+)\s*#*.*$";
-
-            int n = 0;
-            foreach (string Line in Config_File)
+            try
             {
-                foreach (Match match in Regex.Matches(Line, Pattern, RegexOptions.None))
+                string[] Config_File = System.IO.File.ReadAllLines(Config_File_Path);
+                string Pattern = @"^\s*(\d+?)\s*;\s*([^#]+)\s*;\s*([\d\.^#]+)\s*#*.*$";
+
+                int n = 0;
+                foreach (string Line in Config_File)
                 {
-                    //Console.WriteLine("|{0}|{1}|{2}|", match.Groups[1].Value.Trim(),
-                    //    match.Groups[2].Value.Trim(), match.Groups[3].Value.Trim());
-                    n += 1;
-                    Array.Resize(ref Item_Ids, n);
-                    Array.Resize(ref IDs, n);
-                    Array.Resize(ref Scale_Factors, n);
-                    Item_Ids[n - 1] = match.Groups[2].Value.Trim();
-                    IDs[n - 1] = System.Convert.ToInt32(match.Groups[1].Value.Trim());
-                    Scale_Factors[n - 1] = System.Convert.ToDouble(match.Groups[3].Value.Trim(),
-                        System.Globalization.CultureInfo.InvariantCulture);
+                    foreach (Match match in Regex.Matches(Line, Pattern, RegexOptions.None))
+                    {
+                        //Console.WriteLine("|{0}|{1}|{2}|", match.Groups[1].Value.Trim(),
+                        //    match.Groups[2].Value.Trim(), match.Groups[3].Value.Trim());
+                        n++;
+                        Array.Resize(ref Item_Ids, n);
+                        Array.Resize(ref IDs, n);
+                        Array.Resize(ref Scale_Factors, n);
+                        Item_Ids[n - 1] = match.Groups[2].Value.Trim();
+                        IDs[n - 1] = System.Convert.ToInt32(match.Groups[1].Value.Trim());
+                        Scale_Factors[n - 1] = System.Convert.ToDouble(match.Groups[3].Value.Trim(),
+                            System.Globalization.CultureInfo.InvariantCulture);
+                    }
                 }
             }
-
+            catch
+            {
+                System.Console.WriteLine("Error: Could not open configuration file. Exiting.");
+                System.Environment.Exit(1);
+            }
             System.Console.WriteLine("Opening log file.");
             System.IO.StreamWriter SW;
             SW = System.IO.File.AppendText(Log_File_Path);
