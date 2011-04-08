@@ -165,7 +165,14 @@ namespace OPC_Test
                     {
                         double Value = System.Convert.ToDouble(V.Data) * Scale_Factors[i];
                         System.Console.WriteLine(V.TimeStamp.ToLocalTime().ToString());
-                        Component_Values[i] = Value;
+                        if (Value < 1.0E-6)
+                        {
+                            Component_Values[i] = 1.0E-6;
+                        }
+                        else
+                        {
+                            Component_Values[i] = Value;
+                        }
                         Sum += Value;
                         i += 1;
                     }
@@ -209,6 +216,7 @@ namespace OPC_Test
                         // Check that the initial values are within a reasonable range.
                         double P = System.Convert.ToDouble(Values[0].Data);
                         double T = System.Convert.ToDouble(Values[1].Data);
+
                         if (System.Math.Abs(P - Pressure) < 50 && System.Math.Abs(T - Temperature) < 50)
                         {
                             Pressure = P - 30.0;
