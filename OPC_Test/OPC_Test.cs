@@ -257,7 +257,10 @@ namespace OPC_Test
                 Out_Values[0] = new ValueQT(Pressure, EnumQuality.GOOD, System.DateTime.Now);
                 Out_Values[1] = new ValueQT(Temperature, EnumQuality.GOOD, System.DateTime.Now);
 
-                OPC_Subscription.Write(Item_List, Out_Values, out Results, Execution_Options);
+                if (Pressure > 0.0 & Temperature > 0.0)
+                {
+                    OPC_Subscription.Write(Item_List, Out_Values, out Results, Execution_Options);
+                }
 
                 System.Console.WriteLine("Wrote results to OPC server");
             }
