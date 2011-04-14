@@ -98,15 +98,12 @@ namespace OPC_Test
                 System.Console.WriteLine("Error: Could not open configuration file. Exiting.");
                 System.Environment.Exit(1);
             }
+
             System.Console.WriteLine("Opening log file.");
             System.IO.StreamWriter SW;
             SW = System.IO.File.AppendText(Log_File_Path);
 
-            System.Console.WriteLine("Application");
-            // gets the OPC_Application instance
             Application OPC_Application = Application.Instance;
-
-            // initializes the OPC_Application
             OPC_Application.Initialize();
 
             // creates a new DaSession object and adds it to the OPC_Application
@@ -288,8 +285,6 @@ namespace OPC_Test
             DateTime End_Time_Stamp = System.DateTime.Now;
             System.Console.WriteLine(End_Time_Stamp.ToString());
             System.Console.WriteLine("Time used: {0}", (End_Time_Stamp - Start_Time_Stamp).ToString());
-
-            //Thread.Sleep(10000);
         }
     }
 }
