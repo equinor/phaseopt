@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 using Softing.OPCToolbox.Client;
 using Softing.OPCToolbox;
 
@@ -60,7 +61,9 @@ namespace OPC_Test
             DateTime Start_Time_Stamp = System.DateTime.Now;
             string[] Item_Ids = new string[0];
             Int32[] IDs = new Int32[0];
+            List<Int32> ID_List = new List<Int32>();
             double[] Scale_Factors = new double[0];
+            List<double> Scale_List = new List<double>();
             double Temperature = 250;
             double Pressure = 110;
             ValueQT[] Values;
@@ -88,8 +91,11 @@ namespace OPC_Test
                         Array.Resize(ref Scale_Factors, n);
                         Item_Ids[n - 1] = match.Groups[2].Value.Trim();
                         IDs[n - 1] = System.Convert.ToInt32(match.Groups[1].Value.Trim());
+                        ID_List.Add(System.Convert.ToInt32(match.Groups[1].Value.Trim()));
                         Scale_Factors[n - 1] = System.Convert.ToDouble(match.Groups[3].Value.Trim(),
                             System.Globalization.CultureInfo.InvariantCulture);
+                        Scale_List.Add(System.Convert.ToDouble(match.Groups[3].Value.Trim(),
+                            System.Globalization.CultureInfo.InvariantCulture));
                     }
                 }
             }
@@ -153,7 +159,8 @@ namespace OPC_Test
             {
                 System.Console.WriteLine("Read components values from OPC server");
                 Int32 Components = Values.Length;
-                double[] Component_Values = new double[Components];
+                //double[] Component_Values = new double[Components];
+                List<double> Component_List = new List<double>(Components);
                 int i = 0;
 
                 SW.WriteLine(Start_Time_Stamp); Log_File_Lines += 1;
@@ -169,20 +176,27 @@ namespace OPC_Test
                     {
                         double Value = System.Convert.ToDouble(V.Data) * Scale_Factors[i];
                         System.Console.WriteLine(V.TimeStamp.ToLocalTime().ToString());
-                        if (Value < 1.0E-6)
+                        if (Value < 1.0E-4)
                         {
-                            Component_Values[i] = 1.0E-6;
+                            //Component_Values[i] = 1.0E-4;
+                            //ID_List.Remove(i);
+                            //System.Console.WriteLine("Removed: {0}", i.ToString());
                         }
                         else
                         {
-                            Component_Values[i] = Value;
+                            //Component_Values[i] = Value;
+                            Component_List.Add(Value);
+                            ID_List.Add(IDs[i]);
+                            Sum += Value;
                         }
-                        Sum += Value;
-                        i += 1;
                     }
+                    i += 1;
                 }
 
                 System.Console.WriteLine("Sum: {0}", Sum.ToString());
+
+                double[] Component_Values = new double[Component_List.Count];
+                Component_Values = Component_List.ToArray();
 
                 Testing.Normalize(Component_Values, 1.0);
 
@@ -243,7 +257,7 @@ namespace OPC_Test
                 SW.Flush();
                 //SW.Close();
 
-                UMR_DLL.Criconden_Bar(ref Components, IDs, Component_Values,
+                UMR_DLL.Criconden_Bar(ref Components, ID_List.ToArray(), Component_Values,
                  ref Temperature, ref Pressure);
 
                 System.Console.WriteLine("Calculated");
