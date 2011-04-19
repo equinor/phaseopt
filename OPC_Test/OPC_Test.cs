@@ -177,7 +177,7 @@ namespace OPC_Test
                         {
                             Component_Values[i] = Value;
                         }
-                        Sum += Value;
+                        Sum += Component_Values[i];
                         i += 1;
                     }
                 }
