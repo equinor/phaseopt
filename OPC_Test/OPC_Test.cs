@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 using Softing.OPCToolbox.Client;
 using Softing.OPCToolbox;
 
@@ -58,9 +59,9 @@ namespace OPC_Test
         public static void Main(String[] args)
         {
             DateTime Start_Time_Stamp = System.DateTime.Now;
-            string[] Item_Ids = new string[0];
-            Int32[] IDs = new Int32[0];
-            double[] Scale_Factors = new double[0];
+            List<string> Item_Ids = new List<string>();
+            List<Int32> IDs = new List<Int32>();
+            List<double> Scale_Factors = new List<double>();
             double Temperature = 250;
             double Pressure = 110;
             ValueQT[] Values;
@@ -75,21 +76,16 @@ namespace OPC_Test
                 string[] Config_File = System.IO.File.ReadAllLines(Config_File_Path);
                 string Pattern = @"^\s*(\d+?)\s*;\s*([^#]+)\s*;\s*([\d\.^#]+)\s*#*.*$";
 
-                int n = 0;
                 foreach (string Line in Config_File)
                 {
                     foreach (Match match in Regex.Matches(Line, Pattern, RegexOptions.None))
                     {
                         //Console.WriteLine("|{0}|{1}|{2}|", match.Groups[1].Value.Trim(),
                         //    match.Groups[2].Value.Trim(), match.Groups[3].Value.Trim());
-                        n++;
-                        Array.Resize(ref Item_Ids, n);
-                        Array.Resize(ref IDs, n);
-                        Array.Resize(ref Scale_Factors, n);
-                        Item_Ids[n - 1] = match.Groups[2].Value.Trim();
-                        IDs[n - 1] = System.Convert.ToInt32(match.Groups[1].Value.Trim());
-                        Scale_Factors[n - 1] = System.Convert.ToDouble(match.Groups[3].Value.Trim(),
-                            System.Globalization.CultureInfo.InvariantCulture);
+                        Item_Ids.Add(match.Groups[2].Value.Trim());
+                        IDs.Add(System.Convert.ToInt32(match.Groups[1].Value.Trim()));
+                        Scale_Factors.Add(System.Convert.ToDouble(match.Groups[3].Value.Trim(),
+                            System.Globalization.CultureInfo.InvariantCulture));
                     }
                 }
             }
@@ -115,12 +111,10 @@ namespace OPC_Test
 
             DaSubscription OPC_Subscription = new DaSubscription(500, OPC_Session);
 
-            DaItem[] Item_List = new DaItem[Item_Ids.Length];
-            int j = 0;
+            List<DaItem> Item_List = new List<DaItem>();
             foreach (string Item_Id in Item_Ids)
             {
-                Item_List[j] = new DaItem(Item_Id, OPC_Subscription);
-                j += 1;
+                Item_List.Add(new DaItem(Item_Id, OPC_Subscription));
             }
 
             System.Console.WriteLine("Connecting to OPC server.");
@@ -140,7 +134,7 @@ namespace OPC_Test
             // reads the items using OPC_Session object
             int Read_Result = OPC_Subscription.Read(
                 0, // the values are read from the device
-                Item_List,
+                Item_List.ToArray(),
                 out Values,
                 out Results,
                 Execution_Options);
@@ -152,57 +146,58 @@ namespace OPC_Test
             if (ResultCode.SUCCEEDED(Read_Result))
             {
                 System.Console.WriteLine("Read components values from OPC server");
-                Int32 Components = Values.Length;
-                double[] Component_Values = new double[Components];
-                int i = 0;
+                int i = Values.Length - 1;
+                List<double> Component_Values = new List<double>(Scale_Factors);
 
                 SW.WriteLine(Start_Time_Stamp); Log_File_Lines += 1;
+
+                while (i >= 0)
+                {
+                    if (Values[i].Quality == EnumQuality.GOOD)
+                    {
+                        double Value = System.Convert.ToDouble(Values[i].Data) * Scale_Factors[i];
+                        // Discard components that are too low.
+                        if (Value < 1.0E-10)
+                        {
+                            System.Console.WriteLine("Removed ID: {0}", IDs[i].ToString());
+                            IDs.RemoveAt(i);
+                            Component_Values.RemoveAt(i);
+                            Scale_Factors.RemoveAt(i);
+                        }
+                        else
+                        {
+                            Component_Values[i] = Value;
+                            Sum += Value;
+                        }
+                    }
+                    i -= 1;
+                }
 
                 foreach (Int32 ID in IDs)
                 {
                     SW.WriteLine(ID); Log_File_Lines += 1;
                 }
 
-                foreach (ValueQT V in Values)
-                {
-                    if (V.Quality == EnumQuality.GOOD)
-                    {
-                        double Value = System.Convert.ToDouble(V.Data) * Scale_Factors[i];
-                        System.Console.WriteLine(V.TimeStamp.ToLocalTime().ToString());
-                        if (Value < 1.0E-6)
-                        {
-                            Component_Values[i] = 1.0E-6;
-                        }
-                        else
-                        {
-                            Component_Values[i] = Value;
-                        }
-                        Sum += Component_Values[i];
-                        i += 1;
-                    }
-                }
-
                 System.Console.WriteLine("Sum: {0}", Sum.ToString());
 
-                Testing.Normalize(Component_Values, 1.0);
+                double[] Normalized_Values = Component_Values.ToArray();
+                Testing.Normalize(Normalized_Values, 1.0);
+                Component_Values.Clear();
+                Component_Values.AddRange(Normalized_Values);
 
-                Sum = 0.0;
                 foreach (double Val in Component_Values)
                 {
-                    Sum += Val;
                     System.Console.WriteLine(Val.ToString());
                     SW.WriteLine(Val.ToString()); Log_File_Lines += 1;
                 }
 
-                System.Console.WriteLine("Sum after normalization: {0}", Sum.ToString());
-
                 // Read initial values for pressure and temperature.
                 OPC_Session = new DaSession("opcda://localhost/Tunneller:KA-WP15:ABB.800xA DA Connect IHGW");
                 OPC_Subscription = new DaSubscription(500, OPC_Session);
-                Item_List = new DaItem[2];
+                Item_List.Clear();
 
-                Item_List[0] = new DaItem("ANALYSE.CRICONDENBAR", OPC_Subscription);
-                Item_List[1] = new DaItem("ANALYSE.CRICONDENBARTEMPERATURE", OPC_Subscription);
+                Item_List.Add(new DaItem("ANALYSE.CRICONDENBAR", OPC_Subscription));
+                Item_List.Add(new DaItem("ANALYSE.CRICONDENBARTEMPERATURE", OPC_Subscription));
 
                 Connect_Result = OPC_Session.Connect(true, true, Execution_Options);
                 if (ResultCode.SUCCEEDED(Connect_Result))
@@ -210,7 +205,7 @@ namespace OPC_Test
                     System.Console.WriteLine("Connected to OPC server, result.");
                     Read_Result = OPC_Subscription.Read(
                         0, // the values are read from the device
-                        Item_List,
+                        Item_List.ToArray(),
                         out Values,
                         out Results,
                         Execution_Options);
@@ -243,7 +238,8 @@ namespace OPC_Test
                 SW.Flush();
                 //SW.Close();
 
-                UMR_DLL.Criconden_Bar(ref Components, IDs, Component_Values,
+                Int32 Components = IDs.Count;
+                UMR_DLL.Criconden_Bar(ref Components, IDs.ToArray(), Component_Values.ToArray(),
                  ref Temperature, ref Pressure);
 
                 System.Console.WriteLine("Calculated");
@@ -271,7 +267,7 @@ namespace OPC_Test
 
                 if (Pressure > 0.0 & Temperature > 0.0)
                 {
-                    OPC_Subscription.Write(Item_List, Out_Values, out Results, Execution_Options);
+                    OPC_Subscription.Write(Item_List.ToArray(), Out_Values, out Results, Execution_Options);
                 }
 
                 System.Console.WriteLine("Wrote results to OPC server");
