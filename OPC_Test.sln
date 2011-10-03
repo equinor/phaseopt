@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OPC_Test", "OPC_Test\OPC_Test.csproj", "{82432416-17F7-47F9-8976-5DC3CCF084F2}"
 EndProject
 Global
