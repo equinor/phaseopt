@@ -66,18 +66,31 @@ namespace Cricondenbar_OPC_Client
             ValueQT[] Values;
             int[] Results;
             string Log_File_Path = @"cri.log";
-            int Log_File_Lines = 0; 
+            int Log_File_Lines = 0;
             string Config_File_Path = @"cri.conf";
+            string GC_OPC_Server_Path = "";
+            string Tunneller_OPC_Server_Path = "";
 
             // Read config file.
             try
             {
                 string[] Config_File = System.IO.File.ReadAllLines(Config_File_Path);
                 string Component_Pattern = @"^\s*(\d+?)\s*;\s*([^#]+)\s*;\s*([\d\.^#]+)\s*#*.*$";
-                //string OPC_Server_Pattern = @"^\s*OPC_Server_Path=(
+                string GC_OPC_Server_Pattern = @"^\s*GC_OPC_Server_Path=\s*([^#]+)\s*#*.*$";
+                string Tunneller_OPC_Server_Pattern = @"^\s*Tunneller_OPC_Server_Path=\s*([^#]+)\s*#*.*$";
 
                 foreach (string Line in Config_File)
                 {
+                    foreach (Match match in Regex.Matches(Line, GC_OPC_Server_Pattern, RegexOptions.None))
+                    {
+                        GC_OPC_Server_Path = match.Groups[1].Value.Trim();
+                    }
+
+                    foreach (Match match in Regex.Matches(Line, Tunneller_OPC_Server_Pattern, RegexOptions.None))
+                    {
+                        Tunneller_OPC_Server_Path = match.Groups[1].Value.Trim();
+                    }
+
                     foreach (Match match in Regex.Matches(Line, Component_Pattern, RegexOptions.None))
                     {
                         //Console.WriteLine("|{0}|{1}|{2}|", match.Groups[1].Value.Trim(),
@@ -103,7 +116,7 @@ namespace Cricondenbar_OPC_Client
             OPC_Application.Initialize();
 
             // creates a new DaSession object and adds it to the OPC_Application
-            DaSession OPC_Session = new DaSession("opcda://localhost/Siemens.MaxumOPCServer.1");
+            DaSession OPC_Session = new DaSession(GC_OPC_Server_Path);
 
             // sets the execution options
             ExecutionOptions Execution_Options = new ExecutionOptions();
@@ -192,7 +205,7 @@ namespace Cricondenbar_OPC_Client
                 }
 
                 // Read initial values for pressure and temperature.
-                OPC_Session = new DaSession("opcda://localhost/Tunneller:KA-WP15:ABB.800xA DA Connect IHGW");
+                OPC_Session = new DaSession(Tunneller_OPC_Server_Path);
                 OPC_Subscription = new DaSubscription(500, OPC_Session);
                 Item_List.Clear();
 
