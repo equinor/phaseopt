@@ -8,7 +8,7 @@ using Softing.OPCToolbox;
 
 namespace Cricondenbar_OPC_Client
 {
-    public class Testing
+    public class Cricondenbar_Client
     {
         public class UMR_DLL
         {
@@ -73,11 +73,12 @@ namespace Cricondenbar_OPC_Client
             try
             {
                 string[] Config_File = System.IO.File.ReadAllLines(Config_File_Path);
-                string Pattern = @"^\s*(\d+?)\s*;\s*([^#]+)\s*;\s*([\d\.^#]+)\s*#*.*$";
+                string Component_Pattern = @"^\s*(\d+?)\s*;\s*([^#]+)\s*;\s*([\d\.^#]+)\s*#*.*$";
+                //string OPC_Server_Pattern = @"^\s*OPC_Server_Path=(
 
                 foreach (string Line in Config_File)
                 {
-                    foreach (Match match in Regex.Matches(Line, Pattern, RegexOptions.None))
+                    foreach (Match match in Regex.Matches(Line, Component_Pattern, RegexOptions.None))
                     {
                         //Console.WriteLine("|{0}|{1}|{2}|", match.Groups[1].Value.Trim(),
                         //    match.Groups[2].Value.Trim(), match.Groups[3].Value.Trim());
@@ -180,7 +181,7 @@ namespace Cricondenbar_OPC_Client
                 System.Console.WriteLine("Sum: {0}", Sum.ToString());
 
                 double[] Normalized_Values = Component_Values.ToArray();
-                Testing.Normalize(Normalized_Values, 1.0);
+                Cricondenbar_Client.Normalize(Normalized_Values, 1.0);
                 Component_Values.Clear();
                 Component_Values.AddRange(Normalized_Values);
 
