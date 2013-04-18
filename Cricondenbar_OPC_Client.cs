@@ -38,6 +38,13 @@ namespace Cricondenbar_OPC_Client
 
         }
 
+        public class UMR_DLL_V2
+        {
+            [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "CCD", CallingConvention = CallingConvention.Winapi)]
+            public static extern void Criconden(ref int IND, ref int IEOS, ref int NC, int[] ID,
+                double[] Z, ref double T, ref double P);
+        }
+
         private static void Normalize(double[] Array, double Target)
         {
             double Sum = 0.0;
@@ -109,8 +116,8 @@ namespace Cricondenbar_OPC_Client
             }
 
             System.Console.WriteLine("Opening log file.");
-            System.IO.StreamWriter SW;
-            SW = System.IO.File.AppendText(Log_File_Path);
+            System.IO.StreamWriter Log_File;
+            Log_File = System.IO.File.AppendText(Log_File_Path);
 
             Application OPC_Application = Application.Instance;
             OPC_Application.Initialize();
@@ -162,7 +169,7 @@ namespace Cricondenbar_OPC_Client
                 int i = Values.Length - 1;
                 List<double> Component_Values = new List<double>(Scale_Factors);
 
-                SW.WriteLine(Start_Time_Stamp); Log_File_Lines += 1;
+                Log_File.WriteLine(Start_Time_Stamp); Log_File_Lines += 1;
 
                 while (i >= 0)
                 {
@@ -188,7 +195,7 @@ namespace Cricondenbar_OPC_Client
 
                 foreach (Int32 ID in IDs)
                 {
-                    SW.WriteLine(ID); Log_File_Lines += 1;
+                    Log_File.WriteLine(ID); Log_File_Lines += 1;
                 }
 
                 System.Console.WriteLine("Sum: {0}", Sum.ToString());
@@ -201,7 +208,7 @@ namespace Cricondenbar_OPC_Client
                 foreach (double Val in Component_Values)
                 {
                     System.Console.WriteLine(Val.ToString());
-                    SW.WriteLine(Val.ToString()); Log_File_Lines += 1;
+                    Log_File.WriteLine(Val.ToString()); Log_File_Lines += 1;
                 }
 
                 // Read initial values for pressure and temperature.
@@ -244,11 +251,11 @@ namespace Cricondenbar_OPC_Client
                 }
 
                 // Write all data to the log file before attempting to calculate.
-                SW.WriteLine("Initial pressure: {0}", Pressure.ToString()); Log_File_Lines += 1;
+                Log_File.WriteLine("Initial pressure: {0}", Pressure.ToString()); Log_File_Lines += 1;
                 System.Console.WriteLine("Initial pressure: {0}", Pressure.ToString());
-                SW.WriteLine("Initial temperature: {0}", Temperature.ToString()); Log_File_Lines += 1;
+                Log_File.WriteLine("Initial temperature: {0}", Temperature.ToString()); Log_File_Lines += 1;
                 System.Console.WriteLine("Initial temperature: {0}", Temperature.ToString());
-                SW.Flush();
+                Log_File.Flush();
                 //SW.Close();
 
                 Int32 Components = IDs.Count;
@@ -266,12 +273,12 @@ namespace Cricondenbar_OPC_Client
                 System.IO.File.WriteAllLines(Log_File_Path, New_Log_File); */
 
                 System.Console.WriteLine("Calculated pressure: {0}", Pressure.ToString());
-                SW.WriteLine("Calculated pressure: {0}", Pressure.ToString()); Log_File_Lines += 1;
+                Log_File.WriteLine("Calculated pressure: {0}", Pressure.ToString()); Log_File_Lines += 1;
                 System.Console.WriteLine("Calculated temperature: {0}", Temperature.ToString());
-                SW.WriteLine("Calculated temperature: {0}", Temperature.ToString()); Log_File_Lines += 1;
-                SW.WriteLine(); Log_File_Lines += 1;
-                SW.Flush();
-                SW.Close();
+                Log_File.WriteLine("Calculated temperature: {0}", Temperature.ToString()); Log_File_Lines += 1;
+                Log_File.WriteLine(); Log_File_Lines += 1;
+                Log_File.Flush();
+                Log_File.Close();
 
                 // Write results to OPC server.
                 ValueQT[] Out_Values = new ValueQT[2];
