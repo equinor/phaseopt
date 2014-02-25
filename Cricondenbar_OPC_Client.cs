@@ -13,7 +13,7 @@ namespace Cricondenbar_OPC_Client
         public class UMR_DLL
         {
             [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "CCDB", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Criconden_Bar(ref int NC, int[] ID,
+            public static extern void Criconden_Bar(ref Int32 NC, Int32[] ID,
                 double[] XY, ref double T, ref double P);
 
             [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "CCDT", CallingConvention = CallingConvention.Winapi)]
@@ -40,9 +40,17 @@ namespace Cricondenbar_OPC_Client
 
         public class UMR_DLL_V2
         {
-            [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "CCD", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Criconden(ref int IND, ref int IEOS, ref int NC, int[] ID,
+            [DllImport(@"C:\Program Files\UMR-PRU\DLL\UMR.dll", EntryPoint = "CCD", CallingConvention = CallingConvention.Winapi)]
+            public static extern void Criconden(ref Int32 IND, ref Int32 IEOS, ref Int32 NC,
+                Int32[] ID,
                 double[] Z, ref double T, ref double P);
+        }
+
+        public class UMROL_DLL
+        {
+            [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "ccd", CallingConvention = CallingConvention.Winapi)]
+            public static extern void Criconden(ref Int32 IND, ref Int32 NC,
+                Int32[] ID, double[] Z, ref double T, ref double P);
         }
 
         private static void Normalize(double[] Array, double Target)
@@ -68,15 +76,78 @@ namespace Cricondenbar_OPC_Client
             List<string> Item_Ids = new List<string>();
             List<Int32> IDs = new List<Int32>();
             List<double> Scale_Factors = new List<double>();
-            double Temperature = 250;
-            double Pressure = 110;
+            double Temperature = 0.0;
+            double Pressure = 0.0;
             ValueQT[] Values;
             int[] Results;
             string Log_File_Path = @"cri.log";
-            int Log_File_Lines = 0;
             string Config_File_Path = @"cri.conf";
             string GC_OPC_Server_Path = "";
             string Tunneller_OPC_Server_Path = "";
+            bool Test_Run = false;
+
+            foreach (string arg in args)
+            {
+                System.Console.WriteLine("args: {0}", arg);
+                if (arg.Equals(@"/t"))
+                {
+                    Test_Run = true;
+                }
+            }
+
+            if (Test_Run)
+            {
+                IDs.Add(1); Scale_Factors.Add(0.0188591);
+                IDs.Add(2); Scale_Factors.Add(0.0053375);
+                IDs.Add(3); Scale_Factors.Add(0.8696321);
+                IDs.Add(4); Scale_Factors.Add(0.0607237);
+                IDs.Add(5); Scale_Factors.Add(0.0267865);
+                IDs.Add(6); Scale_Factors.Add(0.0043826);
+                IDs.Add(7); Scale_Factors.Add(0.0071378);
+                IDs.Add(9); Scale_Factors.Add(0.0001517);
+                IDs.Add(10); Scale_Factors.Add(0.0019282);
+                IDs.Add(11); Scale_Factors.Add(0.0016613);
+                IDs.Add(14); Scale_Factors.Add(0.0000497);
+                IDs.Add(8); Scale_Factors.Add(0.0001451);
+                IDs.Add(15); Scale_Factors.Add(0.0000843);
+                IDs.Add(16); Scale_Factors.Add(0.0003587);
+                IDs.Add(17); Scale_Factors.Add(0.0001976);
+                IDs.Add(18); Scale_Factors.Add(0.0004511);
+                IDs.Add(701); Scale_Factors.Add(0.0002916);
+                IDs.Add(705); Scale_Factors.Add(0.000803);
+                IDs.Add(707); Scale_Factors.Add(0.0003357);
+                IDs.Add(801); Scale_Factors.Add(0.0000517);
+                IDs.Add(806); Scale_Factors.Add(0.0003413);
+                IDs.Add(810); Scale_Factors.Add(0.0002315);
+                IDs.Add(901); Scale_Factors.Add(0.0000106);
+                IDs.Add(906); Scale_Factors.Add(0.000013);
+                IDs.Add(911); Scale_Factors.Add(0.0000346);
+
+                Int32 IND = 1;
+                Int32 Components = IDs.Count;
+
+                UMROL_DLL.Criconden(ref IND, ref Components, IDs.ToArray(), Scale_Factors.ToArray(),
+                 ref Temperature, ref Pressure);
+
+                System.Console.WriteLine("Test run version 3, ind=1");
+                System.Console.WriteLine("Temperature: {0}", Temperature.ToString());
+                System.Console.WriteLine("Pressure: {0}", Pressure.ToString());
+
+                IND = 2;
+                Temperature = 0;
+                Pressure = 0;
+
+                UMROL_DLL.Criconden(ref IND, ref Components, IDs.ToArray(), Scale_Factors.ToArray(),
+                 ref Temperature, ref Pressure);
+
+                System.Console.WriteLine("Test run version 3, ind=2");
+                System.Console.WriteLine("Temperature: {0}", Temperature.ToString());
+                System.Console.WriteLine("Pressure: {0}", Pressure.ToString());
+
+                return;
+
+            }
+
 
             // Read config file.
             try
@@ -135,9 +206,10 @@ namespace Cricondenbar_OPC_Client
             foreach (string Item_Id in Item_Ids)
             {
                 Item_List.Add(new DaItem(Item_Id, OPC_Subscription));
+                System.Console.WriteLine("Item_Id {0}", Item_Id.ToString());
             }
 
-            System.Console.WriteLine("Connecting to OPC server.");
+            System.Console.WriteLine("Connecting to OPC server. " + GC_OPC_Server_Path);
             // connects object to the server
             int Connect_Result = OPC_Session.Connect(true, true, Execution_Options);
 
@@ -161,15 +233,19 @@ namespace Cricondenbar_OPC_Client
 
             OPC_Session.Disconnect(Execution_Options);
 
+            System.Console.WriteLine("Read_Result: {0}", Read_Result.ToString());
+
             double Sum = 0.0;
 
             if (ResultCode.SUCCEEDED(Read_Result))
             {
                 System.Console.WriteLine("Read components values from OPC server");
+                System.Console.WriteLine("Values:");
                 int i = Values.Length - 1;
+
                 List<double> Component_Values = new List<double>(Scale_Factors);
 
-                Log_File.WriteLine(Start_Time_Stamp); Log_File_Lines += 1;
+                Log_File.WriteLine(Start_Time_Stamp);
 
                 while (i >= 0)
                 {
@@ -195,7 +271,7 @@ namespace Cricondenbar_OPC_Client
 
                 foreach (Int32 ID in IDs)
                 {
-                    Log_File.WriteLine(ID); Log_File_Lines += 1;
+                    Log_File.WriteLine(ID);
                 }
 
                 System.Console.WriteLine("Sum: {0}", Sum.ToString());
@@ -208,7 +284,7 @@ namespace Cricondenbar_OPC_Client
                 foreach (double Val in Component_Values)
                 {
                     System.Console.WriteLine(Val.ToString());
-                    Log_File.WriteLine(Val.ToString()); Log_File_Lines += 1;
+                    Log_File.WriteLine(Val.ToString());
                 }
 
                 // Read initial values for pressure and temperature.
@@ -251,32 +327,24 @@ namespace Cricondenbar_OPC_Client
                 }
 
                 // Write all data to the log file before attempting to calculate.
-                Log_File.WriteLine("Initial pressure: {0}", Pressure.ToString()); Log_File_Lines += 1;
+                Log_File.WriteLine("Initial pressure: {0}", Pressure.ToString());
                 System.Console.WriteLine("Initial pressure: {0}", Pressure.ToString());
-                Log_File.WriteLine("Initial temperature: {0}", Temperature.ToString()); Log_File_Lines += 1;
+                Log_File.WriteLine("Initial temperature: {0}", Temperature.ToString());
                 System.Console.WriteLine("Initial temperature: {0}", Temperature.ToString());
                 Log_File.Flush();
-                //SW.Close();
 
                 Int32 Components = IDs.Count;
-                UMR_DLL.Criconden_Bar(ref Components, IDs.ToArray(), Component_Values.ToArray(),
+                Int32 IND = 2;
+                UMROL_DLL.Criconden(ref IND, ref Components, IDs.ToArray(), Component_Values.ToArray(),
                  ref Temperature, ref Pressure);
 
                 System.Console.WriteLine("Calculated");
-                // After a successfull calculation we can remove the most recent data
-                // from the log file.
-                /*string[] Log_File = System.IO.File.ReadAllLines(Log_File_Path);
-                string[] New_Log_File = new string[Log_File.Length - Log_File_Lines];
-
-                Array.Copy(Log_File, 0, New_Log_File, 0, New_Log_File.Length);
-
-                System.IO.File.WriteAllLines(Log_File_Path, New_Log_File); */
 
                 System.Console.WriteLine("Calculated pressure: {0}", Pressure.ToString());
-                Log_File.WriteLine("Calculated pressure: {0}", Pressure.ToString()); Log_File_Lines += 1;
+                Log_File.WriteLine("Calculated pressure: {0}", Pressure.ToString());
                 System.Console.WriteLine("Calculated temperature: {0}", Temperature.ToString());
-                Log_File.WriteLine("Calculated temperature: {0}", Temperature.ToString()); Log_File_Lines += 1;
-                Log_File.WriteLine(); Log_File_Lines += 1;
+                Log_File.WriteLine("Calculated temperature: {0}", Temperature.ToString());
+                Log_File.WriteLine();
                 Log_File.Flush();
                 Log_File.Close();
 
