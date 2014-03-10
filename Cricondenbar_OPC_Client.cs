@@ -51,6 +51,15 @@ namespace Cricondenbar_OPC_Client
             [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "ccd", CallingConvention = CallingConvention.Winapi)]
             public static extern void Criconden(ref Int32 IND, ref Int32 NC,
                 Int32[] ID, double[] Z, ref double T, ref double P);
+
+            [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "dewt", CallingConvention = CallingConvention.Winapi)]
+            public static extern void Dewt(ref Int32 NC,
+                Int32[] ID, double[] Z, ref double T, ref double P, double[] XY);
+
+            [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "dewp", CallingConvention = CallingConvention.Winapi)]
+            public static extern void Dewp(ref Int32 NC,
+                Int32[] ID, double[] Z, ref double T, ref double P, double[] XY);
+
         }
 
         private static void Normalize(double[] Array, double Target)
