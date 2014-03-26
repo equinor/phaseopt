@@ -58,7 +58,7 @@ namespace Cricondenbar_OPC_Client
 
             [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "dewp", CallingConvention = CallingConvention.Winapi)]
             public static extern void Dewp(ref Int32 NC,
-                Int32[] ID, double[] Z, ref double T, ref double P, double[] XY);
+                Int32[] ID, double[] Z, ref double T, ref double P1, double[] XY1, ref double P2, double[] XY2);
 
         }
 
