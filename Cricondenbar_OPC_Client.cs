@@ -132,16 +132,21 @@ namespace Cricondenbar_OPC_Client
                 IDs.Add(906); Scale_Factors.Add(0.000013);
                 IDs.Add(911); Scale_Factors.Add(0.0000346);
 
+                // Calculate the cricondentherm point
                 Int32 IND = 1;
                 Int32 Components = IDs.Count;
 
                 UMROL_DLL.Criconden(ref IND, ref Components, IDs.ToArray(), Scale_Factors.ToArray(),
                  ref Temperature, ref Pressure);
 
-                System.Console.WriteLine("Test run version 3, ind=1");
-                System.Console.WriteLine("Temperature: {0}", Temperature.ToString());
-                System.Console.WriteLine("Pressure: {0}", Pressure.ToString());
+                System.Console.WriteLine("Test run version 3, ind=1, Cricondentherm point");
+                System.Console.WriteLine("Temperature: {0} K", Temperature.ToString());
+                System.Console.WriteLine("Pressure: {0} bara", Pressure.ToString());
 
+                double CCTT = Temperature;
+                double CCTP = Pressure;
+
+                // Calculate the cricondenbar point
                 IND = 2;
                 Temperature = 0;
                 Pressure = 0;
@@ -149,9 +154,49 @@ namespace Cricondenbar_OPC_Client
                 UMROL_DLL.Criconden(ref IND, ref Components, IDs.ToArray(), Scale_Factors.ToArray(),
                  ref Temperature, ref Pressure);
 
-                System.Console.WriteLine("Test run version 3, ind=2");
-                System.Console.WriteLine("Temperature: {0}", Temperature.ToString());
-                System.Console.WriteLine("Pressure: {0}", Pressure.ToString());
+                System.Console.WriteLine("Test run version 3, ind=2, Cricondenbar point");
+                System.Console.WriteLine("Temperature: {0} K", Temperature.ToString());
+                System.Console.WriteLine("Pressure: {0} bara", Pressure.ToString());
+
+                double CCBT = Temperature;
+                double CCBP = Pressure;
+
+                Int32 Dew_Points = 5; // The number of points to calculate from the cricondenbar and cricondentherm points.
+                // The total number of points calculated will be double of this, pluss the cricondenbar and cricondentherm points.
+                // Total points on the dew point line = 2 + (Dew_Points * 2)
+
+                // Dew points from pressure
+                // Calculate points on the dew point line starting from the cricondentherm point.
+                // Points are calculated approximately halfway towards the cricondenbar point.
+                System.Console.WriteLine("Test run version 3, Dew points from pressure");
+                double P_Interval = (CCBP - CCTP) / ((Dew_Points * 2) - 2);
+                for (Int32 i = 1; i <= Dew_Points; i++)
+                {
+                    double P = CCTP + P_Interval * i;
+                    double T = CCBT;
+                    double[] XY = new double[50];
+                    UMROL_DLL.Dewt(ref Components, IDs.ToArray(), Scale_Factors.ToArray(), ref T, ref P, XY);
+                    System.Console.WriteLine("Temperature: {0} K", T.ToString());
+                    System.Console.WriteLine("Pressure: {0} bara", P.ToString());
+                }
+
+                // Dew points from temperature
+                // Calculate points on the dew point line starting from the cricondenbar point.
+                // Points are calculated approximately halfway towards the cricondentherm point.
+                System.Console.WriteLine("Test run version 3, Dew points from temperature");
+                double T_Interval = (CCTT - CCBT) / ((Dew_Points * 2) - 2);
+                for (Int32 i = 1; i <= Dew_Points; i++)
+                {
+                    double T = CCBT + T_Interval * i;
+                    double P1 = CCTP;
+                    double P2 = CCTP;
+                    double[] XY1 = new double[50];
+                    double[] XY2 = new double[50];
+                    UMROL_DLL.Dewp(ref Components, IDs.ToArray(), Scale_Factors.ToArray(), ref T, ref P1, XY1, ref P2, XY2);
+                    System.Console.WriteLine("Temperature: {0} K", T.ToString());
+                    System.Console.WriteLine("Pressure: {0} bara", P1.ToString());
+                }
+
 
                 return;
 
