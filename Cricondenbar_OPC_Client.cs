@@ -83,16 +83,12 @@ namespace PhaseOpt
             Results.Add(CCTP);
             Results.Add(CCTT);
 
-            Int32 Dew_Points = 5; // The number of points to calculate from the cricondenbar and cricondentherm points.
-            // The total number of points calculated will be double of this, pluss the cricondenbar and cricondentherm points.
-            // Total points on the dew point line = 2 + (Dew_Points * 2)
-
             // Dew points from pressure
             // Calculate points on the dew point line starting from the cricondentherm point.
             // Points are calculated approximately halfway towards the cricondenbar point.
             System.Console.WriteLine("Test run version 3, Dew points from pressure");
-            double P_Interval = (CCBP - CCTP) / ((Dew_Points * 2) - 2);
-            for (Int32 i = 1; i <= Dew_Points; i++)
+            double P_Interval = (CCBP - CCTP) / ((Points * 2) - 2);
+            for (Int32 i = 1; i <= Points; i++)
             {
                 double P = CCTP + P_Interval * i;
                 double T = CCBT;
@@ -107,8 +103,8 @@ namespace PhaseOpt
             // Calculate points on the dew point line starting from the cricondenbar point.
             // Points are calculated approximately halfway towards the cricondentherm point.
             System.Console.WriteLine("Test run version 3, Dew points from temperature");
-            double T_Interval = (CCTT - CCBT) / ((Dew_Points * 2) - 2);
-            for (Int32 i = 1; i <= Dew_Points; i++)
+            double T_Interval = (CCTT - CCBT) / ((Points * 2) - 2);
+            for (Int32 i = 1; i <= Points; i++)
             {
                 double T = CCBT + T_Interval * i;
                 double P1 = CCTP;
@@ -439,7 +435,7 @@ namespace PhaseOpt
 
                 Normalize(Values);
 
-                double[] Result = Calculator.Dew_Point_Line(IDs, Values);
+                double[] Result = Calculator.Dew_Point_Line(IDs, Values, 5);
 
                 return;
             }
