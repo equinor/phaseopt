@@ -10,42 +10,6 @@ namespace Cricondenbar_OPC_Client
 {
     public class Cricondenbar_Client
     {
-        public class UMR_DLL
-        {
-            [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "CCDB", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Criconden_Bar(ref Int32 NC, Int32[] ID,
-                double[] XY, ref double T, ref double P);
-
-            [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "CCDT", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Criconden_Term(ref int NC, int[] ID,
-                double[] XY, ref double T, ref double P);
-
-            [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "BUBP", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Bubble_Point_Bar(ref int NC, int[] ID,
-                double[] XY, ref double T, ref double P);
-
-            [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "BUBT", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Bubble_Point_Term(ref int NC, int[] ID,
-                double[] XY, ref double T, ref double P);
-
-            [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "DEWP", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Dew_Point_Bar(ref int NC, int[] ID,
-                double[] XY, ref double T, ref double P);
-
-            [DllImport(@"C:\UMR\UMR.dll", EntryPoint = "DEWT", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Dew_Point_Term(ref int NC, int[] ID,
-                double[] XY, ref double T, ref double P);
-
-        }
-
-        public class UMR_DLL_V2
-        {
-            [DllImport(@"C:\Program Files\UMR-PRU\DLL\UMR.dll", EntryPoint = "CCD", CallingConvention = CallingConvention.Winapi)]
-            public static extern void Criconden(ref Int32 IND, ref Int32 IEOS, ref Int32 NC,
-                Int32[] ID,
-                double[] Z, ref double T, ref double P);
-        }
-
         public class UMROL_DLL
         {
             [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "ccd", CallingConvention = CallingConvention.Winapi)]
@@ -60,9 +24,13 @@ namespace Cricondenbar_OPC_Client
             public static extern void Dewp(ref Int32 NC,
                 Int32[] ID, double[] Z, ref double T, ref double P1, double[] XY1, ref double P2, double[] XY2);
 
+            [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "dens", CallingConvention = CallingConvention.Winapi)]
+            public static extern void Dewp(ref Int32 NC,
+                Int32[] ID, double[] Z, ref double T, ref double P, ref double D1, ref double D2, ref double CF1,
+                ref double CF2, double[] XY1, double[] XY2);
         }
 
-        private static void Normalize(double[] Array, double Target)
+        private static void Normalize(double[] Array, double Target = 1.0)
         {
             double Sum = 0.0;
 
