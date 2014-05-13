@@ -231,10 +231,6 @@ namespace PhaseOpt
             Criconden(ref IND, ref Components, IDs, Values,
              ref Temperature, ref Pressure);
 
-            System.Console.WriteLine("Test run version 3, ind=1, Cricondentherm point");
-            System.Console.WriteLine("Temperature: {0} K", Temperature.ToString());
-            System.Console.WriteLine("Pressure: {0} bara", Pressure.ToString());
-
             double CCTT = Temperature;
             double CCTP = Pressure;
 
@@ -245,10 +241,6 @@ namespace PhaseOpt
 
             Criconden(ref IND, ref Components, IDs, Values,
              ref Temperature, ref Pressure);
-
-            System.Console.WriteLine("Test run version 3, ind=2, Cricondenbar point");
-            System.Console.WriteLine("Temperature: {0} K", Temperature.ToString());
-            System.Console.WriteLine("Pressure: {0} bara", Pressure.ToString());
 
             double CCBT = Temperature;
             double CCBP = Pressure;
@@ -261,7 +253,6 @@ namespace PhaseOpt
             // Dew points from pressure
             // Calculate points on the dew point line starting from the cricondentherm point.
             // Points are calculated approximately halfway towards the cricondenbar point.
-            System.Console.WriteLine("Test run version 3, Dew points from pressure");
             double P_Interval = (CCBP - CCTP) / ((Points * 2) - 2);
             for (Int32 i = 1; i <= Points; i++)
             {
@@ -270,14 +261,11 @@ namespace PhaseOpt
                 double[] XY = new double[50];
                 Dewt(ref Components, IDs, Values, ref T, ref P, XY);
                 Results.Add(P); Results.Add(T);
-                System.Console.WriteLine("Temperature: {0} K", T.ToString());
-                System.Console.WriteLine("Pressure: {0} bara", P.ToString());
             }
 
             // Dew points from temperature
             // Calculate points on the dew point line starting from the cricondenbar point.
             // Points are calculated approximately halfway towards the cricondentherm point.
-            System.Console.WriteLine("Test run version 3, Dew points from temperature");
             double T_Interval = (CCTT - CCBT) / ((Points * 2) - 2);
             for (Int32 i = 1; i <= Points; i++)
             {
@@ -288,8 +276,6 @@ namespace PhaseOpt
                 double[] XY2 = new double[50];
                 Dewp(ref Components, IDs, Values, ref T, ref P1, XY1, ref P2, XY2);
                 Results.Add(P1); Results.Add(T);
-                System.Console.WriteLine("Temperature: {0} K", T.ToString());
-                System.Console.WriteLine("Pressure: {0} bara", P1.ToString());
             }
             return Results.ToArray();
         }
@@ -611,6 +597,23 @@ namespace PhaseOpt
                 Normalize(Values);
 
                 double[] Result = Calculator.Calculate_Dew_Point_Line(IDs, Values, 5);
+
+                System.Console.WriteLine("Cricondenbar point");
+                System.Console.WriteLine("Pressure: {0} bara", Result[0].ToString());
+                System.Console.WriteLine("Temperature: {0} K", Result[1].ToString());
+                System.Console.WriteLine();
+
+                System.Console.WriteLine("Cricondentherm point");
+                System.Console.WriteLine("Pressure: {0} bara", Result[2].ToString());
+                System.Console.WriteLine("Temperature: {0} K", Result[3].ToString());
+
+                System.Console.WriteLine("Dew Point Line");
+                for (int i = 4; i < Result.Length; i += 2)
+                {
+                    System.Console.WriteLine("Pressure: {0} bara", Result[i].ToString());
+                    System.Console.WriteLine("Temperature: {0} K", Result[i+1].ToString());
+                    System.Console.WriteLine();
+                }
 
                 return;
             }
