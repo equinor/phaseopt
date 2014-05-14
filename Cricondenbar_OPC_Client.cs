@@ -219,7 +219,7 @@ namespace PhaseOpt
         /// 318001	nC39
         /// 700900	C7C9 fraction
         /// </remarks>
-        public double[] Calculate_Dew_Point_Line(int[] IDs, double[] Values, int Points = 5)
+        public static double[] Calculate_Dew_Point_Line(int[] IDs, double[] Values, int Points = 5)
         {
             // Calculate the cricondentherm point
             Int32 IND = 1;
@@ -228,8 +228,7 @@ namespace PhaseOpt
             double Temperature = 0.0;
             List<double> Results = new List<double>();
 
-            Criconden(ref IND, ref Components, IDs, Values,
-             ref Temperature, ref Pressure);
+            Criconden(ref IND, ref Components, IDs, Values, ref Temperature, ref Pressure);
 
             double CCTT = Temperature;
             double CCTP = Pressure;
@@ -239,8 +238,7 @@ namespace PhaseOpt
             Temperature = 0;
             Pressure = 0;
 
-            Criconden(ref IND, ref Components, IDs, Values,
-             ref Temperature, ref Pressure);
+            Criconden(ref IND, ref Components, IDs, Values, ref Temperature, ref Pressure);
 
             double CCBT = Temperature;
             double CCBP = Pressure;
@@ -587,7 +585,6 @@ namespace PhaseOpt
 
             if (Test_Run)
             {
-                PhaseOpt Calculator = new PhaseOpt();
                 int[] IDs = new int[25] { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 14, 8, 15, 16, 17, 18, 701, 705, 707, 801, 806, 710, 901, 906, 911 };
                 double[] Values = new double[25] {0.0188591, 0.0053375, 0.8696321, 0.0607237, 0.0267865, 0.0043826,
                     0.0071378, 0.0001517, 0.0019282, 0.0016613, 0.0000497, 0.0001451, 0.0000843, 0.0003587,
@@ -596,7 +593,7 @@ namespace PhaseOpt
 
                 Normalize(Values);
 
-                double[] Result = Calculator.Calculate_Dew_Point_Line(IDs, Values, 5);
+                double[] Result = PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
                 System.Console.WriteLine("Cricondenbar point");
                 System.Console.WriteLine("Pressure: {0} bara", Result[0].ToString());
