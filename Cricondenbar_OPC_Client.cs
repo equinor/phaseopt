@@ -119,6 +119,28 @@ namespace PhaseOpt
         public string Config_File_Path = @"cri.conf";
 
         /// <summary>
+        /// Scales the sum of Array elements into the range [0..Target].
+        /// </summary>
+        /// <param name="Array"></param>
+        /// <param name="Target"></param>
+        private static void Normalize(double[] Array, double Target = 1.0)
+        {
+            double Sum = 0.0;
+
+            foreach (double Value in Array)
+            {
+                Sum += Value;
+            }
+
+            double Factor = Target / Sum;
+
+            for (int i = 0; i < Array.Length; i++)
+            {
+                Array[i] = Array[i] * Factor;
+            }
+        }
+
+        /// <summary>
         /// Calculates the Dew Point Line of the composition.
         /// </summary>
         /// <param name="IDs">Composition IDs</param>
@@ -219,8 +241,10 @@ namespace PhaseOpt
         /// 318001	nC39
         /// 700900	C7C9 fraction
         /// </remarks>
-        public static double[] Calculate_Dew_Point_Line(int[] IDs, double[] Values, int Points = 5)
+        public static double[] Calculate_Dew_Point_Line(int[] IDs, double[] Values, uint Points = 5)
         {
+            Normalize(Values, 1.0);
+
             // Calculate the cricondentherm point
             Int32 IND = 1;
             Int32 Components = IDs.Length;
@@ -235,8 +259,8 @@ namespace PhaseOpt
 
             // Calculate the cricondenbar point
             IND = 2;
-            Temperature = 0;
-            Pressure = 0;
+            Pressure = 0.0;
+            Temperature = 0.0;
 
             Criconden(ref IND, ref Components, IDs, Values, ref Temperature, ref Pressure);
 
@@ -554,22 +578,6 @@ namespace PhaseOpt
 
     public static class Tester
     {
-        private static void Normalize(double[] Array, double Target = 1.0)
-        {
-            double Sum = 0.0;
-
-            foreach (double Value in Array)
-            {
-                Sum += Value;
-            }
-
-            double Factor = Target / Sum;
-
-            for (int i = 0; i < Array.Length; i++)
-            {
-                Array[i] = Array[i] * Factor;
-            }
-        }
 
         public static void Main(String[] args)
         {
@@ -590,8 +598,6 @@ namespace PhaseOpt
                     0.0071378, 0.0001517, 0.0019282, 0.0016613, 0.0000497, 0.0001451, 0.0000843, 0.0003587,
                     0.0001976, 0.0004511, 0.0002916, 0.000803, 0.0003357, 0.0000517, 0.0003413, 0.0002315,
                     0.0000106, 0.000013, 0.0000346};
-
-                Normalize(Values);
 
                 double[] Result = PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
