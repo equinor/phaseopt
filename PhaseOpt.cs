@@ -111,10 +111,6 @@ namespace PhaseOpt
             Int32[] ID, double[] Z, ref double T, ref double P, ref double D1, ref double D2, ref double CF1,
             ref double CF2, double[] XY1, double[] XY2);
 
-        public DateTime Start_Time_Stamp = System.DateTime.Now;
-        public string Log_File_Path = @"cri.log";
-        public string Config_File_Path = @"cri.conf";
-
         /// <summary>
         /// Scales the sum of Array elements into the range [0..Target].
         /// </summary>
@@ -299,12 +295,9 @@ namespace PhaseOpt
             return Results.ToArray();
         }
 
+        /*
         public void Test()
         {
-
-            /*
-
-
             System.Console.WriteLine("Opening log file.");
             System.IO.StreamWriter Log_File;
             Log_File = System.IO.File.AppendText(Log_File_Path);
@@ -353,7 +346,7 @@ namespace PhaseOpt
             OPC_Application.Terminate();
             DateTime End_Time_Stamp = System.DateTime.Now;
             System.Console.WriteLine(End_Time_Stamp.ToString());
-            System.Console.WriteLine("Time used: {0}", (End_Time_Stamp - Start_Time_Stamp).ToString()); */
-        }
-    }
+            System.Console.WriteLine("Time used: {0}", (End_Time_Stamp - Start_Time_Stamp).ToString());
+        } */
+    } 
 }

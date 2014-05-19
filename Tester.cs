@@ -1,13 +1,13 @@
 ﻿using System;
 using PhaseOpt;
-
+//using OPC_Client;
 
 
 public static class Tester
 {
     public static void Main(String[] args)
     {
-        bool Test_Run = true;
+        bool Test_Run = false;
         foreach (string arg in args)
         {
             System.Console.WriteLine("args: {0}", arg);
@@ -46,5 +46,18 @@ public static class Tester
 
             return;
         }
+
+        string Config_File_Path = @"cri.conf";
+        OPC_Client Client = new OPC_Client();
+        Client.Read_Config(Config_File_Path);
+        double[] Component_Values = Client.Components;
+        int[] Component_IDs = Client.Component_IDs;
+
+        double[] Res = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Component_IDs, Component_Values, 5);
+
+
+
     }
+
+
 }

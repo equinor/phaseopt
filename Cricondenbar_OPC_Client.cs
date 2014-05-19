@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using Softing.OPCToolbox.Client;
 using Softing.OPCToolbox;
 
-using PhaseOpt;
-
     public class OPC_Client
     {
+        public DateTime Start_Time_Stamp = System.DateTime.Now;
+        public string Log_File_Path = @"cri.log";
+
         private List<string> Item_Ids = new List<string>();
         private List<Int32> IDs = new List<Int32>();
         private List<double> Scale_Factors = new List<double>();
@@ -17,6 +18,8 @@ using PhaseOpt;
         private double Temperature = 0.0;
         private double Pressure = 0.0;
         private ValueQT[] Values;
+        private List<double> Component_Values = new List<double>();
+
         private int[] Results;
 
         public void Read_Config(string Config_File_Path)
@@ -72,6 +75,7 @@ using PhaseOpt;
 
             DaSubscription OPC_Subscription = new DaSubscription(500, OPC_Session);
 
+            Component_Values.AddRange(Scale_Factors);
             List<DaItem> Item_List = new List<DaItem>();
             foreach (string Item_Id in Item_Ids)
             {
@@ -106,8 +110,6 @@ using PhaseOpt;
                     System.Console.WriteLine("Values:");
                     int i = Values.Length - 1;
 
-                    List<double> Component_Values = new List<double>(Scale_Factors);
-
                     //Log_File.WriteLine(Start_Time_Stamp);
 
                     while (i >= 0)
@@ -136,13 +138,6 @@ using PhaseOpt;
                     {
                         //Log_File.WriteLine(ID);
                     }
-
-                    System.Console.WriteLine("Sum: {0}", Sum.ToString());
-
-                    double[] Normalized_Values = Component_Values.ToArray();
-                    //UMR.Normalize(Normalized_Values, 1.0);
-                    Component_Values.Clear();
-                    Component_Values.AddRange(Normalized_Values);
 
                     foreach (double Val in Component_Values)
                     {
@@ -221,5 +216,12 @@ using PhaseOpt;
         {
             get { return Temperature; }
         }
+        public double[] Components
+        {
+            get { return Component_Values.ToArray(); }
+        }
+        public int[] Component_IDs
+        {
+            get { return IDs.ToArray(); }
+        }
     }
-
