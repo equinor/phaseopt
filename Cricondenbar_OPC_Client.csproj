@@ -117,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cricondenbar_OPC_Client.cs" />
+    <Compile Include="db_interface.cs" />
     <Compile Include="PhaseOpt.cs" />
     <Compile Include="Tester.cs" />
   </ItemGroup>

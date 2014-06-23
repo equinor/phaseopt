@@ -125,6 +125,8 @@ namespace PhaseOpt
                 Sum += Value;
             }
 
+            System.Console.WriteLine("Sum: {0}", Sum);
+
             double Factor = Target / Sum;
 
             for (int i = 0; i < Array.Length; i++)
@@ -141,7 +143,7 @@ namespace PhaseOpt
         /// <param name="Points">Number of points to calculate from the Cricondenbar and Cricondentherm points.
         /// The total number of points calculated will be double of this, pluss the Cricondenbar and Cricondentherm points.
         /// Total points on the dew point line = 2 + (Points * 2)</param>
-        /// <returns>An array of (pressure, temperature) pairs. The first pair is the Cricondenbar point.
+        /// <returns>An array of (pressure [bara], temperature [K]) pairs. The first pair is the Cricondenbar point.
         /// The second pair is the Cricondentherm point. The following pairs are points on the dew point line.</returns>
         /// <remarks>Compound IDs:
         /// 1	CO2

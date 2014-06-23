@@ -50,14 +50,29 @@ public static class Tester
         string Config_File_Path = @"cri.conf";
         OPC_Client Client = new OPC_Client();
         Client.Read_Config(Config_File_Path);
+        Client.Read_Values();
         double[] Component_Values = Client.Components;
         int[] Component_IDs = Client.Component_IDs;
 
         double[] Res = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Component_IDs, Component_Values, 5);
 
+        System.Console.WriteLine("Cricondenbar point");
+        System.Console.WriteLine("Pressure: {0} bara", Res[0].ToString());
+        System.Console.WriteLine("Temperature: {0} K", Res[1].ToString());
+        System.Console.WriteLine();
 
+        System.Console.WriteLine("Cricondentherm point");
+        System.Console.WriteLine("Pressure: {0} bara", Res[2].ToString());
+        System.Console.WriteLine("Temperature: {0} K", Res[3].ToString());
+        System.Console.WriteLine();
+
+        System.Console.WriteLine("Dew Point Line");
+        for (int i = 4; i < Res.Length; i += 2)
+        {
+            System.Console.WriteLine("Pressure: {0} bara", Res[i].ToString());
+            System.Console.WriteLine("Temperature: {0} K", Res[i + 1].ToString());
+            System.Console.WriteLine();
+        }
 
     }
-
-
 }
