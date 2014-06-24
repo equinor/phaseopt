@@ -7,17 +7,22 @@ public static class Tester
 {
     public static void Main(String[] args)
     {
-        bool Test_Run = false;
+        bool Test_UMR = false;
+        bool Test_DB = true;
         foreach (string arg in args)
         {
             System.Console.WriteLine("args: {0}", arg);
-            if (arg.Equals(@"/t"))
+            if (arg.Equals(@"/u"))
             {
-                Test_Run = true;
+                Test_UMR = true;
+            }
+            else if (arg.Equals(@"/d"))
+            {
+                Test_DB = true;
             }
         }
 
-        if (Test_Run)
+        if (Test_UMR)
         {
             int[] IDs = new int[25] { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 14, 8, 15, 16, 17, 18, 701, 705, 707, 801, 806, 710, 901, 906, 911 };
             double[] Values = new double[25] {0.0188591, 0.0053375, 0.8696321, 0.0607237, 0.0267865, 0.0043826,
@@ -43,6 +48,13 @@ public static class Tester
                 System.Console.WriteLine("Temperature: {0} K", Result[i + 1].ToString());
                 System.Console.WriteLine();
             }
+
+            return;
+        }
+
+        if (Test_DB)
+        {
+            DB_Interface.tester();
 
             return;
         }
