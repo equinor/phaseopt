@@ -243,24 +243,18 @@ namespace PhaseOpt
             // Calculate the cricondentherm point
             Int32 IND = 1;
             Int32 Components = IDs.Length;
-            double Pressure = 0.0;
-            double Temperature = 0.0;
+            double CCTT = 0.0;
+            double CCTP = 0.0;
+            double CCBT = 0.0;
+            double CCBP = 0.0;
             List<double> Results = new List<double>();
 
-            Criconden(ref IND, ref Components, IDs, Values, ref Temperature, ref Pressure);
-
-            double CCTT = Temperature;
-            double CCTP = Pressure;
+            Criconden(ref IND, ref Components, IDs, Values, ref CCTT, ref CCTP);
 
             // Calculate the cricondenbar point
             IND = 2;
-            Pressure = 0.0;
-            Temperature = 0.0;
 
-            Criconden(ref IND, ref Components, IDs, Values, ref Temperature, ref Pressure);
-
-            double CCBT = Temperature;
-            double CCBP = Pressure;
+            Criconden(ref IND, ref Components, IDs, Values, ref CCBT, ref CCBP);
 
             Results.Add(CCBP);
             Results.Add(CCBT);
