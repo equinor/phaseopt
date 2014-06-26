@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<streams>
+  <asgard>
+    <component name="CO2"  id="1"  tag="31AI0157A_K" scale-factor="1.0"/>
+    <component name="N2"   id="2"  tag="31AI0157A_J" scale-factor="1.0"/>
+    <component name="CH4"  id="3"  tag="31AI0157A_A" scale-factor="1.0"/>
+    <component name="C2H6" id="4"  tag="31AI0157A_B" scale-factor="1.0"/>
+    <component name="C3"   id="5"  tag="31AI0157A_C" scale-factor="1.0"/>
+    <component name="iC4"  id="6"  tag="31AI0157A_D" scale-factor="1.0"/>
+    <component name="nC4"  id="7"  tag="31AI0157A_E" scale-factor="1.0"/>
+    <component name="iC5"  id="10" tag="31AI0157A_F" scale-factor="1.0"/>
+  </asgard>
+
+  <statpipe>
+    <component name="CO2" id="1" tag="31AI0161A_K" scale-factor="1.0"/>
+  </statpipe>
+</streams>

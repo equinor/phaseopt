@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using PhaseOpt;
 //using OPC_Client;
 
@@ -54,7 +55,9 @@ public static class Tester
 
         if (Test_DB)
         {
-            DB_Interface.tester();
+            string[] Tag_Name = new string[5] { "31AI0157A_A", "31AI0157A_B", "31AI0157A_C", "31AI0157A_D", "31AI0157A_E" };
+            Hashtable Comp = DB_Interface.tester(Tag_Name, new DateTime(2014, 6, 13, 12, 48, 45));
+            DB_Interface.Read_Config();
 
             return;
         }
