@@ -1,11 +1,34 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using PhaseOpt;
+using System.Xml;
+
 //using OPC_Client;
 
 
 public static class Tester
 {
+    private static List<int> Asgard_IDs = new List<int>();
+    private static List<string> Asgard_Tags = new List<string>();
+    private static List<double> Asgard_Scale_Factors = new List<double>();
+    private static List<double> Asgard_Values = new List<double>();
+    private static List<string> Asgard_Velocity_Tags = new List<string>();
+    private static double Asgard_Pipe_Length;
+
+    private static List<int> Statpipe_IDs = new List<int>();
+    private static List<string> Statpipe_Tags = new List<string>();
+    private static List<double> Statpipe_Scale_Factors = new List<double>();
+    private static List<double> Statpipe_Values = new List<double>();
+    private static List<string> Statpipe_Velocity_Tags = new List<string>();
+    private static double Statpipe_Pipe_Length;
+
+    private static string Tunneller_Opc;
+    private static string IP21_Host;
+    private static string IP21_Port;
+    private static string IP21_Uid;
+    private static string IP21_Pwd;
+
     public static void Main(String[] args)
     {
         bool Test_UMR = false;
@@ -55,9 +78,61 @@ public static class Tester
 
         if (Test_DB)
         {
-            string[] Tag_Name = new string[5] { "31AI0157A_A", "31AI0157A_B", "31AI0157A_C", "31AI0157A_D", "31AI0157A_E" };
-            Hashtable Comp = DB_Interface.tester(Tag_Name, new DateTime(2014, 6, 13, 12, 48, 45));
-            DB_Interface.Read_Config();
+            Read_Config("PhaseOpt.xml");
+
+            // There might not be values in IP21 at Now, so we fetch slightly older values.
+            Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), DateTime.Now.AddSeconds(-5));
+            Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), DateTime.Now.AddSeconds(-5));
+            double Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
+                                              (float)A_Velocity[Asgard_Velocity_Tags[1]] ) / 2.0;
+            double Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
+                                                (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
+            DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
+            DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
+
+            string[] A_Tags = Asgard_Tags.ToArray();
+            string[] S_Tags = Statpipe_Tags.ToArray();
+
+            Hashtable A_Comp = Read_Values(A_Tags, Asgard_Timestamp);
+            Hashtable S_Comp = Read_Values(S_Tags, Statpipe_Timestamp);
+            bool Asgard_Composition_Valid = true;
+            bool Statpipe_Composition_Valid = true;
+
+            for (int i = 0; i < A_Tags.Length; i++)
+            {
+                try
+                {
+                    Asgard_Values.Add((float)A_Comp[A_Tags[i]] * Asgard_Scale_Factors[i]);
+                }
+                catch
+                {
+                    System.Console.WriteLine("Tag {0} not valid", A_Tags[i]);
+                    Asgard_Composition_Valid = false;
+                }
+            }
+
+            for (int i = 0; i < S_Tags.Length; i++)
+            {
+                try
+                {
+                    Statpipe_Values.Add((float)S_Comp[S_Tags[i]] * Statpipe_Scale_Factors[i]);
+                }
+                catch
+                {
+                    System.Console.WriteLine("Tag {0} not valid", S_Tags[i]);
+                    Statpipe_Composition_Valid = false;
+                }
+            }
+
+            if (Asgard_Composition_Valid)
+            {
+                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Asgard_IDs.ToArray(), Asgard_Values.ToArray(), 5);
+            }
+
+            if (Statpipe_Composition_Valid)
+            {
+                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Statpipe_IDs.ToArray(), Statpipe_Values.ToArray(), 5);
+            }
 
             return;
         }
@@ -90,4 +165,155 @@ public static class Tester
         }
 
     }
+
+    public static void Read_Config(string Config_File)
+    {
+        XmlReaderSettings settings = new XmlReaderSettings();
+        settings.IgnoreComments = true;
+        settings.IgnoreProcessingInstructions = true;
+        settings.IgnoreWhitespace = true;
+
+        XmlReader reader = XmlReader.Create(Config_File, settings);
+
+        try
+        {
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "tunneller-opc")
+                {
+                    reader.Read();
+                    Tunneller_Opc = reader.Value;
+                }
+
+                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "IP21-connection")
+                {
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "IP21-connection")
+                            break;
+                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "host")
+                        {
+                            reader.Read();
+                            IP21_Host = reader.Value;
+                        }
+                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "port")
+                        {
+                            reader.Read();
+                            IP21_Port = reader.Value;
+                        }
+                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "uid")
+                        {
+                            reader.Read();
+                            IP21_Uid = reader.Value;
+                        }
+                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "pwd")
+                        {
+                            reader.Read();
+                            IP21_Pwd = reader.Value;
+                        }
+                    }
+                }
+                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "streams")
+                {
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "streams")
+                            break;
+                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "stream" && reader.GetAttribute("name") == "asgard")
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "stream")
+                                    break;
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
+                                {
+                                    Asgard_IDs.Add(XmlConvert.ToInt32(reader.GetAttribute("id")));
+                                    Asgard_Scale_Factors.Add(XmlConvert.ToDouble(reader.GetAttribute("scale-factor")));
+                                    Asgard_Tags.Add(reader.GetAttribute("tag"));
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "velocity")
+                                {
+                                    Asgard_Velocity_Tags.Add(reader.GetAttribute("kalsto-tag"));
+                                    Asgard_Velocity_Tags.Add(reader.GetAttribute("karsto-tag"));
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "length")
+                                {
+                                    reader.Read();
+                                    Asgard_Pipe_Length = XmlConvert.ToDouble(reader.Value);
+                                }
+                            }
+                        }
+                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "stream" && reader.GetAttribute("name") == "statpipe")
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "stream")
+                                    break;
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
+                                {
+                                    Statpipe_IDs.Add(XmlConvert.ToInt32(reader.GetAttribute("id")));
+                                    Statpipe_Scale_Factors.Add(XmlConvert.ToDouble(reader.GetAttribute("scale-factor")));
+                                    Statpipe_Tags.Add(reader.GetAttribute("tag"));
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "velocity")
+                                {
+                                    Statpipe_Velocity_Tags.Add(reader.GetAttribute("kalsto-tag"));
+                                    Statpipe_Velocity_Tags.Add(reader.GetAttribute("karsto-tag"));
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "length")
+                                {
+                                    reader.Read();
+                                    Statpipe_Pipe_Length = XmlConvert.ToDouble(reader.Value);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            System.Console.WriteLine("Error reading config file value {0}", reader.Value);
+            System.Environment.Exit(1);
+        }
+    }
+
+    public static Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
+    {
+        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port + @";UID=" + IP21_Uid +
+                      @";PWD=";
+
+        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
+        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
+        Cmd.Connection.Open();
+
+        string Tag_cond = "(FALSE"; // Makes it easier to add OR conditions.
+        foreach (string Tag in Tag_Name)
+        {
+            Tag_cond += "\n  OR NAME = '" + Tag + "'";
+        }
+        Tag_cond += ")";
+        Cmd.CommandText =
+@"SELECT
+  NAME, VALUE
+FROM
+  History
+WHERE
+  " + Tag_cond + @"
+  AND TS > CAST('" + Time_Stamp.AddSeconds(-1).ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS')
+  AND TS < CAST('" + Time_Stamp.AddSeconds(1).ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS')
+  AND PERIOD = 000:0:01.0;
+";
+
+        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
+        Hashtable Result = new Hashtable();
+        while (DR.Read())
+        {
+            System.Console.WriteLine("{0}\t{1}", DR.GetValue(0), DR.GetValue(1));
+            Result.Add(DR.GetValue(0), DR.GetValue(1));
+        }
+        Cmd.Connection.Close();
+        return Result;
+    }
+
 }
