@@ -14,14 +14,18 @@ public static class Tester
     private static List<double> Asgard_Scale_Factors = new List<double>();
     private static List<double> Asgard_Values = new List<double>();
     private static List<string> Asgard_Velocity_Tags = new List<string>();
+    private static List<string> Asgard_Mass_Flow_Tags = new List<string>();
     private static double Asgard_Pipe_Length;
+    private static string Asgard_Molweight_Tag;
 
     private static List<int> Statpipe_IDs = new List<int>();
     private static List<string> Statpipe_Tags = new List<string>();
     private static List<double> Statpipe_Scale_Factors = new List<double>();
     private static List<double> Statpipe_Values = new List<double>();
     private static List<string> Statpipe_Velocity_Tags = new List<string>();
+    private static List<string> Statpipe_Mass_Flow_Tags = new List<string>();
     private static double Statpipe_Pipe_Length;
+    private static string Statpipe_Molweight_Tag;
 
     private static string Tunneller_Opc;
     private static string IP21_Host;
@@ -81,14 +85,50 @@ public static class Tester
             Read_Config("PhaseOpt.xml");
 
             // There might not be values in IP21 at Now, so we fetch slightly older values.
-            Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), DateTime.Now.AddSeconds(-5));
-            Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), DateTime.Now.AddSeconds(-5));
+            DateTime Timestamp = DateTime.Now.AddSeconds(-5);
+            Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
+            Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
             double Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
                                               (float)A_Velocity[Asgard_Velocity_Tags[1]] ) / 2.0;
             double Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
                                                 (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
             DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
             DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
+
+            Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Timestamp);
+            double Asgard_Molweight = (float)Molweight[Asgard_Molweight_Tag];
+            Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Timestamp);
+            double Statpipe_Molweight = (float)Molweight[Statpipe_Molweight_Tag];
+
+            Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Timestamp);
+            double Asgard_Transport_Flow = 0.0;
+            for (int i = 0; i < Asgard_Mass_Flow_Tags.ToArray().Length; i++)
+            {
+                try
+                {
+                    Asgard_Transport_Flow += (float)Mass_Flow[Asgard_Mass_Flow_Tags[i]];
+                }
+                catch
+                {
+                    System.Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[i]);
+                }
+            }
+            double Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
+
+            Mass_Flow = Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Timestamp);
+            double Statpipe_Transport_Flow = 0.0;
+            for (int i = 0; i < Statpipe_Mass_Flow_Tags.ToArray().Length; i++)
+            {
+                try
+                {
+                    Statpipe_Transport_Flow += (float)Mass_Flow[Statpipe_Mass_Flow_Tags[i]];
+                }
+                catch
+                {
+                    System.Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[i]);
+                }
+            }
+            double Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
             string[] A_Tags = Asgard_Tags.ToArray();
             string[] S_Tags = Statpipe_Tags.ToArray();
@@ -122,6 +162,29 @@ public static class Tester
                     System.Console.WriteLine("Tag {0} not valid", S_Tags[i]);
                     Statpipe_Composition_Valid = false;
                 }
+            }
+
+            List<double> Asgard_Component_Flow = new List<double>();
+            double Asgard_Component_Flow_Sum = 0.0;
+            foreach (double Value in Asgard_Values)
+            {
+                Asgard_Component_Flow.Add(Asgard_Mol_Flow * Value / 100.0);
+                Asgard_Component_Flow_Sum += Asgard_Mol_Flow * Value / 100.0;
+            }
+
+            List<double> Statpipe_Component_Flow = new List<double>();
+            double Statpipe_Component_Flow_Sum = 0.0;
+            foreach (double Value in Statpipe_Values)
+            {
+                Statpipe_Component_Flow.Add(Statpipe_Mol_Flow * Value / 100.0);
+                Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * Value / 100.0;
+            }
+
+            List<double> Mix_To_T420 = new List<double>();
+            for (int i = 0; i < Asgard_Values.ToArray().Length; i++)
+            {
+                Mix_To_T420.Add( (Asgard_Component_Flow[i] + Statpipe_Component_Flow[i]) /
+                                 (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0);
             }
 
             if (Asgard_Composition_Valid)
@@ -241,6 +304,22 @@ public static class Tester
                                     reader.Read();
                                     Asgard_Pipe_Length = XmlConvert.ToDouble(reader.Value);
                                 }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "molweight")
+                                {
+                                    Asgard_Molweight_Tag = reader.GetAttribute("tag");
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "mass-flow")
+                                {
+                                    while (reader.Read())
+                                    {
+                                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "mass-flow")
+                                            break;
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
+                                        {
+                                            Asgard_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
+                                        }
+                                    }
+                                }
                             }
                         }
                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "stream" && reader.GetAttribute("name") == "statpipe")
@@ -264,6 +343,22 @@ public static class Tester
                                 {
                                     reader.Read();
                                     Statpipe_Pipe_Length = XmlConvert.ToDouble(reader.Value);
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "molweight")
+                                {
+                                    Statpipe_Molweight_Tag = reader.GetAttribute("tag");
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "mass-flow")
+                                {
+                                    while (reader.Read())
+                                    {
+                                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "mass-flow")
+                                            break;
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
+                                        {
+                                            Statpipe_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
+                                        }
+                                    }
                                 }
                             }
                         }
