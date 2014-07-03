@@ -13,7 +13,7 @@
   </IP21-connection>
 
   <streams>
-    <stream name="statpipe">
+    <stream name="statpipe" type="input">
       <component name="CO2"  id="1"  tag="31AI0157A_K" scale-factor="1.0"/>
       <component name="N2"   id="2"  tag="31AI0157A_J" scale-factor="1.0"/>
       <component name="CH4"  id="3"  tag="31AI0157A_A" scale-factor="1.0"/>
@@ -44,9 +44,10 @@
       <mass-flow>
         <component name="Stasjon Masse strøm" tag="20FI7195SM"/>
       </mass-flow>
+      <cricondenbar temperature-tag="31TY0157_A" pressure-tag="31PY0157_A"/>
     </stream>
 
-    <stream name="asgard">
+    <stream name="asgard" type="input">
       <component name="CO2"  id="1"  tag="31AI0161A_K" scale-factor="1.0"/>
       <component name="N2"   id="2"  tag="31AI0161A_J" scale-factor="1.0"/>
       <component name="CH4"  id="3"  tag="31AI0161A_A" scale-factor="1.0"/>
@@ -76,8 +77,70 @@
       <length>20000.0</length>
       <mass-flow>
         <component name="Åsgard rikgass før X-over" tag="20FI5506"/>
-        <!--component name="Statpipe crossover"        tag="15FC0105"/-->
       </mass-flow>
+      <cricondenbar temperature-tag="31TY0161_A" pressure-tag="31PY0161_A"/>
+    </stream>
+
+    <stream name="DIXO-mix to T410/T420/DPCU" type="output">
+      <component name="CO2"  id="1"  tag="PHASEOPT_20AY7146_K.VALUE"/>
+      <component name="N2"   id="2"  tag="PHASEOPT_20AY7146_J.VALUE"/>
+      <component name="CH4"  id="3"  tag="PHASEOPT_20AY7146_A.VALUE"/>
+      <component name="C2H6" id="4"  tag="PHASEOPT_20AY7146_B.VALUE"/>
+      <component name="C3"   id="5"  tag="PHASEOPT_20AY7146_C.VALUE"/>
+      <component name="iC4"  id="6"  tag="PHASEOPT_20AY7146_D.VALUE"/>
+      <component name="nC4"  id="7"  tag="PHASEOPT_20AY7146_E.VALUE"/>
+      <component name="iC5"  id="10" tag="PHASEOPT_20AY7146_F.VALUE"/>
+      <component name="nC5"  id="11" tag="PHASEOPT_20AY7146_G.VALUE"/>
+
+      <component name="2-M-C5"          id="16"     tag="PHASEOPT_20AY7146_08.VALUE"/>
+      <component name="3-M-C5"          id="17"     tag="PHASEOPT_20AY7146_34.VALUE"/>
+      <component name="nC6"             id="18"     tag="PHASEOPT_20AY7146_22.VALUE"/>
+      <component name="C7P / nC7"       id="701"    tag="PHASEOPT_20AY7146_46.VALUE"/>
+      <component name="C7N / cy-C6"     id="705"    tag="PHASEOPT_20AY7146_47.VALUE"/>
+      <component name="C7A / Benzene"   id="707"    tag="PHASEOPT_20AY7146_48.VALUE"/>
+      <component name="C8P / nC8"       id="801"    tag="PHASEOPT_20AY7146_49.VALUE"/>
+      <component name="C8N / cy-C7"     id="806"    tag="PHASEOPT_20AY7146_50.VALUE"/>
+      <component name="C8A / Toluene"   id="810"    tag="PHASEOPT_20AY7146_51.VALUE"/>
+      <component name="C9P / nC9"       id="901"    tag="PHASEOPT_20AY7146_52.VALUE"/>
+      <component name="C9N / cy-C8"     id="906"    tag="PHASEOPT_20AY7146_53.VALUE"/>
+      <component name="C9A / m-xylene"  id="911"    tag="PHASEOPT_20AY7146_54.VALUE"/>
+      <component name="nC10"            id="101101" tag="PHASEOPT_20AY7146_05.VALUE"/>
+
+      <cricondenbar temperature-tag="20TY7146_A" pressure-tag="20PY7146_A"/>
+    </stream>
+
+    <stream name="DIXO-mix to T100/T200" type="output">
+      <component name="CO2"  id="1"  tag="PHASEOPT_15AY5626_K.VALUE"/>
+      <component name="N2"   id="2"  tag="PHASEOPT_15AY5626_J.VALUE"/>
+      <component name="CH4"  id="3"  tag="PHASEOPT_15AY5626_A.VALUE"/>
+      <component name="C2H6" id="4"  tag="PHASEOPT_15AY5626_B.VALUE"/>
+      <component name="C3"   id="5"  tag="PHASEOPT_15AY5626_C.VALUE"/>
+      <component name="iC4"  id="6"  tag="PHASEOPT_15AY5626_D.VALUE"/>
+      <component name="nC4"  id="7"  tag="PHASEOPT_15AY5626_E.VALUE"/>
+      <component name="iC5"  id="10" tag="PHASEOPT_15AY5626_F.VALUE"/>
+      <component name="nC5"  id="11" tag="PHASEOPT_15AY5626_G.VALUE"/>
+
+      <component name="2-M-C5"          id="16"     tag="PHASEOPT_15AY5626_08.VALUE"/>
+      <component name="3-M-C5"          id="17"     tag="PHASEOPT_15AY5626_34.VALUE"/>
+      <component name="nC6"             id="18"     tag="PHASEOPT_15AY5626_22.VALUE"/>
+      <component name="C7P / nC7"       id="701"    tag="PHASEOPT_15AY5626_46.VALUE"/>
+      <component name="C7N / cy-C6"     id="705"    tag="PHASEOPT_15AY5626_47.VALUE"/>
+      <component name="C7A / Benzene"   id="707"    tag="PHASEOPT_15AY5626_48.VALUE"/>
+      <component name="C8P / nC8"       id="801"    tag="PHASEOPT_15AY5626_49.VALUE"/>
+      <component name="C8N / cy-C7"     id="806"    tag="PHASEOPT_15AY5626_50.VALUE"/>
+      <component name="C8A / Toluene"   id="810"    tag="PHASEOPT_15AY5626_51.VALUE"/>
+      <component name="C9P / nC9"       id="901"    tag="PHASEOPT_15AY5626_52.VALUE"/>
+      <component name="C9N / cy-C8"     id="906"    tag="PHASEOPT_15AY5626_53.VALUE"/>
+      <component name="C9A / m-xylene"  id="911"    tag="PHASEOPT_15AY5626_54.VALUE"/>
+      <component name="nC10"            id="101101" tag="PHASEOPT_15AY5626_05.VALUE"/>
+
+      <mass-flow>
+        <component name="Stasjon Masse strøm" tag="20FI7193SM"/>
+        <component name="Statpipe crossover"  tag="15FC0105"/>
+      </mass-flow>
+
+      <molweight tag="15AM5626V"/>
+      <cricondenbar temperature-tag="15TY5626_A" pressure-tag="15PY5626_A"/>
     </stream>
   </streams>
 </phaseopt>

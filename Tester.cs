@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using PhaseOpt;
 using System.Xml;
+using Softing.OPCToolbox.Client;
+using Softing.OPCToolbox;
+
 
 //using OPC_Client;
 
@@ -17,6 +20,7 @@ public static class Tester
     private static List<string> Asgard_Mass_Flow_Tags = new List<string>();
     private static double Asgard_Pipe_Length;
     private static string Asgard_Molweight_Tag;
+    private static List<string> Asgard_Cricondenbar_Tags = new List<string>();
 
     private static List<int> Statpipe_IDs = new List<int>();
     private static List<string> Statpipe_Tags = new List<string>();
@@ -26,6 +30,17 @@ public static class Tester
     private static List<string> Statpipe_Mass_Flow_Tags = new List<string>();
     private static double Statpipe_Pipe_Length;
     private static string Statpipe_Molweight_Tag;
+    private static List<string> Statpipe_Cricondenbar_Tags = new List<string>();
+
+    private static List<int> Mix_To_T410_IDs = new List<int>();
+    private static List<string> Mix_To_T410_Tags = new List<string>();
+    private static List<string> Mix_To_T410_Cricondenbar_Tags = new List<string>();
+
+    private static List<int> Mix_To_T100_IDs = new List<int>();
+    private static List<string> Mix_To_T100_Tags = new List<string>();
+    private static List<string> Mix_To_T100_Cricondenbar_Tags = new List<string>();
+    private static List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
+    private static string Mix_To_T100_Molweight_Tag;
 
     private static string Tunneller_Opc;
     private static string IP21_Host;
@@ -95,40 +110,53 @@ public static class Tester
             DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
             DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
 
-            Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Timestamp);
+            Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
             double Asgard_Molweight = (float)Molweight[Asgard_Molweight_Tag];
-            Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Timestamp);
+            Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
             double Statpipe_Molweight = (float)Molweight[Statpipe_Molweight_Tag];
+            Molweight = Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
+            double Mix_To_T100_Molweight = (float)Molweight[Mix_To_T100_Molweight_Tag];
 
-            Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Timestamp);
+            Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
             double Asgard_Transport_Flow = 0.0;
-            for (int i = 0; i < Asgard_Mass_Flow_Tags.ToArray().Length; i++)
+            try
             {
-                try
-                {
-                    Asgard_Transport_Flow += (float)Mass_Flow[Asgard_Mass_Flow_Tags[i]];
-                }
-                catch
-                {
-                    System.Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[i]);
-                }
+                Asgard_Transport_Flow = (float)Mass_Flow[Asgard_Mass_Flow_Tags[0]];
+            }
+            catch
+            {
+                System.Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
             }
             double Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
-            Mass_Flow = Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Timestamp);
+            Mass_Flow = Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
             double Statpipe_Transport_Flow = 0.0;
-            for (int i = 0; i < Statpipe_Mass_Flow_Tags.ToArray().Length; i++)
+            try
             {
-                try
-                {
-                    Statpipe_Transport_Flow += (float)Mass_Flow[Statpipe_Mass_Flow_Tags[i]];
-                }
-                catch
-                {
-                    System.Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[i]);
-                }
+                Statpipe_Transport_Flow = (float)Mass_Flow[Statpipe_Mass_Flow_Tags[0]];
+            }
+            catch
+            {
+                System.Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
             }
             double Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
+
+            Mass_Flow = Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
+            double Mix_To_T100_Flow = 0.0;
+            double Statpipe_Cross_Over_Flow = 0.0;
+            try
+            {
+                Mix_To_T100_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]];
+                Statpipe_Cross_Over_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[1]];
+            }
+            catch
+            {
+                System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Mass_Flow_Tags[0]);
+                System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Mass_Flow_Tags[1]);
+            }
+            double Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
+            double Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
+
 
             string[] A_Tags = Asgard_Tags.ToArray();
             string[] S_Tags = Statpipe_Tags.ToArray();
@@ -180,21 +208,78 @@ public static class Tester
                 Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * Value / 100.0;
             }
 
-            List<double> Mix_To_T420 = new List<double>();
+            List<double> Mix_To_T410 = new List<double>();
             for (int i = 0; i < Asgard_Values.ToArray().Length; i++)
             {
-                Mix_To_T420.Add( (Asgard_Component_Flow[i] + Statpipe_Component_Flow[i]) /
+                Mix_To_T410.Add( (Asgard_Component_Flow[i] + Statpipe_Component_Flow[i]) /
                                  (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0);
             }
 
+            List<double> CY2007_Component_Flow = new List<double>();
+            double CY2007_Component_Flow_Sum = 0.0;
+            foreach (double Value in Asgard_Values)
+            {
+                CY2007_Component_Flow.Add(Statpipe_Cross_Over_Mol_Flow * Value / 100.0);
+                CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * Value / 100.0;
+            }
+
+            List<double> DIXO_Component_Flow = new List<double>();
+            double DIXO_Component_Flow_Sum = 0.0;
+            foreach (double Value in Mix_To_T410)
+            {
+                DIXO_Component_Flow.Add(Mix_To_T100_Mol_Flow * Value / 100.0);
+                DIXO_Component_Flow_Sum += Mix_To_T100_Mol_Flow * Value / 100.0;
+            }
+
+            List<double> Mix_To_T100 = new List<double>();
+            for (int i = 0; i < Asgard_Values.ToArray().Length; i++)
+            {
+                Mix_To_T100.Add((CY2007_Component_Flow[i] + DIXO_Component_Flow[i]) /
+                                 (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum) * 100.0);
+            }
+
+            double[] Asgard_Density = PhaseOpt.PhaseOpt.Calculate_Density_And_Compressibility(Asgard_IDs.ToArray(), Asgard_Values.ToArray(), 1.01325, 15.0);
+
             if (Asgard_Composition_Valid)
             {
-                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Asgard_IDs.ToArray(), Asgard_Values.ToArray(), 5);
+                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Asgard_IDs.ToArray(), Asgard_Values.ToArray(), 0);
             }
 
             if (Statpipe_Composition_Valid)
             {
-                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Statpipe_IDs.ToArray(), Statpipe_Values.ToArray(), 5);
+                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Statpipe_IDs.ToArray(), Statpipe_Values.ToArray(), 0);
+            }
+
+            // Write results to OPC
+            Application OPC_Application = Application.Instance;
+            OPC_Application.Initialize();
+
+            // creates a new DaSession object and adds it to the OPC_Application
+            DaSession OPC_Session = new DaSession(Tunneller_Opc);
+
+            // sets the execution options
+            ExecutionOptions Execution_Options = new ExecutionOptions();
+            Execution_Options.ExecutionType = EnumExecutionType.SYNCHRONOUS;
+
+            DaSubscription OPC_Subscription = new DaSubscription(500, OPC_Session);
+
+            // Write results to OPC server.
+            List<ValueQT> Out_Values = new List<ValueQT>();
+            List<DaItem> Item_List = new List<DaItem>();
+            for (int i = 0; i < Mix_To_T410_Tags.ToArray().Length; i++)
+            {
+                Out_Values.Add(new ValueQT(Mix_To_T410[i], EnumQuality.GOOD, Timestamp));
+                Item_List.Add(new DaItem(Mix_To_T410_Tags[i], OPC_Subscription));
+            }
+
+            int Connect_Result = OPC_Session.Connect(true, true, Execution_Options);
+
+            if (ResultCode.SUCCEEDED(Connect_Result))
+            {
+                int[] Results;
+                OPC_Subscription.Write(Item_List.ToArray(), Out_Values.ToArray(), out Results, Execution_Options);
+                System.Console.WriteLine("Wrote results to OPC server");
+                OPC_Session.Disconnect(Execution_Options);
             }
 
             return;
@@ -357,6 +442,70 @@ public static class Tester
                                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                         {
                                             Statpipe_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "stream" && reader.GetAttribute("name") == "DIXO-mix to T410/T420/DPCU")
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "stream")
+                                    break;
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
+                                {
+                                    Mix_To_T410_IDs.Add(XmlConvert.ToInt32(reader.GetAttribute("id")));
+                                    Mix_To_T410_Tags.Add(reader.GetAttribute("tag"));
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
+                                {
+                                    Mix_To_T410_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
+                                    Mix_To_T410_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "mass-flow")
+                                {
+                                    while (reader.Read())
+                                    {
+                                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "mass-flow")
+                                            break;
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
+                                        {
+                                            Statpipe_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "stream" && reader.GetAttribute("name") == "DIXO-mix to T100/T200")
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "stream")
+                                    break;
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
+                                {
+                                    Mix_To_T100_IDs.Add(XmlConvert.ToInt32(reader.GetAttribute("id")));
+                                    Mix_To_T100_Tags.Add(reader.GetAttribute("tag"));
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
+                                {
+                                    Mix_To_T100_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
+                                    Mix_To_T100_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "molweight")
+                                {
+                                    Mix_To_T100_Molweight_Tag = reader.GetAttribute("tag");
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "mass-flow")
+                                {
+                                    while (reader.Read())
+                                    {
+                                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "mass-flow")
+                                            break;
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
+                                        {
+                                            Mix_To_T100_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
                                         }
                                     }
                                 }
