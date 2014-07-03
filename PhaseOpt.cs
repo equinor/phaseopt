@@ -143,7 +143,8 @@ namespace PhaseOpt
         /// <param name="Points">Number of points to calculate from the Cricondenbar and Cricondentherm points.
         /// The total number of points calculated will be double of this, pluss the Cricondenbar and Cricondentherm points.
         /// Total points on the dew point line = 2 + (Points * 2)</param>
-        /// <returns>An array of (pressure [bara], temperature [K]) pairs. The first pair is the Cricondenbar point.
+        /// <param name="Units">Sets the engineering units of the outputs. 0: use bara and Kelvin. 1: use barg and ­°C.</param>
+        /// <returns>An array of (pressure, temperature) pairs. The first pair is the Cricondenbar point.
         /// The second pair is the Cricondentherm point. The following pairs are points on the dew point line.</returns>
         /// <remarks>Compound IDs:
         /// 1	CO2
@@ -236,8 +237,12 @@ namespace PhaseOpt
         /// 318001	nC39
         /// 700900	C7C9 fraction
         /// </remarks>
-        public static double[] Calculate_Dew_Point_Line(int[] IDs, double[] Values, uint Points = 5)
+        public static double[] Calculate_Dew_Point_Line(int[] IDs, double[] Values, uint Points = 5, uint Units = 1)
         {
+            double Bara_To_Barg = 1.01325;
+            double Kelvin_To_Celcius = 273.15;
+            if (Units > 1) Units = 1;
+
             Normalize(Values, 1.0);
 
             // Calculate the cricondentherm point
@@ -256,10 +261,10 @@ namespace PhaseOpt
 
             Criconden(ref IND, ref Components, IDs, Values, ref CCBT, ref CCBP);
 
-            Results.Add(CCBP);
-            Results.Add(CCBT);
-            Results.Add(CCTP);
-            Results.Add(CCTT);
+            Results.Add(CCBP - (Units * Bara_To_Barg) );
+            Results.Add(CCBT - (Units * Kelvin_To_Celcius) );
+            Results.Add(CCTP - (Units * Bara_To_Barg) );
+            Results.Add(CCTT - (Units * Kelvin_To_Celcius));
 
             // Dew points from pressure
             // Calculate points on the dew point line starting from the cricondentherm point.
@@ -271,7 +276,7 @@ namespace PhaseOpt
                 double T = CCBT;
                 double[] XY = new double[50];
                 Dewt(ref Components, IDs, Values, ref T, ref P, XY);
-                Results.Add(P); Results.Add(T);
+                Results.Add(P - (Units * Bara_To_Barg)); Results.Add(T - (Units * Kelvin_To_Celcius));
             }
 
             // Dew points from temperature
@@ -286,9 +291,33 @@ namespace PhaseOpt
                 double[] XY1 = new double[50];
                 double[] XY2 = new double[50];
                 Dewp(ref Components, IDs, Values, ref T, ref P1, XY1, ref P2, XY2);
-                Results.Add(P1); Results.Add(T);
+                Results.Add(P1 - (Units * Bara_To_Barg)); Results.Add(T - (Units * Kelvin_To_Celcius));
             }
             return Results.ToArray();
+        }
+
+
+        public static double[] Calculate_Density_And_Compressibility(int[] IDs, double[] Values, double P, double T)
+        {
+            double[] Results = new double[4];
+            Int32 Components = IDs.Length;
+            double D1 = 0.0;
+            double D2 = 0.0;
+            double CF1 = 0.0;
+            double CF2 = 0.0;
+            double[] XY1 = new double[50];
+            double[] XY2 = new double[50];
+
+            Normalize(Values, 1.0);
+
+            Dens(ref Components, IDs, Values, ref T, ref P, ref D1, ref D2, ref CF1, ref CF2, XY1, XY2);
+
+            Results[0] = D1;
+            Results[1] = D2;
+            Results[2] = CF1;
+            Results[3] = CF2;
+
+            return Results;
         }
 
         /*
