@@ -524,8 +524,7 @@ public static class Tester
 
     public static Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
     {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port + @";UID=" + IP21_Uid +
-                      @";PWD=";
+        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port + @"UID=" + IP21_Uid;
 
         System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
         Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);

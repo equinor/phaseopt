@@ -9,7 +9,6 @@
     <host>KAR-IP21.statoil.net</host>
     <port>10014</port>
     <uid>STATOIL-NET\f_aspenip21_ka</uid>
-    <pwd>bar</pwd>
   </IP21-connection>
 
   <streams>
