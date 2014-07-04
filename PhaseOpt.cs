@@ -296,8 +296,15 @@ namespace PhaseOpt
             return Results.ToArray();
         }
 
-
-        public static double[] Calculate_Density_And_Compressibility(int[] IDs, double[] Values, double P, double T)
+        /// <summary>
+        /// Calculates the density and the compressibility factor of the composition.
+        /// </summary>
+        /// <param name="IDs">Composition IDs</param>
+        /// <param name="Values">Composition Values</param>
+        /// <param name="P">Pressure</param>
+        /// <param name="T">Temperature</param>
+        /// <returns>An array containing {D1, D2, CF1, CF2}</returns>
+        public static double[] Calculate_Density_And_Compressibility(int[] IDs, double[] Values, double P = 1.01325, double T = 288.15)
         {
             double[] Results = new double[4];
             Int32 Components = IDs.Length;
