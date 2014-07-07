@@ -100,7 +100,7 @@ public static class Tester
         Read_Config("PhaseOpt.xml");
 
         // There might not be values in IP21 at Now, so we fetch slightly older values.
-        DateTime Timestamp = DateTime.Now.AddSeconds(-5);
+        DateTime Timestamp = DateTime.Now.AddSeconds(-15);
         Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
         Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
         double Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
@@ -240,6 +240,80 @@ public static class Tester
         {
             Write_Value(Comp.Tag, Comp.Get_Scaled_Value());
         }
+
+        List<int> Composition_IDs = new List<int>();
+        List<double> Composition_Values = new List<double>();
+        Tags.Clear();
+        Comp_Values.Clear();
+        foreach (Component Comp in Asgard_Comp)
+        {
+            Tags.Add(Comp.Tag);
+        }
+        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
+        foreach (Component c in Asgard_Comp)
+        {
+            c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+        }
+        foreach (Component Value in Asgard_Comp)
+        {
+            Composition_IDs.Add(Value.ID);
+            Composition_Values.Add(Value.Value);
+        }
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Composition_IDs.ToArray(), Composition_Values.ToArray(), 0);
+        for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
+        {
+            Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+        }
+
+        Composition_IDs.Clear();
+        Composition_Values.Clear();
+        Tags.Clear();
+        Comp_Values.Clear();
+        foreach (Component Comp in Statpipe_Comp)
+        {
+            Tags.Add(Comp.Tag);
+        }
+        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
+        foreach (Component c in Statpipe_Comp)
+        {
+            c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+        }
+        foreach (Component Value in Statpipe_Comp)
+        {
+            Composition_IDs.Add(Value.ID);
+            Composition_Values.Add(Value.Value);
+        }
+        Composition_Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Composition_IDs.ToArray(), Composition_Values.ToArray(), 0);
+        for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
+        {
+            Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+        }
+
+        Composition_IDs.Clear();
+        Composition_Values.Clear();
+        foreach (Component Value in Mix_To_T100_Comp)
+        {
+            Composition_IDs.Add(Value.ID);
+            Composition_Values.Add(Value.Value);
+        }
+        Composition_Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Composition_IDs.ToArray(), Composition_Values.ToArray(), 0);
+        for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
+        {
+            Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
+        }
+
+        Composition_IDs.Clear();
+        Composition_Values.Clear();
+        foreach (Component Value in Mix_To_T410_Comp)
+        {
+            Composition_IDs.Add(Value.ID);
+            Composition_Values.Add(Value.Value);
+        }
+        Composition_Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Composition_IDs.ToArray(), Composition_Values.ToArray(), 0);
+        for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
+        {
+            Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+        }
     }
 
     public static void Read_Config(string Config_File)
@@ -333,6 +407,11 @@ public static class Tester
                                         }
                                     }
                                 }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
+                                {
+                                    Asgard_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
+                                    Asgard_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
+                                }
                             }
                         }
                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "stream" && reader.GetAttribute("name") == "statpipe")
@@ -374,6 +453,11 @@ public static class Tester
                                         }
                                     }
                                 }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
+                                {
+                                    Statpipe_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
+                                    Statpipe_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
+                                }
                             }
                         }
                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "stream" && reader.GetAttribute("name") == "DIXO-mix to T410/T420/DPCU")
@@ -404,6 +488,11 @@ public static class Tester
                                             Statpipe_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
                                         }
                                     }
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
+                                {
+                                    Mix_To_T410_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
+                                    Mix_To_T410_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
                                 }
                             }
                         }
@@ -439,6 +528,11 @@ public static class Tester
                                             Mix_To_T100_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
                                         }
                                     }
+                                }
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
+                                {
+                                    Mix_To_T100_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
+                                    Mix_To_T100_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
                                 }
                             }
                         }
