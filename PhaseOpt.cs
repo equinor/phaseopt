@@ -326,59 +326,5 @@ namespace PhaseOpt
 
             return Results;
         }
-
-        /*
-        public void Test()
-        {
-            System.Console.WriteLine("Opening log file.");
-            System.IO.StreamWriter Log_File;
-            Log_File = System.IO.File.AppendText(Log_File_Path);
-
-
-
-                // Write all data to the log file before attempting to calculate.
-                Log_File.WriteLine("Initial pressure: {0}", Pressure.ToString());
-                System.Console.WriteLine("Initial pressure: {0}", Pressure.ToString());
-                Log_File.WriteLine("Initial temperature: {0}", Temperature.ToString());
-                System.Console.WriteLine("Initial temperature: {0}", Temperature.ToString());
-                Log_File.Flush();
-
-                Int32 Components = IDs.Count;
-                Int32 IND = 2;
-                UMROL_DLL.Criconden(ref IND, ref Components, IDs.ToArray(), Component_Values.ToArray(),
-                 ref Temperature, ref Pressure);
-
-                System.Console.WriteLine("Calculated");
-
-                System.Console.WriteLine("Calculated pressure: {0}", Pressure.ToString());
-                Log_File.WriteLine("Calculated pressure: {0}", Pressure.ToString());
-                System.Console.WriteLine("Calculated temperature: {0}", Temperature.ToString());
-                Log_File.WriteLine("Calculated temperature: {0}", Temperature.ToString());
-                Log_File.WriteLine();
-                Log_File.Flush();
-                Log_File.Close();
-
-                // Write results to OPC server.
-                ValueQT[] Out_Values = new ValueQT[2];
-                Out_Values[0] = new ValueQT(Pressure, EnumQuality.GOOD, System.DateTime.Now);
-                Out_Values[1] = new ValueQT(Temperature, EnumQuality.GOOD, System.DateTime.Now);
-
-                if (Pressure > 0.0 & Temperature > 0.0)
-                {
-                    OPC_Subscription.Write(Item_List.ToArray(), Out_Values, out Results, Execution_Options);
-                }
-
-                System.Console.WriteLine("Wrote results to OPC server");
-            }
-            else
-            {
-                System.Console.WriteLine("Read components values failed.");
-            }
-
-            OPC_Application.Terminate();
-            DateTime End_Time_Stamp = System.DateTime.Now;
-            System.Console.WriteLine(End_Time_Stamp.ToString());
-            System.Console.WriteLine("Time used: {0}", (End_Time_Stamp - Start_Time_Stamp).ToString());
-        } */
     } 
 }
