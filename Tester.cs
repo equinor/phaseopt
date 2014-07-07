@@ -202,9 +202,12 @@ public static class Tester
         List<double> Mix_To_T410 = new List<double>();
         foreach (Component Comp in Mix_To_T410_Comp)
         {
-            Comp.Value = ( Asgard_Component_Flow.Find(x => x.ID == Comp.ID).Value +
-                            Statpipe_Component_Flow.Find(x => x.ID == Comp.ID).Value ) /
-                            (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0;
+            if (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum > 0.0)
+            {
+                Comp.Value = (Asgard_Component_Flow.Find(x => x.ID == Comp.ID).Value +
+                              Statpipe_Component_Flow.Find(x => x.ID == Comp.ID).Value) /
+                              (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0;
+            }
         }
 
         List<Component> CY2007_Component_Flow = new List<Component>();
@@ -219,16 +222,19 @@ public static class Tester
         double DIXO_Component_Flow_Sum = 0.0;
         foreach (Component Value in Mix_To_T410_Comp)
         {
-            DIXO_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * Value.Value / 100.0));
-            DIXO_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * Value.Value / 100.0;
+            DIXO_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Mix_To_T100_Mol_Flow * Value.Value / 100.0));
+            DIXO_Component_Flow_Sum += Mix_To_T100_Mol_Flow * Value.Value / 100.0;
         }
 
         List<double> Mix_To_T100 = new List<double>();
         foreach (Component Comp in Mix_To_T100_Comp)
         {
-            Comp.Value = (CY2007_Component_Flow.Find(x => x.ID == Comp.ID).Value +
-                            DIXO_Component_Flow.Find(x => x.ID == Comp.ID).Value) /
-                            (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum) * 100.0;
+            if (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum > 0.0)
+            {
+                Comp.Value = (CY2007_Component_Flow.Find(x => x.ID == Comp.ID).Value +
+                              DIXO_Component_Flow.Find(x => x.ID == Comp.ID).Value) /
+                              (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum) * 100.0;
+            }
         }
 
         foreach (Component Comp in Mix_To_T100_Comp)
