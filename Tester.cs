@@ -3,41 +3,48 @@ using System.Collections;
 using System.Collections.Generic;
 using PhaseOpt;
 using System.Xml;
-using Softing.OPCToolbox.Client;
-using Softing.OPCToolbox;
-
-
-//using OPC_Client;
-
 
 public static class Tester
 {
-    private static List<int> Asgard_IDs = new List<int>();
-    private static List<string> Asgard_Tags = new List<string>();
-    private static List<double> Asgard_Scale_Factors = new List<double>();
-    private static List<double> Asgard_Values = new List<double>();
+    public class Component
+    {
+        public int ID;
+        public string Tag;
+        public double Scale_Factor;
+        public double Value;
+
+        public Component(int i, string t, double s, double v = 0.0)
+        {
+            ID = i;
+            Tag = t;
+            Scale_Factor = s;
+            Value = v;
+        }
+
+        public double Get_Scaled_Value()
+        {
+            return Value * Scale_Factor;
+        }
+    }
+
+    private static List<Component> Asgard_Comp = new List<Component>();
     private static List<string> Asgard_Velocity_Tags = new List<string>();
     private static List<string> Asgard_Mass_Flow_Tags = new List<string>();
     private static double Asgard_Pipe_Length;
     private static string Asgard_Molweight_Tag;
     private static List<string> Asgard_Cricondenbar_Tags = new List<string>();
 
-    private static List<int> Statpipe_IDs = new List<int>();
-    private static List<string> Statpipe_Tags = new List<string>();
-    private static List<double> Statpipe_Scale_Factors = new List<double>();
-    private static List<double> Statpipe_Values = new List<double>();
+    private static List<Component> Statpipe_Comp = new List<Component>();
     private static List<string> Statpipe_Velocity_Tags = new List<string>();
     private static List<string> Statpipe_Mass_Flow_Tags = new List<string>();
     private static double Statpipe_Pipe_Length;
     private static string Statpipe_Molweight_Tag;
     private static List<string> Statpipe_Cricondenbar_Tags = new List<string>();
 
-    private static List<int> Mix_To_T410_IDs = new List<int>();
-    private static List<string> Mix_To_T410_Tags = new List<string>();
+    private static List<Component> Mix_To_T410_Comp = new List<Component>();
     private static List<string> Mix_To_T410_Cricondenbar_Tags = new List<string>();
 
-    private static List<int> Mix_To_T100_IDs = new List<int>();
-    private static List<string> Mix_To_T100_Tags = new List<string>();
+    private static List<Component> Mix_To_T100_Comp = new List<Component>();
     private static List<string> Mix_To_T100_Cricondenbar_Tags = new List<string>();
     private static List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
     private static string Mix_To_T100_Molweight_Tag;
@@ -51,17 +58,12 @@ public static class Tester
     public static void Main(String[] args)
     {
         bool Test_UMR = false;
-        bool Test_DB = true;
         foreach (string arg in args)
         {
             System.Console.WriteLine("args: {0}", arg);
             if (arg.Equals(@"/u"))
             {
                 Test_UMR = true;
-            }
-            else if (arg.Equals(@"/d"))
-            {
-                Test_DB = true;
             }
         }
 
@@ -95,223 +97,149 @@ public static class Tester
             return;
         }
 
-        if (Test_DB)
+        Read_Config("PhaseOpt.xml");
+
+        // There might not be values in IP21 at Now, so we fetch slightly older values.
+        DateTime Timestamp = DateTime.Now.AddSeconds(-5);
+        Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
+        Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
+        double Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
+                                            (float)A_Velocity[Asgard_Velocity_Tags[1]] ) / 2.0;
+        double Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
+                                            (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
+        if (Asgard_Average_Velocity < 0.1 && Statpipe_Average_Velocity > 0.1) Asgard_Average_Velocity = Statpipe_Average_Velocity;
+        if (Statpipe_Average_Velocity < 0.1 && Asgard_Average_Velocity > 0.1) Statpipe_Average_Velocity = Asgard_Average_Velocity;
+        DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
+        DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
+
+        Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
+        double Asgard_Molweight = (float)Molweight[Asgard_Molweight_Tag];
+        Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
+        double Statpipe_Molweight = (float)Molweight[Statpipe_Molweight_Tag];
+        Molweight = Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
+        double Mix_To_T100_Molweight = (float)Molweight[Mix_To_T100_Molweight_Tag];
+
+        Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
+        double Asgard_Transport_Flow = 0.0;
+        try
         {
-            Read_Config("PhaseOpt.xml");
+            Asgard_Transport_Flow = (float)Mass_Flow[Asgard_Mass_Flow_Tags[0]];
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
+        }
+        double Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
-            // There might not be values in IP21 at Now, so we fetch slightly older values.
-            DateTime Timestamp = DateTime.Now.AddSeconds(-5);
-            Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
-            Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
-            double Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
-                                              (float)A_Velocity[Asgard_Velocity_Tags[1]] ) / 2.0;
-            double Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
-                                                (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
-            DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
-            DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
+        Mass_Flow = Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
+        double Statpipe_Transport_Flow = 0.0;
+        try
+        {
+            Statpipe_Transport_Flow = (float)Mass_Flow[Statpipe_Mass_Flow_Tags[0]];
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
+        }
+        double Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
-            Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
-            double Asgard_Molweight = (float)Molweight[Asgard_Molweight_Tag];
-            Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
-            double Statpipe_Molweight = (float)Molweight[Statpipe_Molweight_Tag];
-            Molweight = Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
-            double Mix_To_T100_Molweight = (float)Molweight[Mix_To_T100_Molweight_Tag];
-
-            Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
-            double Asgard_Transport_Flow = 0.0;
-            try
-            {
-                Asgard_Transport_Flow = (float)Mass_Flow[Asgard_Mass_Flow_Tags[0]];
-            }
-            catch
-            {
-                System.Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
-            }
-            double Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
-
-            Mass_Flow = Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
-            double Statpipe_Transport_Flow = 0.0;
-            try
-            {
-                Statpipe_Transport_Flow = (float)Mass_Flow[Statpipe_Mass_Flow_Tags[0]];
-            }
-            catch
-            {
-                System.Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
-            }
-            double Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
-
-            Mass_Flow = Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
-            double Mix_To_T100_Flow = 0.0;
-            double Statpipe_Cross_Over_Flow = 0.0;
-            try
-            {
-                Mix_To_T100_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]];
-                Statpipe_Cross_Over_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[1]];
-            }
-            catch
-            {
-                System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Mass_Flow_Tags[0]);
-                System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Mass_Flow_Tags[1]);
-            }
-            double Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
-            double Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
+        Mass_Flow = Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
+        double Mix_To_T100_Flow = 0.0;
+        double Statpipe_Cross_Over_Flow = 0.0;
+        try
+        {
+            Mix_To_T100_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]];
+            Statpipe_Cross_Over_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[1]];
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Mass_Flow_Tags[0]);
+            System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Mass_Flow_Tags[1]);
+        }
+        double Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
+        double Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
 
 
-            string[] A_Tags = Asgard_Tags.ToArray();
-            string[] S_Tags = Statpipe_Tags.ToArray();
-
-            Hashtable A_Comp = Read_Values(A_Tags, Asgard_Timestamp);
-            Hashtable S_Comp = Read_Values(S_Tags, Statpipe_Timestamp);
-            bool Asgard_Composition_Valid = true;
-            bool Statpipe_Composition_Valid = true;
-
-            for (int i = 0; i < A_Tags.Length; i++)
-            {
-                try
-                {
-                    Asgard_Values.Add((float)A_Comp[A_Tags[i]] * Asgard_Scale_Factors[i]);
-                }
-                catch
-                {
-                    System.Console.WriteLine("Tag {0} not valid", A_Tags[i]);
-                    Asgard_Composition_Valid = false;
-                }
-            }
-
-            for (int i = 0; i < S_Tags.Length; i++)
-            {
-                try
-                {
-                    Statpipe_Values.Add((float)S_Comp[S_Tags[i]] * Statpipe_Scale_Factors[i]);
-                }
-                catch
-                {
-                    System.Console.WriteLine("Tag {0} not valid", S_Tags[i]);
-                    Statpipe_Composition_Valid = false;
-                }
-            }
-
-            List<double> Asgard_Component_Flow = new List<double>();
-            double Asgard_Component_Flow_Sum = 0.0;
-            foreach (double Value in Asgard_Values)
-            {
-                Asgard_Component_Flow.Add(Asgard_Mol_Flow * Value / 100.0);
-                Asgard_Component_Flow_Sum += Asgard_Mol_Flow * Value / 100.0;
-            }
-
-            List<double> Statpipe_Component_Flow = new List<double>();
-            double Statpipe_Component_Flow_Sum = 0.0;
-            foreach (double Value in Statpipe_Values)
-            {
-                Statpipe_Component_Flow.Add(Statpipe_Mol_Flow * Value / 100.0);
-                Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * Value / 100.0;
-            }
-
-            List<double> Mix_To_T410 = new List<double>();
-            for (int i = 0; i < Asgard_Values.ToArray().Length; i++)
-            {
-                Mix_To_T410.Add( (Asgard_Component_Flow[i] + Statpipe_Component_Flow[i]) /
-                                 (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0);
-            }
-
-            List<double> CY2007_Component_Flow = new List<double>();
-            double CY2007_Component_Flow_Sum = 0.0;
-            foreach (double Value in Asgard_Values)
-            {
-                CY2007_Component_Flow.Add(Statpipe_Cross_Over_Mol_Flow * Value / 100.0);
-                CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * Value / 100.0;
-            }
-
-            List<double> DIXO_Component_Flow = new List<double>();
-            double DIXO_Component_Flow_Sum = 0.0;
-            foreach (double Value in Mix_To_T410)
-            {
-                DIXO_Component_Flow.Add(Mix_To_T100_Mol_Flow * Value / 100.0);
-                DIXO_Component_Flow_Sum += Mix_To_T100_Mol_Flow * Value / 100.0;
-            }
-
-            List<double> Mix_To_T100 = new List<double>();
-            for (int i = 0; i < Asgard_Values.ToArray().Length; i++)
-            {
-                Mix_To_T100.Add((CY2007_Component_Flow[i] + DIXO_Component_Flow[i]) /
-                                 (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum) * 100.0);
-            }
-
-            double[] Asgard_Density = PhaseOpt.PhaseOpt.Calculate_Density_And_Compressibility(Asgard_IDs.ToArray(), Asgard_Values.ToArray(), 1.01325, 15.0);
-
-            if (Asgard_Composition_Valid)
-            {
-                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Asgard_IDs.ToArray(), Asgard_Values.ToArray(), 0);
-            }
-
-            if (Statpipe_Composition_Valid)
-            {
-                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Statpipe_IDs.ToArray(), Statpipe_Values.ToArray(), 0);
-            }
-
-            // Write results to OPC
-            Application OPC_Application = Application.Instance;
-            OPC_Application.Initialize();
-
-            // creates a new DaSession object and adds it to the OPC_Application
-            DaSession OPC_Session = new DaSession(Tunneller_Opc);
-
-            // sets the execution options
-            ExecutionOptions Execution_Options = new ExecutionOptions();
-            Execution_Options.ExecutionType = EnumExecutionType.SYNCHRONOUS;
-
-            DaSubscription OPC_Subscription = new DaSubscription(500, OPC_Session);
-
-            // Write results to OPC server.
-            List<ValueQT> Out_Values = new List<ValueQT>();
-            List<DaItem> Item_List = new List<DaItem>();
-            for (int i = 0; i < Mix_To_T410_Tags.ToArray().Length; i++)
-            {
-                Out_Values.Add(new ValueQT(Mix_To_T410[i], EnumQuality.GOOD, Timestamp));
-                Item_List.Add(new DaItem(Mix_To_T410_Tags[i], OPC_Subscription));
-            }
-
-            int Connect_Result = OPC_Session.Connect(true, true, Execution_Options);
-
-            if (ResultCode.SUCCEEDED(Connect_Result))
-            {
-                int[] Results;
-                OPC_Subscription.Write(Item_List.ToArray(), Out_Values.ToArray(), out Results, Execution_Options);
-                System.Console.WriteLine("Wrote results to OPC server");
-                OPC_Session.Disconnect(Execution_Options);
-            }
-
-            return;
+        List<string> Tags = new List<string>();
+        foreach (Component Comp in Asgard_Comp)
+        {
+            Tags.Add(Comp.Tag);
+        }
+        Hashtable Comp_Values = Read_Values(Tags.ToArray(), Asgard_Timestamp);
+        foreach (Component c in Asgard_Comp)
+        {
+            c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
         }
 
-        string Config_File_Path = @"cri.conf";
-        OPC_Client Client = new OPC_Client();
-        Client.Read_Config(Config_File_Path);
-        Client.Read_Values();
-        double[] Component_Values = Client.Components;
-        int[] Component_IDs = Client.Component_IDs;
-
-        double[] Res = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Component_IDs, Component_Values, 5);
-
-        System.Console.WriteLine("Cricondenbar point");
-        System.Console.WriteLine("Pressure: {0} bara", Res[0].ToString());
-        System.Console.WriteLine("Temperature: {0} K", Res[1].ToString());
-        System.Console.WriteLine();
-
-        System.Console.WriteLine("Cricondentherm point");
-        System.Console.WriteLine("Pressure: {0} bara", Res[2].ToString());
-        System.Console.WriteLine("Temperature: {0} K", Res[3].ToString());
-        System.Console.WriteLine();
-
-        System.Console.WriteLine("Dew Point Line");
-        for (int i = 4; i < Res.Length; i += 2)
+        Tags.Clear();
+        Comp_Values.Clear();
+        foreach (Component Comp in Statpipe_Comp)
         {
-            System.Console.WriteLine("Pressure: {0} bara", Res[i].ToString());
-            System.Console.WriteLine("Temperature: {0} K", Res[i + 1].ToString());
-            System.Console.WriteLine();
+            Tags.Add(Comp.Tag);
+        }
+        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
+        foreach (Component c in Statpipe_Comp)
+        {
+            c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
         }
 
+        List<Component> Asgard_Component_Flow = new List<Component>();
+        double Asgard_Component_Flow_Sum = 0.0;
+        foreach (Component Value in Asgard_Comp)
+        {
+            Asgard_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Asgard_Mol_Flow * Value.Value / 100.0));
+            Asgard_Component_Flow_Sum += Asgard_Mol_Flow * Value.Value / 100.0;
+        }
+
+        List<Component> Statpipe_Component_Flow = new List<Component>();
+        double Statpipe_Component_Flow_Sum = 0.0;
+        foreach (Component Value in Statpipe_Comp)
+        {
+            Statpipe_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Statpipe_Mol_Flow * Value.Value / 100.0));
+            Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * Value.Value / 100.0;
+        }
+
+        List<double> Mix_To_T410 = new List<double>();
+        foreach (Component Comp in Mix_To_T410_Comp)
+        {
+            Comp.Value = ( Asgard_Component_Flow.Find(x => x.ID == Comp.ID).Value +
+                            Statpipe_Component_Flow.Find(x => x.ID == Comp.ID).Value ) /
+                            (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0;
+        }
+
+        List<Component> CY2007_Component_Flow = new List<Component>();
+        double CY2007_Component_Flow_Sum = 0.0;
+        foreach (Component Value in Asgard_Comp)
+        {
+            CY2007_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * Value.Value / 100.0));
+            CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * Value.Value / 100.0;
+        }
+
+        List<Component> DIXO_Component_Flow = new List<Component>();
+        double DIXO_Component_Flow_Sum = 0.0;
+        foreach (Component Value in Mix_To_T410_Comp)
+        {
+            DIXO_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * Value.Value / 100.0));
+            DIXO_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * Value.Value / 100.0;
+        }
+
+        List<double> Mix_To_T100 = new List<double>();
+        foreach (Component Comp in Mix_To_T100_Comp)
+        {
+            Comp.Value = (CY2007_Component_Flow.Find(x => x.ID == Comp.ID).Value +
+                            DIXO_Component_Flow.Find(x => x.ID == Comp.ID).Value) /
+                            (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum) * 100.0;
+        }
+
+        foreach (Component Comp in Mix_To_T100_Comp)
+        {
+            Write_Value(Comp.Tag, Comp.Get_Scaled_Value());
+        }
+
+        foreach (Component Comp in Mix_To_T410_Comp)
+        {
+            Write_Value(Comp.Tag, Comp.Get_Scaled_Value());
+        }
     }
 
     public static void Read_Config(string Config_File)
@@ -375,9 +303,9 @@ public static class Tester
                                     break;
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
-                                    Asgard_IDs.Add(XmlConvert.ToInt32(reader.GetAttribute("id")));
-                                    Asgard_Scale_Factors.Add(XmlConvert.ToDouble(reader.GetAttribute("scale-factor")));
-                                    Asgard_Tags.Add(reader.GetAttribute("tag"));
+                                    Asgard_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                                             reader.GetAttribute("tag"),
+                                                             XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "velocity")
                                 {
@@ -415,9 +343,10 @@ public static class Tester
                                     break;
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
-                                    Statpipe_IDs.Add(XmlConvert.ToInt32(reader.GetAttribute("id")));
-                                    Statpipe_Scale_Factors.Add(XmlConvert.ToDouble(reader.GetAttribute("scale-factor")));
-                                    Statpipe_Tags.Add(reader.GetAttribute("tag"));
+                                    Statpipe_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                                               reader.GetAttribute("tag"),
+                                                               XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
+
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "velocity")
                                 {
@@ -455,8 +384,9 @@ public static class Tester
                                     break;
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
-                                    Mix_To_T410_IDs.Add(XmlConvert.ToInt32(reader.GetAttribute("id")));
-                                    Mix_To_T410_Tags.Add(reader.GetAttribute("tag"));
+                                    Mix_To_T410_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                                                       reader.GetAttribute("tag"),
+                                                                       XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
                                 {
@@ -485,8 +415,9 @@ public static class Tester
                                     break;
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
-                                    Mix_To_T100_IDs.Add(XmlConvert.ToInt32(reader.GetAttribute("id")));
-                                    Mix_To_T100_Tags.Add(reader.GetAttribute("tag"));
+                                    Mix_To_T100_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                                                       reader.GetAttribute("tag"),
+                                                                       XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
                                 {
@@ -524,7 +455,7 @@ public static class Tester
 
     public static Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
     {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port + @"UID=" + IP21_Uid;
+        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
 
         System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
         Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
@@ -557,6 +488,23 @@ WHERE
         }
         Cmd.Connection.Close();
         return Result;
+    }
+
+    public static void Write_Value(string Tag_Name, double Value)
+    {
+        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
+
+        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
+        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
+        Cmd.Connection.Open();
+
+        Cmd.CommandText =
+@"UPDATE ip_analogdef
+  SET ip_input_value = " + Value.ToString() + @", ip_input_quality = 'Good'
+  WHERE name = '" + Tag_Name + @"'";
+
+        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
+        Cmd.Connection.Close();
     }
 
 }
