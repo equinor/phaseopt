@@ -112,13 +112,8 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.XML" />
-    <Reference Include="TBN40, Version=4.30.0.1839, Culture=neutral, PublicKeyToken=c5e0259e5ccbaac4, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\Softing\OPCToolbox\V43x\Windows\bin\TBN40.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cricondenbar_OPC_Client.cs" />
     <Compile Include="PhaseOpt.cs" />
     <Compile Include="Tester.cs" />
   </ItemGroup>
