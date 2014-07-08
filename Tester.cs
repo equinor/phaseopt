@@ -266,7 +266,7 @@ public static class Tester
             Composition_IDs.Add(Value.ID);
             Composition_Values.Add(Value.Value);
         }
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Composition_IDs.ToArray(), Composition_Values.ToArray(), 0);
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
@@ -290,7 +290,7 @@ public static class Tester
             Composition_IDs.Add(Value.ID);
             Composition_Values.Add(Value.Value);
         }
-        Composition_Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Composition_IDs.ToArray(), Composition_Values.ToArray(), 0);
+        Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
@@ -303,7 +303,7 @@ public static class Tester
             Composition_IDs.Add(Value.ID);
             Composition_Values.Add(Value.Value);
         }
-        Composition_Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Composition_IDs.ToArray(), Composition_Values.ToArray(), 0);
+        Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
@@ -316,7 +316,7 @@ public static class Tester
             Composition_IDs.Add(Value.ID);
             Composition_Values.Add(Value.Value);
         }
-        Composition_Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(Composition_IDs.ToArray(), Composition_Values.ToArray(), 0);
+        Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
