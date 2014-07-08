@@ -109,6 +109,7 @@ public static class Tester
                                             (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
         if (Asgard_Average_Velocity < 0.1 && Statpipe_Average_Velocity > 0.1) Asgard_Average_Velocity = Statpipe_Average_Velocity;
         if (Statpipe_Average_Velocity < 0.1 && Asgard_Average_Velocity > 0.1) Statpipe_Average_Velocity = Asgard_Average_Velocity;
+        if (Asgard_Average_Velocity < 0.1 && Statpipe_Average_Velocity < 0.1) return;
         DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
         DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
 
