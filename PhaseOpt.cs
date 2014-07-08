@@ -7,6 +7,9 @@ namespace PhaseOpt
 {
     public class PhaseOpt
     {
+        private const double Bara_To_Barg = 1.01325;
+        private const double Kelvin_To_Celcius = 273.15;
+
         /// <summary>
         /// Calculates the criconden points (bar and/or therm).
         /// </summary>
@@ -237,8 +240,6 @@ namespace PhaseOpt
         /// </remarks>
         public static double[] Calculate_Dew_Point_Line(int[] IDs, double[] Values, uint Points = 5, uint Units = 1)
         {
-            double Bara_To_Barg = 1.01325;
-            double Kelvin_To_Celcius = 273.15;
             if (Units > 1) Units = 1;
 
             Normalize(Values, 1.0);
@@ -324,5 +325,48 @@ namespace PhaseOpt
 
             return Results;
         }
+
+        public static double[] Cricondenbar(int[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
+        {
+            if (Units > 1) Units = 1;
+
+            Normalize(Values, 1.0);
+
+            // Calculate the cricondenbar point
+            Int32 IND = 2;
+            Int32 Components = IDs.Length;
+            double CCBT = T;
+            double CCBP = P;
+            List<double> Results = new List<double>();
+
+            Criconden(ref IND, ref Components, IDs, Values, ref CCBT, ref CCBP);
+
+            Results.Add(CCBP - (Units * Bara_To_Barg));
+            Results.Add(CCBT - (Units * Kelvin_To_Celcius));
+
+            return Results.ToArray();
+        }
+
+        public static double[] Cricondentherm(int[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
+        {
+            if (Units > 1) Units = 1;
+
+            Normalize(Values, 1.0);
+
+            // Calculate the cricondenbar point
+            Int32 IND = 1;
+            Int32 Components = IDs.Length;
+            double CCTT = T;
+            double CCTP = P;
+            List<double> Results = new List<double>();
+
+            Criconden(ref IND, ref Components, IDs, Values, ref CCTT, ref CCTP);
+
+            Results.Add(CCTP - (Units * Bara_To_Barg));
+            Results.Add(CCTT - (Units * Kelvin_To_Celcius));
+
+            return Results.ToArray();
+        }
+
     } 
 }
