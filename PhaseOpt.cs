@@ -125,8 +125,6 @@ namespace PhaseOpt
                 Sum += Value;
             }
 
-            System.Console.WriteLine("Sum: {0}", Sum);
-
             double Factor = Target / Sum;
 
             for (int i = 0; i < Array.Length; i++)

@@ -583,7 +583,6 @@ WHERE
         Hashtable Result = new Hashtable();
         while (DR.Read())
         {
-            System.Console.WriteLine("{0}\t{1}", DR.GetValue(0), DR.GetValue(1));
             Result.Add(DR.GetValue(0), DR.GetValue(1));
         }
         Cmd.Connection.Close();
