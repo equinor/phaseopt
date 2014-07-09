@@ -99,27 +99,75 @@ public static class Tester
 
         Read_Config("PhaseOpt.xml");
 
+        // Read velocities
         // There might not be values in IP21 at Now, so we fetch slightly older values.
         DateTime Timestamp = DateTime.Now.AddSeconds(-15);
         Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
+        double Asgard_Average_Velocity = 0.0;
+        try
+        {
+            Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
+                                                (float)A_Velocity[Asgard_Velocity_Tags[1]]) / 2.0;
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} and/or {1} not valid", Asgard_Velocity_Tags[0], Asgard_Velocity_Tags[1]);
+            System.Environment.Exit(13);
+        }
         Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
-        double Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
-                                            (float)A_Velocity[Asgard_Velocity_Tags[1]] ) / 2.0;
-        double Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
-                                            (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
+        double Statpipe_Average_Velocity = 0.0;
+        try
+        {
+            Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
+                                                (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} and/or {1} not valid", Statpipe_Velocity_Tags[0], Statpipe_Velocity_Tags[1]);
+            System.Environment.Exit(13);
+        }
         if (Asgard_Average_Velocity < 0.1 && Statpipe_Average_Velocity > 0.1) Asgard_Average_Velocity = Statpipe_Average_Velocity;
         if (Statpipe_Average_Velocity < 0.1 && Asgard_Average_Velocity > 0.1) Statpipe_Average_Velocity = Asgard_Average_Velocity;
         if (Asgard_Average_Velocity < 0.1 && Statpipe_Average_Velocity < 0.1) return;
         DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
         DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
 
+        // Read molweight
         Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
-        double Asgard_Molweight = (float)Molweight[Asgard_Molweight_Tag];
+        double Asgard_Molweight = 0.0;
+        try
+        {
+            Asgard_Molweight = (float)Molweight[Asgard_Molweight_Tag];
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Asgard_Molweight_Tag);
+            System.Environment.Exit(13);
+        }
         Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
-        double Statpipe_Molweight = (float)Molweight[Statpipe_Molweight_Tag];
+        double Statpipe_Molweight = 0.0;
+        try
+        {
+            Statpipe_Molweight = (float)Molweight[Statpipe_Molweight_Tag];
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Statpipe_Molweight_Tag);
+            System.Environment.Exit(13);
+        }
         Molweight = Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
-        double Mix_To_T100_Molweight = (float)Molweight[Mix_To_T100_Molweight_Tag];
+        double Mix_To_T100_Molweight = 0.0;
+        try
+        {
+            Mix_To_T100_Molweight = (float)Molweight[Mix_To_T100_Molweight_Tag];
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Molweight_Tag);
+            System.Environment.Exit(13);
+        }
 
+        // Read mass flow
         Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
         double Asgard_Transport_Flow = 0.0;
         try
@@ -129,6 +177,7 @@ public static class Tester
         catch
         {
             System.Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
+            System.Environment.Exit(13);
         }
         double Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
@@ -141,6 +190,7 @@ public static class Tester
         catch
         {
             System.Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
+            System.Environment.Exit(13);
         }
         double Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
@@ -154,118 +204,143 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Mass_Flow_Tags[0]);
-            System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Mass_Flow_Tags[1]);
+            System.Console.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100_Mass_Flow_Tags[0], Mix_To_T100_Mass_Flow_Tags[1]);
+            System.Environment.Exit(13);
         }
         double Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
         double Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
 
-
+        // Read composition
         List<string> Tags = new List<string>();
-        foreach (Component Comp in Asgard_Comp)
-        {
-            Tags.Add(Comp.Tag);
-        }
-        Hashtable Comp_Values = Read_Values(Tags.ToArray(), Asgard_Timestamp);
         foreach (Component c in Asgard_Comp)
         {
-            c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+            Tags.Add(c.Tag);
         }
-
+        Hashtable Comp_Values = Read_Values(Tags.ToArray(), Asgard_Timestamp);
+        string Tag_Name = "";
+        try
+        {
+            foreach (Component c in Asgard_Comp)
+            {
+                Tag_Name = c.Tag;
+                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+            }
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Tag_Name);
+            System.Environment.Exit(13);
+        }
         Tags.Clear();
         Comp_Values.Clear();
-        foreach (Component Comp in Statpipe_Comp)
-        {
-            Tags.Add(Comp.Tag);
-        }
-        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
         foreach (Component c in Statpipe_Comp)
         {
-            c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+            Tags.Add(c.Tag);
+        }
+        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
+        try
+        {
+            foreach (Component c in Statpipe_Comp)
+            {
+                Tag_Name = c.Tag;
+                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+            }
+        }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Tag_Name);
+            System.Environment.Exit(13);
         }
 
         List<Component> Asgard_Component_Flow = new List<Component>();
         double Asgard_Component_Flow_Sum = 0.0;
-        foreach (Component Value in Asgard_Comp)
+        foreach (Component c in Asgard_Comp)
         {
-            Asgard_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Asgard_Mol_Flow * Value.Value / 100.0));
-            Asgard_Component_Flow_Sum += Asgard_Mol_Flow * Value.Value / 100.0;
+            Asgard_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Asgard_Mol_Flow * c.Value / 100.0));
+            Asgard_Component_Flow_Sum += Asgard_Mol_Flow * c.Value / 100.0;
         }
 
         List<Component> Statpipe_Component_Flow = new List<Component>();
         double Statpipe_Component_Flow_Sum = 0.0;
-        foreach (Component Value in Statpipe_Comp)
+        foreach (Component c in Statpipe_Comp)
         {
-            Statpipe_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Statpipe_Mol_Flow * Value.Value / 100.0));
-            Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * Value.Value / 100.0;
+            Statpipe_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Mol_Flow * c.Value / 100.0));
+            Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * c.Value / 100.0;
         }
 
         List<double> Mix_To_T410 = new List<double>();
-        foreach (Component Comp in Mix_To_T410_Comp)
+        foreach (Component c in Mix_To_T410_Comp)
         {
             if (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum > 0.0)
             {
-                Comp.Value = (Asgard_Component_Flow.Find(x => x.ID == Comp.ID).Value +
-                              Statpipe_Component_Flow.Find(x => x.ID == Comp.ID).Value) /
+                c.Value = (Asgard_Component_Flow.Find(x => x.ID == c.ID).Value +
+                              Statpipe_Component_Flow.Find(x => x.ID == c.ID).Value) /
                               (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0;
             }
         }
 
         List<Component> CY2007_Component_Flow = new List<Component>();
         double CY2007_Component_Flow_Sum = 0.0;
-        foreach (Component Value in Asgard_Comp)
+        foreach (Component c in Asgard_Comp)
         {
-            CY2007_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * Value.Value / 100.0));
-            CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * Value.Value / 100.0;
+            CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
+            CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
         }
 
         List<Component> DIXO_Component_Flow = new List<Component>();
         double DIXO_Component_Flow_Sum = 0.0;
-        foreach (Component Value in Mix_To_T410_Comp)
+        foreach (Component c in Mix_To_T410_Comp)
         {
-            DIXO_Component_Flow.Add(new Component(Value.ID, Value.Tag, 1.0, Mix_To_T100_Mol_Flow * Value.Value / 100.0));
-            DIXO_Component_Flow_Sum += Mix_To_T100_Mol_Flow * Value.Value / 100.0;
+            DIXO_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Mix_To_T100_Mol_Flow * c.Value / 100.0));
+            DIXO_Component_Flow_Sum += Mix_To_T100_Mol_Flow * c.Value / 100.0;
         }
 
         List<double> Mix_To_T100 = new List<double>();
-        foreach (Component Comp in Mix_To_T100_Comp)
+        foreach (Component c in Mix_To_T100_Comp)
         {
             if (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum > 0.0)
             {
-                Comp.Value = (CY2007_Component_Flow.Find(x => x.ID == Comp.ID).Value +
-                              DIXO_Component_Flow.Find(x => x.ID == Comp.ID).Value) /
+                c.Value = (CY2007_Component_Flow.Find(x => x.ID == c.ID).Value +
+                              DIXO_Component_Flow.Find(x => x.ID == c.ID).Value) /
                               (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum) * 100.0;
             }
         }
 
-        foreach (Component Comp in Mix_To_T100_Comp)
+        foreach (Component c in Mix_To_T100_Comp)
         {
-            Write_Value(Comp.Tag, Comp.Get_Scaled_Value());
+            Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
-        foreach (Component Comp in Mix_To_T410_Comp)
+        foreach (Component c in Mix_To_T410_Comp)
         {
-            Write_Value(Comp.Tag, Comp.Get_Scaled_Value());
+            Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
         List<int> Composition_IDs = new List<int>();
         List<double> Composition_Values = new List<double>();
         Tags.Clear();
         Comp_Values.Clear();
-        foreach (Component Comp in Asgard_Comp)
-        {
-            Tags.Add(Comp.Tag);
-        }
-        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
         foreach (Component c in Asgard_Comp)
         {
-            c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+            Tags.Add(c.Tag);
         }
-        foreach (Component Value in Asgard_Comp)
+        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
+        try
         {
-            Composition_IDs.Add(Value.ID);
-            Composition_Values.Add(Value.Value);
+            foreach (Component c in Asgard_Comp)
+            {
+                Tag_Name = c.Tag;
+                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+                Composition_IDs.Add(c.ID);
+                Composition_Values.Add(c.Value);
+            }
         }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Tag_Name);
+            System.Environment.Exit(13);
+        }
+
         double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
         {
@@ -276,20 +351,27 @@ public static class Tester
         Composition_Values.Clear();
         Tags.Clear();
         Comp_Values.Clear();
-        foreach (Component Comp in Statpipe_Comp)
-        {
-            Tags.Add(Comp.Tag);
-        }
-        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
         foreach (Component c in Statpipe_Comp)
         {
-            c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+            Tags.Add(c.Tag);
         }
-        foreach (Component Value in Statpipe_Comp)
+        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
+        try
         {
-            Composition_IDs.Add(Value.ID);
-            Composition_Values.Add(Value.Value);
+            foreach (Component c in Statpipe_Comp)
+            {
+                Tag_Name = c.Tag;
+                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+                Composition_IDs.Add(c.ID);
+                Composition_Values.Add(c.Value);
+            }
         }
+        catch
+        {
+            System.Console.WriteLine("Tag {0} not valid", Tag_Name);
+            System.Environment.Exit(13);
+        }
+
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
@@ -298,10 +380,10 @@ public static class Tester
 
         Composition_IDs.Clear();
         Composition_Values.Clear();
-        foreach (Component Value in Mix_To_T100_Comp)
+        foreach (Component c in Mix_To_T100_Comp)
         {
-            Composition_IDs.Add(Value.ID);
-            Composition_Values.Add(Value.Value);
+            Composition_IDs.Add(c.ID);
+            Composition_Values.Add(c.Value);
         }
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
@@ -311,10 +393,10 @@ public static class Tester
 
         Composition_IDs.Clear();
         Composition_Values.Clear();
-        foreach (Component Value in Mix_To_T410_Comp)
+        foreach (Component c in Mix_To_T410_Comp)
         {
-            Composition_IDs.Add(Value.ID);
-            Composition_Values.Add(Value.Value);
+            Composition_IDs.Add(c.ID);
+            Composition_Values.Add(c.Value);
         }
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
