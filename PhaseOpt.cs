@@ -19,7 +19,7 @@ namespace PhaseOpt
         /// Input (The ID numbers of the compounds, available in UMR database).</param>
         /// <param name="Z">Mixture composition in mol/mol, DOUBLE PRECISION array of 50 elements, Input.</param>
         /// <param name="T">Criconden point temperature [in K], DOUBLE PRECISION, Input/Output</param>
-        /// <param name="P">Criconden point pressure [in bar], DOUBLE PRECISION, Input/Output.</param>
+        /// <param name="P">Criconden point pressure [in bara], DOUBLE PRECISION, Input/Output.</param>
         /// <remarks>
         /// <para>For routine calling, T, P must be equal to or less than zero if the program's default initial
         /// values is to be used.
@@ -146,7 +146,8 @@ namespace PhaseOpt
         /// Total points on the dew point line = 2 + (Points * 2)</param>
         /// <param name="Units">Sets the engineering units of the outputs. 0: use bara and Kelvin. 1: use barg and ­°C.</param>
         /// <returns>An array of (pressure, temperature) pairs. The first pair is the Cricondenbar point.
-        /// The second pair is the Cricondentherm point. The following pairs are points on the dew point line.</returns>
+        /// The second pair is the Cricondentherm point. The following pairs are points on the dew point line. If the
+        /// Points parameter is zero, only the two criconden points are returned</returns>
         /// <remarks>Compound IDs:
         /// 1	CO2
         /// 2	N2
@@ -296,13 +297,14 @@ namespace PhaseOpt
         }
 
         /// <summary>
-        /// Calculates the density and the compressibility factor of the composition.
+        /// Calculates the density and the compressibility factor, at given pressure and temperature, of the composition.
         /// </summary>
         /// <param name="IDs">Composition IDs</param>
         /// <param name="Values">Composition Values</param>
-        /// <param name="P">Pressure</param>
-        /// <param name="T">Temperature</param>
-        /// <returns>An array containing {D1, D2, CF1, CF2}</returns>
+        /// <param name="P">Pressure [bara]</param>
+        /// <param name="T">Temperature [K]</param>
+        /// <returns>An array containing {Vapour density, Liquid density, Vapour compressibility factor, Liquid compressibility factor}.
+        /// If there is only one phase the values for the non existing phase will be -1.</returns>
         public static double[] Calculate_Density_And_Compressibility(int[] IDs, double[] Values, double P = 1.01325, double T = 288.15)
         {
             double[] Results = new double[4];
@@ -326,6 +328,15 @@ namespace PhaseOpt
             return Results;
         }
 
+        /// <summary>
+        /// Calculates the cricondenbar point of the composition.
+        /// </summary>
+        /// <param name="IDs">Composition IDs</param>
+        /// <param name="Values">Composition Values</param>
+        /// <param name="P">Pressure</param>
+        /// <param name="T">Temperature</param>
+        /// <param name="Units">Sets the engineering units of the outputs. 0: use bara and Kelvin. 1: use barg and ­°C.</param>
+        /// <returns>An array containing the cricondenbar pressure and temperature.</returns>
         public static double[] Cricondenbar(int[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
         {
             if (Units > 1) Units = 1;
@@ -337,16 +348,29 @@ namespace PhaseOpt
             Int32 Components = IDs.Length;
             double CCBT = T;
             double CCBP = P;
-            List<double> Results = new List<double>();
+            double[] Results = new double[2];
 
+            DateTime Start = DateTime.Now;
             Criconden(ref IND, ref Components, IDs, Values, ref CCBT, ref CCBP);
+            DateTime End = DateTime.Now;
 
-            Results.Add(CCBP - (Units * Bara_To_Barg));
-            Results.Add(CCBT - (Units * Kelvin_To_Celcius));
+            System.Console.WriteLine("Cricondenbar runtime: {0}", End - Start);
 
-            return Results.ToArray();
+            Results[0] = (CCBP - (Units * Bara_To_Barg));
+            Results[1] = (CCBT - (Units * Kelvin_To_Celcius));
+
+            return Results;
         }
 
+        /// <summary>
+        /// Calculates the cricondentherm point of the composition.
+        /// </summary>
+        /// <param name="IDs">Composition IDs</param>
+        /// <param name="Values">Composition Values</param>
+        /// <param name="P">Pressure</param>
+        /// <param name="T">Temperature</param>
+        /// <param name="Units">Sets the engineering units of the outputs. 0: use bara and Kelvin. 1: use barg and ­°C.</param>
+        /// <returns>An array containing the cricondentherm pressure and temperature.</returns>
         public static double[] Cricondentherm(int[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
         {
             if (Units > 1) Units = 1;
@@ -358,14 +382,14 @@ namespace PhaseOpt
             Int32 Components = IDs.Length;
             double CCTT = T;
             double CCTP = P;
-            List<double> Results = new List<double>();
+            double[] Results = new double[2];
 
             Criconden(ref IND, ref Components, IDs, Values, ref CCTT, ref CCTP);
 
-            Results.Add(CCTP - (Units * Bara_To_Barg));
-            Results.Add(CCTT - (Units * Kelvin_To_Celcius));
+            Results[0] = (CCTP - (Units * Bara_To_Barg));
+            Results[1] = (CCTT - (Units * Kelvin_To_Celcius));
 
-            return Results.ToArray();
+            return Results;
         }
 
     } 
