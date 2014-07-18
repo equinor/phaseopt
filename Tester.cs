@@ -59,7 +59,6 @@ public static class Tester
         bool Test_UMR = false;
         foreach (string arg in args)
         {
-            Console.WriteLine("args: {0}", arg);
             if (arg.Equals(@"/u"))
             {
                 Test_UMR = true;
@@ -77,21 +76,28 @@ public static class Tester
             double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
             Console.WriteLine("Cricondenbar point");
-            Console.WriteLine("Pressure: {0} bara", Result[0].ToString());
-            Console.WriteLine("Temperature: {0} K", Result[1].ToString());
+            Console.WriteLine("Pressure: {0} barg", Result[0].ToString());
+            Console.WriteLine("Temperature: {0} °C", Result[1].ToString());
             Console.WriteLine();
 
             Console.WriteLine("Cricondentherm point");
-            Console.WriteLine("Pressure: {0} bara", Result[2].ToString());
-            Console.WriteLine("Temperature: {0} K", Result[3].ToString());
+            Console.WriteLine("Pressure: {0} barg", Result[2].ToString());
+            Console.WriteLine("Temperature: {0} °C", Result[3].ToString());
 
             Console.WriteLine("Dew Point Line");
             for (int i = 4; i < Result.Length; i += 2)
             {
-                Console.WriteLine("Pressure: {0} bara", Result[i].ToString());
-                Console.WriteLine("Temperature: {0} K", Result[i + 1].ToString());
+                Console.WriteLine("Pressure: {0} barg", Result[i].ToString());
+                Console.WriteLine("Temperature: {0} °C", Result[i + 1].ToString());
                 Console.WriteLine();
             }
+
+            double[] Dens_Result = PhaseOpt.PhaseOpt.Calculate_Density_And_Compressibility(IDs, Values);
+
+            Console.WriteLine("Vapour density: {0} kg/m­³", Dens_Result[0]);
+            Console.WriteLine("Compressibility factor: {0}", Dens_Result[2]);
+            Console.WriteLine("Liquid density: {0} kg/m­³", Dens_Result[1]);
+            Console.WriteLine("Compressibility factor: {0}", Dens_Result[3]);
 
             return;
         }
@@ -107,6 +113,9 @@ public static class Tester
         {
             Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
                                                 (float)A_Velocity[Asgard_Velocity_Tags[1]]) / 2.0;
+#if DEBUG
+            Console.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
+#endif
         }
         catch
         {
@@ -119,6 +128,9 @@ public static class Tester
         {
             Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
                                                 (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
+#if DEBUG
+            Console.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
+#endif
         }
         catch
         {
@@ -134,6 +146,10 @@ public static class Tester
             return;
         DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
         DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
+#if DEBUG
+        Console.WriteLine("Åsgard delay: {0}", Asgard_Pipe_Length / Asgard_Average_Velocity);
+        Console.WriteLine("Statpipe delay: {0}", Statpipe_Pipe_Length / Statpipe_Average_Velocity);
+#endif
 
         // Read molweight
         Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
@@ -173,9 +189,15 @@ public static class Tester
         // Read mass flow
         Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
         double Asgard_Transport_Flow = 0.0;
+#if DEBUG
+        Console.WriteLine("\nÅsgard flow:");
+#endif
         try
         {
             Asgard_Transport_Flow = (float)Mass_Flow[Asgard_Mass_Flow_Tags[0]];
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Asgard_Mass_Flow_Tags[0], Asgard_Transport_Flow);
+#endif
         }
         catch
         {
@@ -186,9 +208,15 @@ public static class Tester
 
         Mass_Flow = Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
         double Statpipe_Transport_Flow = 0.0;
+#if DEBUG
+        Console.WriteLine("\nStatpipe flow:");
+#endif
         try
         {
             Statpipe_Transport_Flow = (float)Mass_Flow[Statpipe_Mass_Flow_Tags[0]];
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Statpipe_Mass_Flow_Tags[0], Statpipe_Transport_Flow);
+#endif
         }
         catch
         {
@@ -348,6 +376,9 @@ public static class Tester
         for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+#endif
         }
 
         Composition_IDs.Clear();
@@ -379,6 +410,9 @@ public static class Tester
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+#endif
         }
 
         Composition_IDs.Clear();
@@ -392,6 +426,9 @@ public static class Tester
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
+#endif
         }
 
         Composition_IDs.Clear();
@@ -405,6 +442,9 @@ public static class Tester
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+#endif
         }
     }
 
