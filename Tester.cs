@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using PhaseOpt;
 using System.Xml;
 
 public static class Tester
@@ -60,7 +59,7 @@ public static class Tester
         bool Test_UMR = false;
         foreach (string arg in args)
         {
-            System.Console.WriteLine("args: {0}", arg);
+            Console.WriteLine("args: {0}", arg);
             if (arg.Equals(@"/u"))
             {
                 Test_UMR = true;
@@ -77,21 +76,21 @@ public static class Tester
 
             double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
-            System.Console.WriteLine("Cricondenbar point");
-            System.Console.WriteLine("Pressure: {0} bara", Result[0].ToString());
-            System.Console.WriteLine("Temperature: {0} K", Result[1].ToString());
-            System.Console.WriteLine();
+            Console.WriteLine("Cricondenbar point");
+            Console.WriteLine("Pressure: {0} bara", Result[0].ToString());
+            Console.WriteLine("Temperature: {0} K", Result[1].ToString());
+            Console.WriteLine();
 
-            System.Console.WriteLine("Cricondentherm point");
-            System.Console.WriteLine("Pressure: {0} bara", Result[2].ToString());
-            System.Console.WriteLine("Temperature: {0} K", Result[3].ToString());
+            Console.WriteLine("Cricondentherm point");
+            Console.WriteLine("Pressure: {0} bara", Result[2].ToString());
+            Console.WriteLine("Temperature: {0} K", Result[3].ToString());
 
-            System.Console.WriteLine("Dew Point Line");
+            Console.WriteLine("Dew Point Line");
             for (int i = 4; i < Result.Length; i += 2)
             {
-                System.Console.WriteLine("Pressure: {0} bara", Result[i].ToString());
-                System.Console.WriteLine("Temperature: {0} K", Result[i + 1].ToString());
-                System.Console.WriteLine();
+                Console.WriteLine("Pressure: {0} bara", Result[i].ToString());
+                Console.WriteLine("Temperature: {0} K", Result[i + 1].ToString());
+                Console.WriteLine();
             }
 
             return;
@@ -111,8 +110,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} and/or {1} not valid", Asgard_Velocity_Tags[0], Asgard_Velocity_Tags[1]);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} and/or {1} not valid", Asgard_Velocity_Tags[0], Asgard_Velocity_Tags[1]);
+            Environment.Exit(13);
         }
         Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
         double Statpipe_Average_Velocity = 0.0;
@@ -123,8 +122,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} and/or {1} not valid", Statpipe_Velocity_Tags[0], Statpipe_Velocity_Tags[1]);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} and/or {1} not valid", Statpipe_Velocity_Tags[0], Statpipe_Velocity_Tags[1]);
+            Environment.Exit(13);
         }
         if (Asgard_Average_Velocity < 0.1 && Statpipe_Average_Velocity > 0.1) Asgard_Average_Velocity = Statpipe_Average_Velocity;
         if (Statpipe_Average_Velocity < 0.1 && Asgard_Average_Velocity > 0.1) Statpipe_Average_Velocity = Asgard_Average_Velocity;
@@ -141,8 +140,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Asgard_Molweight_Tag);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Asgard_Molweight_Tag);
+            Environment.Exit(13);
         }
         Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
         double Statpipe_Molweight = 0.0;
@@ -152,8 +151,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Statpipe_Molweight_Tag);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Statpipe_Molweight_Tag);
+            Environment.Exit(13);
         }
         Molweight = Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
         double Mix_To_T100_Molweight = 0.0;
@@ -163,8 +162,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Mix_To_T100_Molweight_Tag);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Mix_To_T100_Molweight_Tag);
+            Environment.Exit(13);
         }
 
         // Read mass flow
@@ -176,8 +175,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
+            Environment.Exit(13);
         }
         double Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
@@ -189,8 +188,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
+            Environment.Exit(13);
         }
         double Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
@@ -204,8 +203,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100_Mass_Flow_Tags[0], Mix_To_T100_Mass_Flow_Tags[1]);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100_Mass_Flow_Tags[0], Mix_To_T100_Mass_Flow_Tags[1]);
+            Environment.Exit(13);
         }
         double Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
         double Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
@@ -228,8 +227,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Tag_Name);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Tag_Name);
+            Environment.Exit(13);
         }
         Tags.Clear();
         Comp_Values.Clear();
@@ -248,8 +247,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Tag_Name);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Tag_Name);
+            Environment.Exit(13);
         }
 
         List<Component> Asgard_Component_Flow = new List<Component>();
@@ -337,8 +336,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Tag_Name);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Tag_Name);
+            Environment.Exit(13);
         }
 
         double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
@@ -368,8 +367,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Tag {0} not valid", Tag_Name);
-            System.Environment.Exit(13);
+            Console.WriteLine("Tag {0} not valid", Tag_Name);
+            Environment.Exit(13);
         }
 
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
@@ -631,8 +630,8 @@ public static class Tester
         }
         catch
         {
-            System.Console.WriteLine("Error reading config file value {0}", reader.Value);
-            System.Environment.Exit(1);
+            Console.WriteLine("Error reading config file value {0}", reader.Value);
+            Environment.Exit(1);
         }
     }
 
