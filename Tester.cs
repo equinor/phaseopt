@@ -102,11 +102,15 @@ public static class Tester
             return;
         }
 
+        System.IO.StreamWriter Log_File = System.IO.File.AppendText(@"PhaseOpt_Kar.log");
+
         Read_Config("PhaseOpt.xml");
 
         // Read velocities
         // There might not be values in IP21 at Now, so we fetch slightly older values.
         DateTime Timestamp = DateTime.Now.AddSeconds(-15);
+        Log_File.WriteLine();
+        Log_File.WriteLine(Timestamp.ToString("yyyy-MM-dd HH:mm:ss"));
         Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
         double Asgard_Average_Velocity = 0.0;
         try
@@ -356,6 +360,7 @@ public static class Tester
             Tags.Add(c.Tag);
         }
         Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
+        Log_File.WriteLine("Åsgard:");
         try
         {
             foreach (Component c in Asgard_Comp)
@@ -364,6 +369,7 @@ public static class Tester
                 c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
                 Composition_IDs.Add(c.ID);
                 Composition_Values.Add(c.Value);
+                Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
             }
         }
         catch
@@ -376,6 +382,7 @@ public static class Tester
         for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+            Log_File.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
 #endif
@@ -390,6 +397,7 @@ public static class Tester
             Tags.Add(c.Tag);
         }
         Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
+        Log_File.WriteLine("Statpipe:");
         try
         {
             foreach (Component c in Statpipe_Comp)
@@ -398,6 +406,7 @@ public static class Tester
                 c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
                 Composition_IDs.Add(c.ID);
                 Composition_Values.Add(c.Value);
+                Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
             }
         }
         catch
@@ -410,6 +419,7 @@ public static class Tester
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+            Log_File.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
 #endif
@@ -417,15 +427,18 @@ public static class Tester
 
         Composition_IDs.Clear();
         Composition_Values.Clear();
+        Log_File.WriteLine("Mix to T100:");
         foreach (Component c in Mix_To_T100_Comp)
         {
             Composition_IDs.Add(c.ID);
             Composition_Values.Add(c.Value);
+            Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
+            Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
 #endif
@@ -433,19 +446,25 @@ public static class Tester
 
         Composition_IDs.Clear();
         Composition_Values.Clear();
+        Log_File.WriteLine("Mix to T400:");
         foreach (Component c in Mix_To_T410_Comp)
         {
             Composition_IDs.Add(c.ID);
             Composition_Values.Add(c.Value);
+            Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
         {
             Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+            Log_File.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
 #endif
         }
+
+        Log_File.Flush();
+        Log_File.Close();
     }
 
     public static void Read_Config(string Config_File)
