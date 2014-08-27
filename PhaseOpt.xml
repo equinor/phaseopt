@@ -39,7 +39,7 @@
 
       <molweight tag="31AI0157A_V"/>
       <velocity kalsto-tag="PMS_0286KM5-0292KM1_0" karsto-tag="PMS_0306KM7-0307KM0_0"/>
-      <length>20000.0</length>
+      <length>19781.0</length>
       <mass-flow>
         <component name="Stasjon Masse strøm" tag="20FI7195SM"/>
       </mass-flow>
@@ -73,7 +73,7 @@
 
       <molweight tag="31AI0161A_V"/>
       <velocity kalsto-tag="PMS_0685KM1-0706KM7_0" karsto-tag="PMS_0685KM1-0706KM7_1"/>
-      <length>20000.0</length>
+      <length>21500.0</length>
       <mass-flow>
         <component name="Åsgard rikgass før X-over" tag="20FI5506"/>
       </mass-flow>
