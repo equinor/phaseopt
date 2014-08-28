@@ -378,6 +378,7 @@ public static class Tester
             Environment.Exit(13);
         }
 
+        Log_File.Flush();
         double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
         {
@@ -415,6 +416,7 @@ public static class Tester
             Environment.Exit(13);
         }
 
+        Log_File.Flush();
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
@@ -434,6 +436,8 @@ public static class Tester
             Composition_Values.Add(c.Value);
             Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
+
+        Log_File.Flush();
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
         {
@@ -453,6 +457,8 @@ public static class Tester
             Composition_Values.Add(c.Value);
             Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
+
+        Log_File.Flush();
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
         {
