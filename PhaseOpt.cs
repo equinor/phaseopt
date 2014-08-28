@@ -377,7 +377,7 @@ namespace PhaseOpt
 
             Normalize(Values, 1.0);
 
-            // Calculate the cricondenbar point
+            // Calculate the cricondentherm point
             Int32 IND = 1;
             Int32 Components = IDs.Length;
             double CCTT = T;
