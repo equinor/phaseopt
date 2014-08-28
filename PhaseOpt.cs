@@ -136,6 +136,32 @@ namespace PhaseOpt
             }
         }
 
+        private static bool Check_Composition(double[] Composition)
+        {
+            bool Return_Value = true;
+            double Expected_Sum = 100.0;
+            double Sum_Deviation_Limit = 1.0;
+            double Sum = 0.0;
+
+            double Lower_Limit = 10E-9;
+            int Number_Below_Lower_Limit = Composition.Length * 25/100;
+            int Below = 0;
+
+            foreach (double Value in Composition)
+            {
+                Sum += Value;
+                if (Value < Lower_Limit)
+                    Below++;
+            }
+
+            if (Math.Abs(Expected_Sum - Sum) > Sum_Deviation_Limit)
+                Return_Value = false;
+            if (Below > Number_Below_Lower_Limit)
+                Return_Value = false;
+
+            return Return_Value;
+        }
+
         /// <summary>
         /// Calculates the Dew Point Line of the composition.
         /// </summary>
@@ -339,25 +365,33 @@ namespace PhaseOpt
         /// <returns>An array containing the cricondenbar pressure and temperature.</returns>
         public static double[] Cricondenbar(int[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
         {
-            if (Units > 1) Units = 1;
-
-            Normalize(Values, 1.0);
-
-            // Calculate the cricondenbar point
-            Int32 IND = 2;
-            Int32 Components = IDs.Length;
-            double CCBT = T;
-            double CCBP = P;
             double[] Results = new double[2];
 
-            DateTime Start = DateTime.Now;
-            Criconden(ref IND, ref Components, IDs, Values, ref CCBT, ref CCBP);
-            DateTime End = DateTime.Now;
+            if (Check_Composition(Values) == false)
+            {
+                Int32 IND = 2;
+                Int32 Components = IDs.Length;
+                double CCBT = T;
+                double CCBP = P;
 
-            System.Console.WriteLine("Cricondenbar runtime: {0}", End - Start);
+                if (Units > 1) Units = 1;
 
-            Results[0] = (CCBP - (Units * Bara_To_Barg));
-            Results[1] = (CCBT - (Units * Kelvin_To_Celcius));
+                Normalize(Values, 1.0);
+
+                DateTime Start = DateTime.Now;
+                Criconden(ref IND, ref Components, IDs, Values, ref CCBT, ref CCBP);
+                DateTime End = DateTime.Now;
+
+                System.Console.WriteLine("Cricondenbar runtime: {0}", End - Start);
+
+                Results[0] = (CCBP - (Units * Bara_To_Barg));
+                Results[1] = (CCBT - (Units * Kelvin_To_Celcius));
+            }
+            else
+            {
+                Results[0] = -1.0;
+                Results[1] = 0.0;
+            }
 
             return Results;
         }
