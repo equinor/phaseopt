@@ -367,7 +367,7 @@ namespace PhaseOpt
         {
             double[] Results = new double[2];
 
-            if (Check_Composition(Values) == false)
+            if (Check_Composition(Values))
             {
                 Int32 IND = 2;
                 Int32 Components = IDs.Length;
