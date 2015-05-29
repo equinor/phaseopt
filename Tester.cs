@@ -48,7 +48,6 @@ public static class Tester
     private static List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
     private static string Mix_To_T100_Molweight_Tag;
 
-    private static string Tunneller_Opc;
     private static string IP21_Host;
     private static string IP21_Port;
     private static string IP21_Uid;
@@ -502,13 +501,7 @@ public static class Tester
         {
             while (reader.Read())
             {
-                if (reader.NodeType == XmlNodeType.Element && reader.Name == "tunneller-opc")
-                {
-                    reader.Read();
-                    Tunneller_Opc = reader.Value;
-                }
-
-                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "IP21-connection")
+                if (reader.NodeType == XmlNodeType.Element && reader.Name == "IP21-connection")
                 {
                     while (reader.Read())
                     {

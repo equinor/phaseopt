@@ -3,8 +3,6 @@
 <phaseopt>
   <!-- comment -->
 
-  <tunneller-opc>opcda://localhost/Tunneller:KA-WP15:ABB.800xA DA Connect IHGW</tunneller-opc>
-
   <IP21-connection>
     <host>KAR-IP21.statoil.net</host>
     <port>10014</port>
