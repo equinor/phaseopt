@@ -269,6 +269,14 @@ public static class Tester
             Console.WriteLine("Tag {0} not valid", Tag_Name);
             Environment.Exit(13);
         }
+
+        //
+        // Sanity check of Åsgard composition
+        // Check sum and individual components
+        //
+
+        Check_Composition(Asgard_Comp);
+
         Tags.Clear();
         Comp_Values.Clear();
         foreach (Component c in Statpipe_Comp)
@@ -289,6 +297,11 @@ public static class Tester
             Console.WriteLine("Tag {0} not valid", Tag_Name);
             Environment.Exit(13);
         }
+
+        //
+        // Sanity check of Statpipe composition
+        // Check sum and individual components
+        //
 
         List<Component> Asgard_Component_Flow = new List<Component>();
         double Asgard_Component_Flow_Sum = 0.0;
@@ -760,4 +773,29 @@ WHERE
         Cmd.Connection.Close();
     }
 
+    private static bool Check_Composition(List<Component> Composition)
+    {
+        bool Return_Value = true;
+        double Expected_Sum = 100.0;
+        double Sum_Deviation_Limit = 1.0;
+        double Sum = 0.0;
+
+        double Lower_Limit = 10E-9;
+        int Number_Below_Lower_Limit = 0; // Composition.Count * 25 / 100;
+        int Below = 0;
+
+        foreach (Component c in Composition)
+        {
+            Sum += c.Value;
+            if (c.Value < Lower_Limit)
+                Below++;
+        }
+
+        if (Math.Abs(Expected_Sum - Sum) > Sum_Deviation_Limit)
+            Return_Value = false;
+        if (Below > Number_Below_Lower_Limit)
+            Return_Value = false;
+
+        return Return_Value;
+    }
 }
