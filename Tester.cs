@@ -67,11 +67,10 @@ public static class Tester
 
         if (Test_UMR)
         {
-            int[] IDs = new int[25] { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 14, 8, 15, 16, 17, 18, 701, 705, 707, 801, 806, 710, 901, 906, 911 };
-            double[] Values = new double[25] {0.0188591, 0.0053375, 0.8696321, 0.0607237, 0.0267865, 0.0043826,
-                    0.0071378, 0.0001517, 0.0019282, 0.0016613, 0.0000497, 0.0001451, 0.0000843, 0.0003587,
-                    0.0001976, 0.0004511, 0.0002916, 0.000803, 0.0003357, 0.0000517, 0.0003413, 0.0002315,
-                    0.0000106, 0.000013, 0.0000346};
+            int[] IDs = new int[22] { 1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 17, 18, 701, 705, 707, 801, 806, 810, 901, 906, 911, 101101 };
+            double[] Values = new double[22] { 2.483, 0.738, 81.667, 8.393, 4.22, 0.605, 1.084, 0.24, 0.23, 0.0801, 0.0243, 0.0614,
+                0.0233, 0.0778, 0.0191, 0.0048, 0.0302, 0.0116, 0.0023, 0.0017, 0.0022, 0.0014};
+
 
             double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
@@ -445,7 +444,7 @@ public static class Tester
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
         {
-            Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
+            Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i] - 10.0, "Bad");
             Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
@@ -744,7 +743,7 @@ WHERE
         return Result;
     }
 
-    public static void Write_Value(string Tag_Name, double Value)
+    public static void Write_Value(string Tag_Name, double Value, string Quality = "Good")
     {
         string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
 
@@ -754,7 +753,7 @@ WHERE
 
         Cmd.CommandText =
 @"UPDATE ip_analogdef
-  SET ip_input_value = " + Value.ToString() + @", ip_input_quality = 'Good'
+  SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
         System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
