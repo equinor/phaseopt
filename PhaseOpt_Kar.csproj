@@ -114,8 +114,9 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Main.cs" />
     <Compile Include="PhaseOpt.cs" />
-    <Compile Include="Tester.cs" />
+    <Compile Include="PhaseOpt_KAR.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
