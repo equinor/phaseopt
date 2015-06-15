@@ -99,6 +99,7 @@ public static class Main_Class
             }
 
             PO_A.Read_From_IP21();
+            PO_B.Read_From_IP21();
 
             Log_File.Flush();
             System.Threading.Thread.Sleep(180000);

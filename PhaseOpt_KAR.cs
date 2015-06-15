@@ -40,15 +40,21 @@ public class PhaseOpt_KAR
     public List<Component> Asgard_Comp = new List<Component>();
     private List<string> Asgard_Velocity_Tags = new List<string>();
     private List<string> Asgard_Mass_Flow_Tags = new List<string>();
+    public double Asgard_Transport_Flow;
     private double Asgard_Pipe_Length;
     private string Asgard_Molweight_Tag;
+    public double Asgard_Molweight;
+    private double Asgard_Mol_Flow;
     private List<string> Asgard_Cricondenbar_Tags = new List<string>();
 
     public List<Component> Statpipe_Comp = new List<Component>();
     private List<string> Statpipe_Velocity_Tags = new List<string>();
     private List<string> Statpipe_Mass_Flow_Tags = new List<string>();
+    public double Statpipe_Transport_Flow;
     private double Statpipe_Pipe_Length;
     private string Statpipe_Molweight_Tag;
+    public double Statpipe_Molweight;
+    private double Statpipe_Mol_Flow;
     private List<string> Statpipe_Cricondenbar_Tags = new List<string>();
     private double Statpipe_Cross_Over_Mol_Flow;
 
@@ -179,7 +185,7 @@ public class PhaseOpt_KAR
     {
         // Read molweight
         Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
-        double Asgard_Molweight = 0.0;
+        Asgard_Molweight = 0.0;
         try
         {
             Asgard_Molweight = (float)Molweight[Asgard_Molweight_Tag];
@@ -190,7 +196,7 @@ public class PhaseOpt_KAR
             Environment.Exit(13);
         }
         Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
-        double Statpipe_Molweight = 0.0;
+        Statpipe_Molweight = 0.0;
         try
         {
             Statpipe_Molweight = (float)Molweight[Statpipe_Molweight_Tag];
@@ -214,7 +220,7 @@ public class PhaseOpt_KAR
 
         // Read mass flow
         Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
-        double Asgard_Transport_Flow = 0.0;
+        Asgard_Transport_Flow = 0.0;
 #if DEBUG
         Console.WriteLine("\nÅsgard flow:");
 #endif
@@ -230,10 +236,10 @@ public class PhaseOpt_KAR
             Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
             Environment.Exit(13);
         }
-        double Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
+        Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
         Mass_Flow = Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
-        double Statpipe_Transport_Flow = 0.0;
+        Statpipe_Transport_Flow = 0.0;
 #if DEBUG
         Console.WriteLine("\nStatpipe flow:");
 #endif
@@ -249,7 +255,7 @@ public class PhaseOpt_KAR
             Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
             Environment.Exit(13);
         }
-        double Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
+        Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
         Mass_Flow = Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
         double Mix_To_T100_Flow = 0.0;
@@ -266,8 +272,10 @@ public class PhaseOpt_KAR
         }
         Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
         Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
+    }
 
-
+    public void Calculate()
+    {
         List<Component> Asgard_Component_Flow = new List<Component>();
         double Asgard_Component_Flow_Sum = 0.0;
         foreach (Component c in Asgard_Comp)
@@ -294,10 +302,6 @@ public class PhaseOpt_KAR
                               (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0;
             }
         }
-    }
-
-    public void Calculate()
-    {
 
         List<Component> CY2007_Component_Flow = new List<Component>();
         double CY2007_Component_Flow_Sum = 0.0;
