@@ -3,66 +3,79 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
 
-public class PhaseOpt_KAR
+public class Component
 {
-    public class Component
+    public int ID;
+    public string Tag;
+    public double Scale_Factor;
+    public double Value;
+
+    public Component(int i, string t, double s, double v = 0.0)
     {
-        public int ID;
-        public string Tag;
-        public double Scale_Factor;
-        public double Value;
-
-        public Component(int i, string t, double s, double v = 0.0)
-        {
-            ID = i;
-            Tag = t;
-            Scale_Factor = s;
-            Value = v;
-        }
-
-        public double Get_Scaled_Value()
-        {
-            return Value * Scale_Factor;
-        }
+        ID = i;
+        Tag = t;
+        Scale_Factor = s;
+        Value = v;
     }
 
-    private static List<Component> Asgard_Comp = new List<Component>();
-    private static List<string> Asgard_Velocity_Tags = new List<string>();
-    private static List<string> Asgard_Mass_Flow_Tags = new List<string>();
-    private static double Asgard_Pipe_Length;
-    private static string Asgard_Molweight_Tag;
-    private static List<string> Asgard_Cricondenbar_Tags = new List<string>();
-
-    private static List<Component> Statpipe_Comp = new List<Component>();
-    private static List<string> Statpipe_Velocity_Tags = new List<string>();
-    private static List<string> Statpipe_Mass_Flow_Tags = new List<string>();
-    private static double Statpipe_Pipe_Length;
-    private static string Statpipe_Molweight_Tag;
-    private static List<string> Statpipe_Cricondenbar_Tags = new List<string>();
-
-    private static List<Component> Mix_To_T410_Comp = new List<Component>();
-    private static List<string> Mix_To_T410_Cricondenbar_Tags = new List<string>();
-
-    private static List<Component> Mix_To_T100_Comp = new List<Component>();
-    private static List<string> Mix_To_T100_Cricondenbar_Tags = new List<string>();
-    private static List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
-    private static string Mix_To_T100_Molweight_Tag;
-
-    private static string IP21_Host;
-    private static string IP21_Port;
-    private static string IP21_Uid;
-    private static string IP21_Pwd;
-
-    public void Calculate()
+    public Component(Component other)
     {
+        ID = other.ID;
+        Tag = other.Tag;
+        Scale_Factor = other.Scale_Factor;
+        Value = other.Value;
+    }
 
-        System.IO.StreamWriter Log_File = System.IO.File.AppendText(@"PhaseOpt_Kar.log");
+    public double Get_Scaled_Value()
+    {
+        return Value * Scale_Factor;
+    }
+}
 
-        Read_Config("PhaseOpt.xml");
+public class PhaseOpt_KAR
+{
+    public List<Component> Asgard_Comp = new List<Component>();
+    private List<string> Asgard_Velocity_Tags = new List<string>();
+    private List<string> Asgard_Mass_Flow_Tags = new List<string>();
+    private double Asgard_Pipe_Length;
+    private string Asgard_Molweight_Tag;
+    private List<string> Asgard_Cricondenbar_Tags = new List<string>();
 
+    public List<Component> Statpipe_Comp = new List<Component>();
+    private List<string> Statpipe_Velocity_Tags = new List<string>();
+    private List<string> Statpipe_Mass_Flow_Tags = new List<string>();
+    private double Statpipe_Pipe_Length;
+    private string Statpipe_Molweight_Tag;
+    private List<string> Statpipe_Cricondenbar_Tags = new List<string>();
+
+    private List<Component> Mix_To_T410_Comp = new List<Component>();
+    private List<string> Mix_To_T410_Cricondenbar_Tags = new List<string>();
+
+    private List<Component> Mix_To_T100_Comp = new List<Component>();
+    private List<string> Mix_To_T100_Cricondenbar_Tags = new List<string>();
+    private List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
+    private string Mix_To_T100_Molweight_Tag;
+
+    private string IP21_Host;
+    private string IP21_Port;
+    private string IP21_Uid;
+    private string IP21_Pwd;
+
+    private System.IO.StreamWriter Log_File;
+    private DateTime Timestamp;
+    private DateTime Asgard_Timestamp;
+    private DateTime Statpipe_Timestamp;
+
+    public PhaseOpt_KAR(string Log_File_Name)
+    {
+        Log_File = System.IO.File.AppendText(Log_File_Name);
+    }
+
+    public void Read_Composition()
+    {
         // Read velocities
         // There might not be values in IP21 at Now, so we fetch slightly older values.
-        DateTime Timestamp = DateTime.Now.AddSeconds(-15);
+        Timestamp = DateTime.Now.AddSeconds(-15);
         Log_File.WriteLine();
         Log_File.WriteLine(Timestamp.ToString("yyyy-MM-dd HH:mm:ss"));
         Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
@@ -104,8 +117,8 @@ public class PhaseOpt_KAR
             Statpipe_Average_Velocity = Asgard_Average_Velocity;
         if (Asgard_Average_Velocity < Velocity_Threshold && Statpipe_Average_Velocity < Velocity_Threshold)
             return;
-        DateTime Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
-        DateTime Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
+        Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
+        Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
         Log_File.WriteLine("Åsgard delay: {0}", Asgard_Pipe_Length / Asgard_Average_Velocity);
         Log_File.WriteLine("Statpipe delay: {0}", Statpipe_Pipe_Length / Statpipe_Average_Velocity);
 #if DEBUG
@@ -113,6 +126,52 @@ public class PhaseOpt_KAR
         Console.WriteLine("Statpipe delay: {0}", Statpipe_Pipe_Length / Statpipe_Average_Velocity);
 #endif
 
+        // Read composition
+        List<string> Tags = new List<string>();
+        foreach (Component c in Asgard_Comp)
+        {
+            Tags.Add(c.Tag);
+        }
+        Hashtable Comp_Values = Read_Values(Tags.ToArray(), Asgard_Timestamp);
+        string Tag_Name = "";
+        try
+        {
+            foreach (Component c in Asgard_Comp)
+            {
+                Tag_Name = c.Tag;
+                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+            }
+        }
+        catch
+        {
+            Console.WriteLine("Tag {0} not valid", Tag_Name);
+            Environment.Exit(13);
+        }
+
+        Tags.Clear();
+        Comp_Values.Clear();
+        foreach (Component c in Statpipe_Comp)
+        {
+            Tags.Add(c.Tag);
+        }
+        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
+        try
+        {
+            foreach (Component c in Statpipe_Comp)
+            {
+                Tag_Name = c.Tag;
+                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+            }
+        }
+        catch
+        {
+            Console.WriteLine("Tag {0} not valid", Tag_Name);
+            Environment.Exit(13);
+        }
+    }
+
+    public void Read_From_IP21()
+    {
         // Read molweight
         Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
         double Asgard_Molweight = 0.0;
@@ -203,60 +262,6 @@ public class PhaseOpt_KAR
         double Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
         double Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
 
-        // Read composition
-        List<string> Tags = new List<string>();
-        foreach (Component c in Asgard_Comp)
-        {
-            Tags.Add(c.Tag);
-        }
-        Hashtable Comp_Values = Read_Values(Tags.ToArray(), Asgard_Timestamp);
-        string Tag_Name = "";
-        try
-        {
-            foreach (Component c in Asgard_Comp)
-            {
-                Tag_Name = c.Tag;
-                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
-            }
-        }
-        catch
-        {
-            Console.WriteLine("Tag {0} not valid", Tag_Name);
-            Environment.Exit(13);
-        }
-
-        //
-        // Sanity check of Åsgard composition
-        // Check sum and individual components
-        //
-
-        Check_Composition(Asgard_Comp);
-
-        Tags.Clear();
-        Comp_Values.Clear();
-        foreach (Component c in Statpipe_Comp)
-        {
-            Tags.Add(c.Tag);
-        }
-        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
-        try
-        {
-            foreach (Component c in Statpipe_Comp)
-            {
-                Tag_Name = c.Tag;
-                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
-            }
-        }
-        catch
-        {
-            Console.WriteLine("Tag {0} not valid", Tag_Name);
-            Environment.Exit(13);
-        }
-
-        //
-        // Sanity check of Statpipe composition
-        // Check sum and individual components
-        //
 
         List<Component> Asgard_Component_Flow = new List<Component>();
         double Asgard_Component_Flow_Sum = 0.0;
@@ -284,6 +289,10 @@ public class PhaseOpt_KAR
                               (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum) * 100.0;
             }
         }
+    }
+    /*
+    public void Calculate()
+    {
 
         List<Component> CY2007_Component_Flow = new List<Component>();
         double CY2007_Component_Flow_Sum = 0.0;
@@ -442,7 +451,7 @@ public class PhaseOpt_KAR
 
         Log_File.Flush();
         Log_File.Close();
-    }
+    } */
 
     public void Read_Config(string Config_File)
     {
@@ -669,7 +678,7 @@ public class PhaseOpt_KAR
         }
     }
 
-    public Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
+    private Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
     {
         string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
 
@@ -705,7 +714,7 @@ WHERE
         return Result;
     }
 
-    public void Write_Value(string Tag_Name, double Value, string Quality = "Good")
+    private void Write_Value(string Tag_Name, double Value, string Quality = "Good")
     {
         string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
 
@@ -720,31 +729,5 @@ WHERE
 
         System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
         Cmd.Connection.Close();
-    }
-
-    private bool Check_Composition(List<Component> Composition)
-    {
-        bool Return_Value = true;
-        double Expected_Sum = 100.0;
-        double Sum_Deviation_Limit = 1.0;
-        double Sum = 0.0;
-
-        double Lower_Limit = 10E-9;
-        int Number_Below_Lower_Limit = 0; // Composition.Count * 25 / 100;
-        int Below = 0;
-
-        foreach (Component c in Composition)
-        {
-            Sum += c.Value;
-            if (c.Value < Lower_Limit)
-                Below++;
-        }
-
-        if (Math.Abs(Expected_Sum - Sum) > Sum_Deviation_Limit)
-            Return_Value = false;
-        if (Below > Number_Below_Lower_Limit)
-            Return_Value = false;
-
-        return Return_Value;
     }
 }
