@@ -11,37 +11,36 @@
 
   <streams>
     <stream name="statpipe" type="input">
-      <component name="CO2"  id="1"  tag="31AI0157A_K" scale-factor="1.0"/>
-      <component name="N2"   id="2"  tag="31AI0157A_J" scale-factor="1.0"/>
-      <component name="CH4"  id="3"  tag="31AI0157A_A" scale-factor="1.0"/>
-      <component name="C2H6" id="4"  tag="31AI0157A_B" scale-factor="1.0"/>
-      <component name="C3"   id="5"  tag="31AI0157A_C" scale-factor="1.0"/>
-      <component name="iC4"  id="6"  tag="31AI0157A_D" scale-factor="1.0"/>
-      <component name="nC4"  id="7"  tag="31AI0157A_E" scale-factor="1.0"/>
-      <component name="iC5"  id="10" tag="31AI0157A_F" scale-factor="1.0"/>
-      <component name="nC5"  id="11" tag="31AI0157A_G" scale-factor="1.0"/>
+      <component name="CO2"  id="1"  tag="31AI0157B_K" scale-factor="1.0"/>
+      <component name="N2"   id="2"  tag="31AI0157B_J" scale-factor="1.0"/>
+      <component name="CH4"  id="3"  tag="31AI0157B_A" scale-factor="1.0"/>
+      <component name="C2H6" id="4"  tag="31AI0157B_C" scale-factor="1.0"/>
+      <component name="iC4"  id="6"  tag="31AI0157B_D" scale-factor="1.0"/>
+      <component name="nC4"  id="7"  tag="31AI0157B_E" scale-factor="1.0"/>
+      <component name="iC5"  id="10" tag="31AI0157B_F" scale-factor="1.0"/>
+      <component name="nC5"  id="11" tag="31AI0157B_G" scale-factor="1.0"/>
 
-      <component name="2-M-C5"          id="16"     tag="31AI0157A_08" scale-factor="0.0001"/>
-      <component name="3-M-C5"          id="17"     tag="31AI0157A_34" scale-factor="0.0001"/>
-      <component name="nC6"             id="18"     tag="31AI0157A_22" scale-factor="0.0001"/>
-      <component name="C7P / nC7"       id="701"    tag="31AI0157A_46" scale-factor="0.0001"/>
-      <component name="C7N / cy-C6"     id="705"    tag="31AI0157A_47" scale-factor="0.0001"/>
-      <component name="C7A / Benzene"   id="707"    tag="31AI0157A_48" scale-factor="0.0001"/>
-      <component name="C8P / nC8"       id="801"    tag="31AI0157A_49" scale-factor="0.0001"/>
-      <component name="C8N / cy-C7"     id="806"    tag="31AI0157A_50" scale-factor="0.0001"/>
-      <component name="C8A / Toluene"   id="810"    tag="31AI0157A_51" scale-factor="0.0001"/>
-      <component name="C9P / nC9"       id="901"    tag="31AI0157A_52" scale-factor="0.0001"/>
-      <component name="C9N / cy-C8"     id="906"    tag="31AI0157A_53" scale-factor="0.0001"/>
-      <component name="C9A / m-xylene"  id="911"    tag="31AI0157A_54" scale-factor="0.0001"/>
-      <component name="nC10"            id="101101" tag="31AI0157A_05" scale-factor="0.0001"/>
+      <component name="2-M-C5"          id="16"     tag="31AI0157B_08" scale-factor="0.0001"/>
+      <component name="3-M-C5"          id="17"     tag="31AI0157B_34" scale-factor="0.0001"/>
+      <component name="nC6"             id="18"     tag="31AI0157B_22" scale-factor="0.0001"/>
+      <component name="C7P / nC7"       id="701"    tag="31AI0157B_46" scale-factor="0.0001"/>
+      <component name="C7N / cy-C6"     id="705"    tag="31AI0157B_47" scale-factor="0.0001"/>
+      <component name="C7A / Benzene"   id="707"    tag="31AI0157B_48" scale-factor="0.0001"/>
+      <component name="C8P / nC8"       id="801"    tag="31AI0157B_49" scale-factor="0.0001"/>
+      <component name="C8N / cy-C7"     id="806"    tag="31AI0157B_50" scale-factor="0.0001"/>
+      <component name="C8A / Toluene"   id="810"    tag="31AI0157B_51" scale-factor="0.0001"/>
+      <component name="C9P / nC9"       id="901"    tag="31AI0157B_52" scale-factor="0.0001"/>
+      <component name="C9N / cy-C8"     id="906"    tag="31AI0157B_53" scale-factor="0.0001"/>
+      <component name="C9A / m-xylene"  id="911"    tag="31AI0157B_54" scale-factor="0.0001"/>
+      <component name="nC10"            id="101101" tag="31AI0157B_05" scale-factor="0.0001"/>
 
-      <molweight tag="31AI0157A_V"/>
+      <molweight tag="31AI0157B_V"/>
       <velocity kalsto-tag="PMS_0286KM5-0292KM1_0" karsto-tag="PMS_0306KM7-0307KM0_0"/>
       <length>19781.0</length>
       <mass-flow>
         <component name="Stasjon Masse strøm" tag="20FI7195SM"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0157_A" pressure-tag="31PY0157_A"/>
+      <cricondenbar temperature-tag="31TY0157_B" pressure-tag="31PY0157_B"/>
     </stream>
 
     <stream name="asgard" type="input">
@@ -55,19 +54,19 @@
       <component name="iC5"  id="10" tag="31AI0161A_F" scale-factor="1.0"/>
       <component name="nC5"  id="11" tag="31AI0161A_G" scale-factor="1.0"/>
 
-      <component name="2-M-C5"          id="16"     tag="31AI0161A_08" scale-factor="0.0001"/>
-      <component name="3-M-C5"          id="17"     tag="31AI0161A_34" scale-factor="0.0001"/>
-      <component name="nC6"             id="18"     tag="31AI0161A_22" scale-factor="0.0001"/>
-      <component name="C7P / nC7"       id="701"    tag="31AI0161A_46" scale-factor="0.0001"/>
-      <component name="C7N / cy-C6"     id="705"    tag="31AI0161A_47" scale-factor="0.0001"/>
-      <component name="C7A / Benzene"   id="707"    tag="31AI0161A_48" scale-factor="0.0001"/>
-      <component name="C8P / nC8"       id="801"    tag="31AI0161A_49" scale-factor="0.0001"/>
-      <component name="C8N / cy-C7"     id="806"    tag="31AI0161A_50" scale-factor="0.0001"/>
-      <component name="C8A / Toluene"   id="810"    tag="31AI0161A_51" scale-factor="0.0001"/>
-      <component name="C9P / nC9"       id="901"    tag="31AI0161A_52" scale-factor="0.0001"/>
-      <component name="C9N / cy-C8"     id="906"    tag="31AI0161A_53" scale-factor="0.0001"/>
-      <component name="C9A / m-xylene"  id="911"    tag="31AI0161A_54" scale-factor="0.0001"/>
-      <component name="nC10"            id="101101" tag="31AI0161A_05" scale-factor="0.0001"/>
+      <component name="2-M-C5"          id="16"     tag="31AI0161B_08" scale-factor="0.0001"/>
+      <component name="3-M-C5"          id="17"     tag="31AI0161B_34" scale-factor="0.0001"/>
+      <component name="nC6"             id="18"     tag="31AI0161B_22" scale-factor="0.0001"/>
+      <component name="C7P / nC7"       id="701"    tag="31AI0161B_46" scale-factor="0.0001"/>
+      <component name="C7N / cy-C6"     id="705"    tag="31AI0161B_47" scale-factor="0.0001"/>
+      <component name="C7A / Benzene"   id="707"    tag="31AI0161B_48" scale-factor="0.0001"/>
+      <component name="C8P / nC8"       id="801"    tag="31AI0161B_49" scale-factor="0.0001"/>
+      <component name="C8N / cy-C7"     id="806"    tag="31AI0161B_50" scale-factor="0.0001"/>
+      <component name="C8A / Toluene"   id="810"    tag="31AI0161B_51" scale-factor="0.0001"/>
+      <component name="C9P / nC9"       id="901"    tag="31AI0161B_52" scale-factor="0.0001"/>
+      <component name="C9N / cy-C8"     id="906"    tag="31AI0161B_53" scale-factor="0.0001"/>
+      <component name="C9A / m-xylene"  id="911"    tag="31AI0161B_54" scale-factor="0.0001"/>
+      <component name="nC10"            id="101101" tag="31AI0161B_05" scale-factor="0.0001"/>
 
       <molweight tag="31AI0161A_V"/>
       <velocity kalsto-tag="PMS_0685KM1-0706KM7_0" karsto-tag="PMS_0685KM1-0706KM7_1"/>
@@ -75,7 +74,7 @@
       <mass-flow>
         <component name="Åsgard rikgass før X-over" tag="20FI5506"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0161_A" pressure-tag="31PY0161_A"/>
+      <cricondenbar temperature-tag="31TY0161_B" pressure-tag="31PY0161_B"/>
     </stream>
 
     <stream name="DIXO-mix to T410/T420/DPCU" type="output">
@@ -103,7 +102,7 @@
       <component name="C9A / m-xylene"  id="911"    tag="20AY7146_54" scale-factor="10000.0"/>
       <component name="nC10"            id="101101" tag="20AY7146_05" scale-factor="10000.0"/>
 
-      <cricondenbar temperature-tag="20TY7146_A" pressure-tag="20PY7146_A"/>
+      <cricondenbar temperature-tag="20TY7146_B" pressure-tag="20PY7146_B"/>
     </stream>
 
     <stream name="DIXO-mix to T100/T200" type="output">
@@ -137,7 +136,7 @@
       </mass-flow>
 
       <molweight tag="15AM5626V"/>
-      <cricondenbar temperature-tag="15TY5626_A" pressure-tag="15PY5626_A"/>
+      <cricondenbar temperature-tag="15TY5626_B" pressure-tag="15PY5626_B"/>
     </stream>
   </streams>
 </phaseopt>

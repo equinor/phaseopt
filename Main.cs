@@ -60,69 +60,97 @@ public static class Main_Class
         PO_B.Read_Config("PhaseOpt_B.xml");
 
         Queue GC_A_Comp_Asgard = new Queue();
-        int memory = 5;
+        Queue GC_A_Comp_Statpipe = new Queue();
+        Queue GC_B_Comp_Asgard = new Queue();
+        Queue GC_B_Comp_Statpipe = new Queue();
+        //int memory = 5;
 
         System.IO.StreamWriter Log_File;
         Log_File = System.IO.File.AppendText(@"stdev.log");
         while (true)
         {
+            double Stdev_Low_Limit = 1.0E-10;
+
             PO_A.Read_Composition();
+            PO_B.Read_Composition();
 
-            List<double> Values = new List<double>();
-            foreach (Component c in PO_A.Asgard_Comp)
+            if (Composition_Stdev(PO_A.Asgard_Comp, GC_A_Comp_Asgard) < Stdev_Low_Limit)
             {
-                Values.Add(c.Value);
+                Console.WriteLine("Bad composition");
             }
-            GC_A_Comp_Asgard.Enqueue(Values.ToArray());
-
-            while (GC_A_Comp_Asgard.Count > memory)
+            if (Composition_Stdev(PO_A.Statpipe_Comp, GC_A_Comp_Statpipe) < Stdev_Low_Limit)
             {
-                GC_A_Comp_Asgard.Dequeue();
+                Console.WriteLine("Bad composition");
             }
-
-            Dictionary<int, List<double>> CA = new Dictionary<int, List<double>>();
-
-            for (int i=0; i < PO_A.Asgard_Comp.Count; i++)
+            if (Composition_Stdev(PO_B.Asgard_Comp, GC_B_Comp_Asgard) < Stdev_Low_Limit)
             {
-                CA.Add(i, new List<double>());
+                Console.WriteLine("Bad composition");
             }
-
-            foreach (double[] cl in GC_A_Comp_Asgard)
+            if (Composition_Stdev(PO_B.Statpipe_Comp, GC_B_Comp_Statpipe) < Stdev_Low_Limit)
             {
-                int i = 0;
-                foreach (double v in cl)
-                {
-                    CA[i].Add(v);
-                    i++;
-                }
-            }
-
-            if (GC_A_Comp_Asgard.Count >= memory)
-            {
-                double Lowest_Stdev = double.MaxValue;
-                foreach (List<double> cl in CA.Values)
-                {
-                    double stdev = CalculateStdDev(cl);
-                    Log_File.WriteLine(stdev);
-                    if (stdev < Lowest_Stdev)
-                    {
-                        Lowest_Stdev = stdev;
-                    }
-                }
+                Console.WriteLine("Bad composition");
             }
 
             Log_File.WriteLine();
 
-            if (Check_Composition(PO_A.Asgard_Comp))
+            if (Check_Composition(PO_A.Asgard_Comp) && Check_Composition(PO_A.Statpipe_Comp))
             {
 
             }
+
+            PO_A.Read_From_IP21();
 
             Log_File.Flush();
             System.Threading.Thread.Sleep(180000);
         }
     }
 
+    public static double Composition_Stdev(List<Component> PO, Queue GC_Comp, int memory=5)
+    {
+        double Lowest_Stdev = double.MaxValue;
+        List<double> Values = new List<double>();
+        Dictionary<int, List<double>> CA = new Dictionary<int, List<double>>();
+
+        foreach (Component c in PO)
+        {
+            Values.Add(c.Value);
+        }
+        GC_Comp.Enqueue(Values.ToArray());
+
+        while (GC_Comp.Count > memory)
+        {
+            GC_Comp.Dequeue();
+        }
+
+        for (int i = 0; i < PO.Count; i++)
+        {
+            CA.Add(i, new List<double>());
+        }
+
+        foreach (double[] cl in GC_Comp)
+        {
+            int i = 0;
+            foreach (double v in cl)
+            {
+                CA[i].Add(v);
+                i++;
+            }
+        }
+
+        if (GC_Comp.Count >= memory)
+        {
+            foreach (List<double> cl in CA.Values)
+            {
+                double stdev = CalculateStdDev(cl);
+                //Log_File.WriteLine(stdev);
+                if (stdev < Lowest_Stdev)
+                {
+                    Lowest_Stdev = stdev;
+                }
+            }
+        }
+        return Lowest_Stdev;
+    }
     public static bool Check_Composition(List<Component> Composition)
     {
         bool Return_Value = true;

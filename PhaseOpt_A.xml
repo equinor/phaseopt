@@ -45,15 +45,15 @@
     </stream>
 
     <stream name="asgard" type="input">
-      <component name="CO2"  id="1"  tag="31AI0161A_K" scale-factor="1.0"/>
-      <component name="N2"   id="2"  tag="31AI0161A_J" scale-factor="1.0"/>
-      <component name="CH4"  id="3"  tag="31AI0161A_A" scale-factor="1.0"/>
-      <component name="C2H6" id="4"  tag="31AI0161A_B" scale-factor="1.0"/>
-      <component name="C3"   id="5"  tag="31AI0161A_C" scale-factor="1.0"/>
-      <component name="iC4"  id="6"  tag="31AI0161A_D" scale-factor="1.0"/>
-      <component name="nC4"  id="7"  tag="31AI0161A_E" scale-factor="1.0"/>
-      <component name="iC5"  id="10" tag="31AI0161A_F" scale-factor="1.0"/>
-      <component name="nC5"  id="11" tag="31AI0161A_G" scale-factor="1.0"/>
+      <component name="CO2"  id="1"  tag="31AI0161B_K" scale-factor="1.0"/>
+      <component name="N2"   id="2"  tag="31AI0161B_J" scale-factor="1.0"/>
+      <component name="CH4"  id="3"  tag="31AI0161B_A" scale-factor="1.0"/>
+      <component name="C2H6" id="4"  tag="31AI0161B_B" scale-factor="1.0"/>
+      <component name="C3"   id="5"  tag="31AI0161B_C" scale-factor="1.0"/>
+      <component name="iC4"  id="6"  tag="31AI0161B_D" scale-factor="1.0"/>
+      <component name="nC4"  id="7"  tag="31AI0161B_E" scale-factor="1.0"/>
+      <component name="iC5"  id="10" tag="31AI0161B_F" scale-factor="1.0"/>
+      <component name="nC5"  id="11" tag="31AI0161B_G" scale-factor="1.0"/>
 
       <component name="2-M-C5"          id="16"     tag="31AI0161A_08" scale-factor="0.0001"/>
       <component name="3-M-C5"          id="17"     tag="31AI0161A_34" scale-factor="0.0001"/>
