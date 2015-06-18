@@ -356,6 +356,9 @@ namespace PhaseOpt
 
             System.Console.WriteLine("Cricondenbar runtime: {0}", End - Start);
 
+            if (CCBP < 0.0) CCBP = double.NaN;
+            if (CCBT < 0.0) CCBT = double.NaN;
+
             Results[0] = (CCBP - (Units * Bara_To_Barg));
             Results[1] = (CCBT - (Units * Kelvin_To_Celcius));
 
