@@ -56,6 +56,7 @@ public class PhaseOpt_KAR
     public double Statpipe_Molweight;
     private double Statpipe_Mol_Flow;
     private List<string> Statpipe_Cricondenbar_Tags = new List<string>();
+    public double Statpipe_Cross_Over_Flow;
     private double Statpipe_Cross_Over_Mol_Flow;
 
     private List<Component> Mix_To_T410_Comp = new List<Component>();
@@ -64,6 +65,7 @@ public class PhaseOpt_KAR
     private List<Component> Mix_To_T100_Comp = new List<Component>();
     private List<string> Mix_To_T100_Cricondenbar_Tags = new List<string>();
     private List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
+    public double Mix_To_T100_Flow;
     private string Mix_To_T100_Molweight_Tag;
     private double Mix_To_T100_Mol_Flow;
 
@@ -102,8 +104,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} and/or {1} not valid", Asgard_Velocity_Tags[0], Asgard_Velocity_Tags[1]);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} and/or {1} not valid", Asgard_Velocity_Tags[0], Asgard_Velocity_Tags[1]);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
         Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
         double Statpipe_Average_Velocity = 0.0;
@@ -118,8 +121,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} and/or {1} not valid", Statpipe_Velocity_Tags[0], Statpipe_Velocity_Tags[1]);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} and/or {1} not valid", Statpipe_Velocity_Tags[0], Statpipe_Velocity_Tags[1]);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
         double Velocity_Threshold = 0.1;
         if (Asgard_Average_Velocity < Velocity_Threshold && Statpipe_Average_Velocity > Velocity_Threshold)
@@ -155,8 +159,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Tag_Name);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
 
         Tags.Clear();
@@ -176,8 +181,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Tag_Name);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
     }
 
@@ -192,8 +198,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Asgard_Molweight_Tag);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Asgard_Molweight_Tag);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
         Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
         Statpipe_Molweight = 0.0;
@@ -203,8 +210,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Statpipe_Molweight_Tag);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Statpipe_Molweight_Tag);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
         Molweight = Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
         double Mix_To_T100_Molweight = 0.0;
@@ -214,8 +222,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Mix_To_T100_Molweight_Tag);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Mix_To_T100_Molweight_Tag);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
 
         // Read mass flow
@@ -233,8 +242,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
         Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
@@ -252,14 +262,15 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
         Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
         Mass_Flow = Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
-        double Mix_To_T100_Flow = 0.0;
-        double Statpipe_Cross_Over_Flow = 0.0;
+        Mix_To_T100_Flow = 0.0;
+        Statpipe_Cross_Over_Flow = 0.0;
         try
         {
             Mix_To_T100_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]];
@@ -267,8 +278,9 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100_Mass_Flow_Tags[0], Mix_To_T100_Mass_Flow_Tags[1]);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100_Mass_Flow_Tags[0], Mix_To_T100_Mass_Flow_Tags[1]);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
         Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
         Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
@@ -292,7 +304,7 @@ public class PhaseOpt_KAR
             Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * c.Value / 100.0;
         }
 
-        List<double> Mix_To_T410 = new List<double>();
+        //List<double> Mix_To_T410 = new List<double>();
         foreach (Component c in Mix_To_T410_Comp)
         {
             if (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum > 0.0)
@@ -319,7 +331,7 @@ public class PhaseOpt_KAR
             DIXO_Component_Flow_Sum += Mix_To_T100_Mol_Flow * c.Value / 100.0;
         }
 
-        List<double> Mix_To_T100 = new List<double>();
+        //List<double> Mix_To_T100 = new List<double>();
         foreach (Component c in Mix_To_T100_Comp)
         {
             if (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum > 0.0)
@@ -340,6 +352,7 @@ public class PhaseOpt_KAR
             Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
+        // Åsgard cricondenbar
         List<int> Composition_IDs = new List<int>();
         List<double> Composition_Values = new List<double>();
         Tags.Clear();
@@ -364,21 +377,26 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Tag_Name);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
 
         Log_File.Flush();
         double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
         {
-            Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+            if (!Composition_Result[i].Equals(double.NaN))
+            {
+                Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+            }
             Log_File.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
 #endif
         }
 
+        // Statpipe cricondenbar
         Composition_IDs.Clear();
         Composition_Values.Clear();
         Tags.Clear();
@@ -387,7 +405,7 @@ public class PhaseOpt_KAR
         {
             Tags.Add(c.Tag);
         }
-        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
+        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
         Log_File.WriteLine("Statpipe:");
         try
         {
@@ -402,21 +420,26 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Tag {0} not valid", Tag_Name);
-            Environment.Exit(13);
+            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
+            Log_File.Flush();
+            //Environment.Exit(13);
         }
 
         Log_File.Flush();
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
-            Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+            if (!Composition_Result[i].Equals(double.NaN))
+            {
+                Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+            }
             Log_File.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
 #endif
         }
 
+        // Mix to T100 cricondenbar
         Composition_IDs.Clear();
         Composition_Values.Clear();
         Log_File.WriteLine("Mix to T100:");
@@ -431,13 +454,17 @@ public class PhaseOpt_KAR
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
         {
-            Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i] - 10.0, "Bad");
+            if (!Composition_Result[i].Equals(double.NaN))
+            {
+                Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
+            }
             Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
 #endif
         }
 
+        // Mix to T400 cricondenbar
         Composition_IDs.Clear();
         Composition_Values.Clear();
         Log_File.WriteLine("Mix to T400:");
@@ -452,7 +479,10 @@ public class PhaseOpt_KAR
         Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
         {
-            Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+            if (!Composition_Result[i].Equals(double.NaN))
+            {
+                Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+            }
             Log_File.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
@@ -460,7 +490,7 @@ public class PhaseOpt_KAR
         }
 
         Log_File.Flush();
-        Log_File.Close();
+        //Log_File.Close();
     }
 
     public void Read_Config(string Config_File)
@@ -683,7 +713,8 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Console.WriteLine("Error reading config file value {0}", reader.Value);
+            Log_File.WriteLine("Error reading config file value {0}", reader.Value);
+            Log_File.Flush();
             Environment.Exit(1);
         }
     }

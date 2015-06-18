@@ -63,50 +63,183 @@ public static class Main_Class
         Queue GC_A_Comp_Statpipe = new Queue();
         Queue GC_B_Comp_Asgard = new Queue();
         Queue GC_B_Comp_Statpipe = new Queue();
+        Queue GC_A_Molweight_Asgard = new Queue();
+        Queue GC_A_Molweight_Statpipe = new Queue();
+        Queue GC_B_Molweight_Asgard = new Queue();
+        Queue GC_B_Molweight_Statpipe = new Queue();
+        Queue GC_A_Asgard_Flow = new Queue();
+        Queue GC_A_Statpipe_Flow = new Queue();
+        Queue GC_B_Asgard_Flow = new Queue();
+        Queue GC_B_Statpipe_Flow = new Queue();
+        Queue GC_A_Statpipe_Cross_Over_Flow = new Queue();
+        Queue GC_B_Statpipe_Cross_Over_Flow = new Queue();
+        Queue GC_A_Mix_To_T100_Flow = new Queue();
+        Queue GC_B_Mix_To_T100_Flow = new Queue();
+
         //int memory = 5;
 
         System.IO.StreamWriter Log_File;
         Log_File = System.IO.File.AppendText(@"stdev.log");
+
         while (true)
         {
+            DateTime Start_Time = DateTime.Now;
             double Stdev_Low_Limit = 1.0E-10;
+            int errors_A = 0;
+            int errors_B = 0;
 
             PO_A.Read_Composition();
             PO_B.Read_Composition();
 
-            if (Composition_Stdev(PO_A.Asgard_Comp, GC_A_Comp_Asgard) < Stdev_Low_Limit)
+            if (Composition_Stdev(PO_A.Asgard_Comp, GC_A_Comp_Asgard) < Stdev_Low_Limit ||
+                Check_Composition(PO_A.Asgard_Comp) == false)
             {
-                Console.WriteLine("Bad composition");
+                Console.WriteLine("Bad composition Asgard A");
+                errors_A++;
             }
-            if (Composition_Stdev(PO_A.Statpipe_Comp, GC_A_Comp_Statpipe) < Stdev_Low_Limit)
+            if (Composition_Stdev(PO_A.Statpipe_Comp, GC_A_Comp_Statpipe) < Stdev_Low_Limit ||
+                Check_Composition(PO_A.Statpipe_Comp) == false)
             {
-                Console.WriteLine("Bad composition");
+                Console.WriteLine("Bad composition Statpipe A");
+                errors_A++;
             }
-            if (Composition_Stdev(PO_B.Asgard_Comp, GC_B_Comp_Asgard) < Stdev_Low_Limit)
+            if (Composition_Stdev(PO_B.Asgard_Comp, GC_B_Comp_Asgard) < Stdev_Low_Limit ||
+                Check_Composition(PO_B.Asgard_Comp) == false)
             {
-                Console.WriteLine("Bad composition");
+                Console.WriteLine("Bad composition Asgard B");
+                errors_B++;
             }
-            if (Composition_Stdev(PO_B.Statpipe_Comp, GC_B_Comp_Statpipe) < Stdev_Low_Limit)
+            if (Composition_Stdev(PO_B.Statpipe_Comp, GC_B_Comp_Statpipe) < Stdev_Low_Limit ||
+                Check_Composition(PO_B.Statpipe_Comp) == false)
             {
-                Console.WriteLine("Bad composition");
+                Console.WriteLine("Bad composition Statpipe B");
+                errors_B++;
             }
 
             Log_File.WriteLine();
 
-            if (Check_Composition(PO_A.Asgard_Comp) && Check_Composition(PO_A.Statpipe_Comp))
-            {
-
-            }
-
             PO_A.Read_From_IP21();
             PO_B.Read_From_IP21();
 
+            if (Molweight_Stdev(PO_A.Asgard_Molweight, GC_A_Molweight_Asgard) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad molweight Asgard A");
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_A.Statpipe_Molweight, GC_A_Molweight_Statpipe) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad molweight Statpipe A");
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_B.Asgard_Molweight, GC_B_Molweight_Asgard) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad molweight Asgard B");
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_B.Statpipe_Molweight, GC_B_Molweight_Statpipe) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad molweight Statpipe B");
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_A.Asgard_Transport_Flow, GC_A_Asgard_Flow) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad flow Asgard A");
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_A.Statpipe_Transport_Flow, GC_A_Statpipe_Flow) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad flow Statpipe A");
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_B.Asgard_Transport_Flow, GC_B_Asgard_Flow) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad flow Asgard B");
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_B.Statpipe_Transport_Flow, GC_B_Statpipe_Flow) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad flow Statpipe B");
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_A.Statpipe_Cross_Over_Flow, GC_A_Statpipe_Cross_Over_Flow) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad flow Statpipe cross over A");
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_B.Statpipe_Cross_Over_Flow, GC_B_Statpipe_Cross_Over_Flow) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad flow Statpipe cross over B");
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_A.Mix_To_T100_Flow, GC_A_Mix_To_T100_Flow) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad flow Mix to T100 flow A");
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_B.Mix_To_T100_Flow, GC_B_Mix_To_T100_Flow) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("Bad flow Mix to T100 flow B");
+                errors_B++;
+            }
+
+            if (errors_A < 1)
+            {
+                PO_A.Calculate();
+            }
+            else
+            {
+                Log_File.WriteLine("Errors in A: {0}", errors_A);
+            }
+
+            if (errors_B < 1)
+            {
+                PO_B.Calculate();
+            }
+            else
+            {
+                Log_File.WriteLine("Errors in B: {0}", errors_B);
+            }
+
             Log_File.Flush();
-            System.Threading.Thread.Sleep(180000);
+            double Sleep_Time = (Start_Time.AddMinutes(3) - DateTime.Now).TotalMilliseconds;
+            if (Sleep_Time > 1.0)
+            {
+                System.Threading.Thread.Sleep((int)Sleep_Time);
+            }
         }
     }
 
-    public static double Composition_Stdev(List<Component> PO, Queue GC_Comp, int memory=5)
+    public static double Molweight_Stdev(double MW, Queue GC_Comp, int memory = 5)
+    {
+        double Lowest_Stdev = double.MaxValue;
+        List<double> Values = new List<double>();
+        Dictionary<int, List<double>> CA = new Dictionary<int, List<double>>();
+
+        GC_Comp.Enqueue(MW);
+
+        while (GC_Comp.Count > memory)
+        {
+            GC_Comp.Dequeue();
+        }
+
+        if (GC_Comp.Count >= memory)
+        {
+            foreach (double v in GC_Comp)
+            {
+                Values.Add(v);
+            }
+            double stdev = CalculateStdDev(Values);
+            //Log_File.WriteLine(stdev);
+            if (stdev < Lowest_Stdev)
+            {
+                Lowest_Stdev = stdev;
+            }
+        }
+
+        return Lowest_Stdev;
+    }
+
+    public static double Composition_Stdev(List<Component> PO, Queue GC_Comp, int memory = 10)
     {
         double Lowest_Stdev = double.MaxValue;
         List<double> Values = new List<double>();
@@ -152,6 +285,7 @@ public static class Main_Class
         }
         return Lowest_Stdev;
     }
+
     public static bool Check_Composition(List<Component> Composition)
     {
         bool Return_Value = true;

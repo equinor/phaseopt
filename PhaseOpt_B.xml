@@ -14,7 +14,8 @@
       <component name="CO2"  id="1"  tag="31AI0157B_K" scale-factor="1.0"/>
       <component name="N2"   id="2"  tag="31AI0157B_J" scale-factor="1.0"/>
       <component name="CH4"  id="3"  tag="31AI0157B_A" scale-factor="1.0"/>
-      <component name="C2H6" id="4"  tag="31AI0157B_C" scale-factor="1.0"/>
+      <component name="C2H6" id="4"  tag="31AI0157B_B" scale-factor="1.0"/>
+      <component name="C3"   id="5"  tag="31AI0157B_C" scale-factor="1.0"/>
       <component name="iC4"  id="6"  tag="31AI0157B_D" scale-factor="1.0"/>
       <component name="nC4"  id="7"  tag="31AI0157B_E" scale-factor="1.0"/>
       <component name="iC5"  id="10" tag="31AI0157B_F" scale-factor="1.0"/>
