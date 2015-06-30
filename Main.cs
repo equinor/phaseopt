@@ -91,26 +91,22 @@ public static class Main_Class
             PO_A.Read_Composition();
             PO_B.Read_Composition();
 
-            if (Composition_Stdev(PO_A.Asgard_Comp, GC_A_Comp_Asgard) < Stdev_Low_Limit ||
-                Check_Composition(PO_A.Asgard_Comp) == false)
+            if (Check_Composition(PO_A.Asgard_Comp) == false)
             {
                 Console.WriteLine("Bad composition Asgard A");
                 errors_A++;
             }
-            if (Composition_Stdev(PO_A.Statpipe_Comp, GC_A_Comp_Statpipe) < Stdev_Low_Limit ||
-                Check_Composition(PO_A.Statpipe_Comp) == false)
+            if (Check_Composition(PO_A.Statpipe_Comp) == false)
             {
                 Console.WriteLine("Bad composition Statpipe A");
                 errors_A++;
             }
-            if (Composition_Stdev(PO_B.Asgard_Comp, GC_B_Comp_Asgard) < Stdev_Low_Limit ||
-                Check_Composition(PO_B.Asgard_Comp) == false)
+            if (Check_Composition(PO_B.Asgard_Comp) == false)
             {
                 Console.WriteLine("Bad composition Asgard B");
                 errors_B++;
             }
-            if (Composition_Stdev(PO_B.Statpipe_Comp, GC_B_Comp_Statpipe) < Stdev_Low_Limit ||
-                Check_Composition(PO_B.Statpipe_Comp) == false)
+            if (Check_Composition(PO_B.Statpipe_Comp) == false)
             {
                 Console.WriteLine("Bad composition Statpipe B");
                 errors_B++;
@@ -182,9 +178,52 @@ public static class Main_Class
                 errors_B++;
             }
 
+            PO_A.Read_Current_Kalsto_Composition();
+            PO_B.Read_Current_Kalsto_Composition();
+
+            if (Composition_Stdev(PO_A.Composition_Values_Statpipe_Current, GC_A_Comp_Statpipe) > Stdev_Low_Limit &&
+                Check_Composition(PO_A.Composition_Values_Statpipe_Current))
+            {
+                PO_A.Calculate_Kalsto_Statpipe();
+            }
+            else
+            {
+                Log_File.WriteLine("{0}: Errors in Statpipe current composition A", DateTime.Now);
+            }
+
+            if (Composition_Stdev(PO_A.Composition_Values_Asgard_Current, GC_A_Comp_Asgard) > Stdev_Low_Limit &&
+                Check_Composition(PO_A.Composition_Values_Asgard_Current))
+            {
+                PO_A.Calculate_Kalsto_Asgard();
+            }
+            else
+            {
+                Log_File.WriteLine("{0}: Errors in Asgard current composition A", DateTime.Now);
+            }
+
+            if (Composition_Stdev(PO_B.Composition_Values_Statpipe_Current, GC_B_Comp_Statpipe) > Stdev_Low_Limit &&
+                Check_Composition(PO_B.Composition_Values_Statpipe_Current))
+            {
+                PO_B.Calculate_Kalsto_Statpipe();
+            }
+            else
+            {
+                Log_File.WriteLine("{0}: Errors in Statpipe current composition B", DateTime.Now);
+            }
+
+            if (Composition_Stdev(PO_B.Composition_Values_Asgard_Current, GC_B_Comp_Asgard) > Stdev_Low_Limit &&
+                Check_Composition(PO_B.Composition_Values_Asgard_Current))
+            {
+                PO_B.Calculate_Kalsto_Asgard();
+            }
+            else
+            {
+                Log_File.WriteLine("{0}: Errors in Asgard current composition B", DateTime.Now);
+            }
+
             if (errors_A < 1)
             {
-                PO_A.Calculate();
+                PO_A.Calculate_Karsto();
             }
             else
             {
@@ -193,7 +232,7 @@ public static class Main_Class
 
             if (errors_B < 1)
             {
-                PO_B.Calculate();
+                PO_B.Calculate_Karsto();
             }
             else
             {
@@ -239,15 +278,15 @@ public static class Main_Class
         return Lowest_Stdev;
     }
 
-    public static double Composition_Stdev(List<Component> PO, Queue GC_Comp, int memory = 10)
+    public static double Composition_Stdev(List<double> PO, Queue GC_Comp, int memory = 10)
     {
         double Lowest_Stdev = double.MaxValue;
         List<double> Values = new List<double>();
         Dictionary<int, List<double>> CA = new Dictionary<int, List<double>>();
 
-        foreach (Component c in PO)
+        foreach (double v in PO)
         {
-            Values.Add(c.Value);
+            Values.Add(v);
         }
         GC_Comp.Enqueue(Values.ToArray());
 
@@ -301,6 +340,32 @@ public static class Main_Class
         {
             Sum += c.Value;
             if (c.Value < Lower_Limit)
+                Below++;
+        }
+
+        if (Math.Abs(Expected_Sum - Sum) > Sum_Deviation_Limit)
+            Return_Value = false;
+        if (Below > Number_Below_Lower_Limit)
+            Return_Value = false;
+
+        return Return_Value;
+    }
+
+    public static bool Check_Composition(List<double> Composition)
+    {
+        bool Return_Value = true;
+        double Expected_Sum = 100.0;
+        double Sum_Deviation_Limit = 1.0;
+        double Sum = 0.0;
+
+        double Lower_Limit = 10E-9;
+        int Number_Below_Lower_Limit = 0; // Composition.Count * 25 / 100;
+        int Below = 0;
+
+        foreach (double v in Composition)
+        {
+            Sum += v;
+            if (v < Lower_Limit)
                 Below++;
         }
 

@@ -38,6 +38,8 @@ public class PhaseOpt_KAR
     private Hashtable Comp_Values;
 
     public List<Component> Asgard_Comp = new List<Component>();
+    public List<double> Composition_Values_Asgard_Current = new List<double>();
+    private List<int> Composition_IDs_Asgard = new List<int>();
     private List<string> Asgard_Velocity_Tags = new List<string>();
     private List<string> Asgard_Mass_Flow_Tags = new List<string>();
     public double Asgard_Transport_Flow;
@@ -48,6 +50,8 @@ public class PhaseOpt_KAR
     private List<string> Asgard_Cricondenbar_Tags = new List<string>();
 
     public List<Component> Statpipe_Comp = new List<Component>();
+    public List<double> Composition_Values_Statpipe_Current = new List<double>();
+    private List<int> Composition_IDs_Statpipe = new List<int>();
     private List<string> Statpipe_Velocity_Tags = new List<string>();
     private List<string> Statpipe_Mass_Flow_Tags = new List<string>();
     public double Statpipe_Transport_Flow;
@@ -286,7 +290,7 @@ public class PhaseOpt_KAR
         Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
     }
 
-    public void Calculate()
+    public void Calculate_Karsto()
     {
         List<Component> Asgard_Component_Flow = new List<Component>();
         double Asgard_Component_Flow_Sum = 0.0;
@@ -304,7 +308,6 @@ public class PhaseOpt_KAR
             Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * c.Value / 100.0;
         }
 
-        //List<double> Mix_To_T410 = new List<double>();
         foreach (Component c in Mix_To_T410_Comp)
         {
             if (Asgard_Component_Flow_Sum + Statpipe_Component_Flow_Sum > 0.0)
@@ -331,7 +334,6 @@ public class PhaseOpt_KAR
             DIXO_Component_Flow_Sum += Mix_To_T100_Mol_Flow * c.Value / 100.0;
         }
 
-        //List<double> Mix_To_T100 = new List<double>();
         foreach (Component c in Mix_To_T100_Comp)
         {
             if (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum > 0.0)
@@ -352,92 +354,8 @@ public class PhaseOpt_KAR
             Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
-        // Åsgard cricondenbar
         List<int> Composition_IDs = new List<int>();
         List<double> Composition_Values = new List<double>();
-        Tags.Clear();
-        Comp_Values.Clear();
-        foreach (Component c in Asgard_Comp)
-        {
-            Tags.Add(c.Tag);
-        }
-        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
-        Log_File.WriteLine("Åsgard:");
-        string Tag_Name = "";
-        try
-        {
-            foreach (Component c in Asgard_Comp)
-            {
-                Tag_Name = c.Tag;
-                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
-                Composition_IDs.Add(c.ID);
-                Composition_Values.Add(c.Value);
-                Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
-            }
-        }
-        catch
-        {
-            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
-            Log_File.Flush();
-            //Environment.Exit(13);
-        }
-
-        Log_File.Flush();
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
-        for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
-        {
-            if (!Composition_Result[i].Equals(double.NaN))
-            {
-                Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
-            }
-            Log_File.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
-#if DEBUG
-            Console.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
-#endif
-        }
-
-        // Statpipe cricondenbar
-        Composition_IDs.Clear();
-        Composition_Values.Clear();
-        Tags.Clear();
-        Comp_Values.Clear();
-        foreach (Component c in Statpipe_Comp)
-        {
-            Tags.Add(c.Tag);
-        }
-        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
-        Log_File.WriteLine("Statpipe:");
-        try
-        {
-            foreach (Component c in Statpipe_Comp)
-            {
-                Tag_Name = c.Tag;
-                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
-                Composition_IDs.Add(c.ID);
-                Composition_Values.Add(c.Value);
-                Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
-            }
-        }
-        catch
-        {
-            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
-            Log_File.Flush();
-            //Environment.Exit(13);
-        }
-
-        Log_File.Flush();
-        Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
-        for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
-        {
-            if (!Composition_Result[i].Equals(double.NaN))
-            {
-                Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
-            }
-            Log_File.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
-#if DEBUG
-            Console.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
-#endif
-        }
 
         // Mix to T100 cricondenbar
         Composition_IDs.Clear();
@@ -451,7 +369,7 @@ public class PhaseOpt_KAR
         }
 
         Log_File.Flush();
-        Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
         {
             if (!Composition_Result[i].Equals(double.NaN))
@@ -493,6 +411,102 @@ public class PhaseOpt_KAR
         //Log_File.Close();
     }
 
+    public void Read_Current_Kalsto_Composition()
+    {
+        // Åsgard
+        Composition_Values_Asgard_Current.Clear();
+        Composition_IDs_Asgard.Clear();
+        Tags.Clear();
+        Comp_Values.Clear();
+        foreach (Component c in Asgard_Comp)
+        {
+            Tags.Add(c.Tag);
+        }
+        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
+        Log_File.WriteLine("Åsgard:");
+        string Tag_Name = "";
+        try
+        {
+            foreach (Component c in Asgard_Comp)
+            {
+                Tag_Name = c.Tag;
+                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+                Composition_IDs_Asgard.Add(c.ID);
+                Composition_Values_Asgard_Current.Add(c.Value);
+                Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+            }
+        }
+        catch
+        {
+            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
+            Log_File.Flush();
+            //Environment.Exit(13);
+        }
+
+        // Statpipe
+        Composition_Values_Statpipe_Current.Clear();
+        Composition_IDs_Statpipe.Clear();
+        Tags.Clear();
+        Comp_Values.Clear();
+        foreach (Component c in Statpipe_Comp)
+        {
+            Tags.Add(c.Tag);
+        }
+        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
+        Log_File.WriteLine("Statpipe:");
+        try
+        {
+            foreach (Component c in Statpipe_Comp)
+            {
+                Tag_Name = c.Tag;
+                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+                Composition_IDs_Statpipe.Add(c.ID);
+                Composition_Values_Statpipe_Current.Add(c.Value);
+                Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+            }
+        }
+        catch
+        {
+            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
+            Log_File.Flush();
+            //Environment.Exit(13);
+        }
+
+        Log_File.Flush();
+    }
+
+    public void Calculate_Kalsto_Asgard()
+    {
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Asgard.ToArray(), Composition_Values_Asgard_Current.ToArray());
+        for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
+        {
+            if (!Composition_Result[i].Equals(double.NaN))
+            {
+                Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+            }
+            Log_File.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+#endif
+        }
+    }
+
+    public void Calculate_Kalsto_Statpipe()
+    {
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray());
+        for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
+        {
+            if (!Composition_Result[i].Equals(double.NaN))
+            {
+                Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+            }
+            Log_File.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+#endif
+        }
+
+    }
     public void Read_Config(string Config_File)
     {
         XmlReaderSettings settings = new XmlReaderSettings();
