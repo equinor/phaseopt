@@ -119,62 +119,60 @@ public static class Main_Class
 
             if (Molweight_Stdev(PO_A.Asgard_Molweight, GC_A_Molweight_Asgard) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad molweight Asgard A");
+                Console.WriteLine("{0}: Bad molweight Asgard A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_A.Statpipe_Molweight, GC_A_Molweight_Statpipe) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad molweight Statpipe A");
+                Console.WriteLine("{0}: Bad molweight Statpipe A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_B.Asgard_Molweight, GC_B_Molweight_Asgard) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad molweight Asgard B");
+                Console.WriteLine("{0}: Bad molweight Asgard B", DateTime.Now);
                 errors_B++;
             }
             if (Molweight_Stdev(PO_B.Statpipe_Molweight, GC_B_Molweight_Statpipe) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad molweight Statpipe B");
+                Console.WriteLine("{0}: Bad molweight Statpipe B", DateTime.Now);
                 errors_B++;
             }
             if (Molweight_Stdev(PO_A.Asgard_Transport_Flow, GC_A_Asgard_Flow) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad flow Asgard A");
+                Console.WriteLine("{0}: Bad flow Asgard A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_A.Statpipe_Transport_Flow, GC_A_Statpipe_Flow) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad flow Statpipe A");
+                Console.WriteLine("{0}: Bad flow Statpipe A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_B.Asgard_Transport_Flow, GC_B_Asgard_Flow) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad flow Asgard B");
+                Console.WriteLine("{0}: Bad flow Asgard B", DateTime.Now);
                 errors_B++;
             }
             if (Molweight_Stdev(PO_B.Statpipe_Transport_Flow, GC_B_Statpipe_Flow) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad flow Statpipe B");
+                Console.WriteLine("{0}: Bad flow Statpipe B", DateTime.Now);
                 errors_B++;
             }
             if (Molweight_Stdev(PO_A.Statpipe_Cross_Over_Flow, GC_A_Statpipe_Cross_Over_Flow) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad flow Statpipe cross over A");
-                errors_A++;
+                Console.WriteLine("{0}: Bad flow Statpipe cross over A", DateTime.Now);
             }
             if (Molweight_Stdev(PO_B.Statpipe_Cross_Over_Flow, GC_B_Statpipe_Cross_Over_Flow) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad flow Statpipe cross over B");
-                errors_B++;
+                Console.WriteLine("{0}: Bad flow Statpipe cross over B", DateTime.Now);
             }
             if (Molweight_Stdev(PO_A.Mix_To_T100_Flow, GC_A_Mix_To_T100_Flow) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad flow Mix to T100 flow A");
+                Console.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_B.Mix_To_T100_Flow, GC_B_Mix_To_T100_Flow) < Stdev_Low_Limit)
             {
-                Console.WriteLine("Bad flow Mix to T100 flow B");
+                Console.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now);
                 errors_B++;
             }
 
