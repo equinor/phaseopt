@@ -135,7 +135,13 @@ public class PhaseOpt_KAR
         if (Statpipe_Average_Velocity < Velocity_Threshold && Asgard_Average_Velocity > Velocity_Threshold)
             Statpipe_Average_Velocity = Asgard_Average_Velocity;
         if (Asgard_Average_Velocity < Velocity_Threshold && Statpipe_Average_Velocity < Velocity_Threshold)
+        {
+            Log_File.WriteLine("Velocity below threshold 0.1 m/s");
+#if DEBUG
+            Console.WriteLine("Velocity below threshold 0.1 m/s");
+#endif
             return;
+        }
         Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
         Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
         Log_File.WriteLine("Åsgard delay: {0}", Asgard_Pipe_Length / Asgard_Average_Velocity);
