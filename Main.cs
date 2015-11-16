@@ -53,6 +53,12 @@ public static class Main_Class
             return;
         }
 
+        System.IO.StreamWriter Log_File;
+        Log_File = System.IO.File.AppendText(@"stdev.log");
+
+        Log_File.WriteLine("{0}: PhaseOpt startup", DateTime.Now);
+        Log_File.Flush();
+
         PhaseOpt_KAR PO_A = new PhaseOpt_KAR(@"PhaseOpt_Kar_A.log");
         PhaseOpt_KAR PO_B = new PhaseOpt_KAR(@"PhaseOpt_Kar_B.log");
 
@@ -78,9 +84,6 @@ public static class Main_Class
 
         //int memory = 5;
 
-        System.IO.StreamWriter Log_File;
-        Log_File = System.IO.File.AppendText(@"stdev.log");
-
         while (true)
         {
             DateTime Start_Time = DateTime.Now;
@@ -89,100 +92,151 @@ public static class Main_Class
             int errors_B = 0;
 
             PO_A.Read_Composition();
+            Log_File.WriteLine("{0}: Read composition A", DateTime.Now);
+            Log_File.Flush();
             PO_B.Read_Composition();
+            Log_File.WriteLine("{0}: Read composition B", DateTime.Now);
+            Log_File.Flush();
 
             if (Check_Composition(PO_A.Asgard_Comp) == false)
             {
                 Console.WriteLine("Bad composition Asgard A");
+                Log_File.WriteLine("{0}: Bad composition Asgard A", DateTime.Now);
+                Log_File.Flush();
                 errors_A++;
             }
             if (Check_Composition(PO_A.Statpipe_Comp) == false)
             {
                 Console.WriteLine("Bad composition Statpipe A");
+                Log_File.WriteLine("{0}: Bad composition Statpipe A", DateTime.Now);
+                Log_File.Flush();
                 errors_A++;
             }
             if (Check_Composition(PO_B.Asgard_Comp) == false)
             {
                 Console.WriteLine("Bad composition Asgard B");
+                Log_File.WriteLine("{0}: Bad composition Asgard B", DateTime.Now);
+                Log_File.Flush();
                 errors_B++;
             }
             if (Check_Composition(PO_B.Statpipe_Comp) == false)
             {
                 Console.WriteLine("Bad composition Statpipe B");
+                Log_File.WriteLine("{0}: Bad composition Statpipe B", DateTime.Now);
+                Log_File.Flush();
                 errors_B++;
             }
 
-            Log_File.WriteLine();
-
             PO_A.Read_From_IP21();
+            Log_File.WriteLine("{0}: Read from IP21 A", DateTime.Now);
+            Log_File.Flush();
             PO_B.Read_From_IP21();
+            Log_File.WriteLine("{0}: Read from IP21 B", DateTime.Now);
 
             if (Molweight_Stdev(PO_A.Asgard_Molweight, GC_A_Molweight_Asgard) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad molweight Asgard A", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad molweight Asgard A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_A.Statpipe_Molweight, GC_A_Molweight_Statpipe) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad molweight Statpipe A", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad molweight Statpipe A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_B.Asgard_Molweight, GC_B_Molweight_Asgard) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad molweight Asgard B", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad molweight Asgard B", DateTime.Now);
                 errors_B++;
             }
             if (Molweight_Stdev(PO_B.Statpipe_Molweight, GC_B_Molweight_Statpipe) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad molweight Statpipe B", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad molweight Statpipe B", DateTime.Now);
                 errors_B++;
             }
             if (Molweight_Stdev(PO_A.Asgard_Transport_Flow, GC_A_Asgard_Flow) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad flow Asgard A", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad flow Asgard A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_A.Statpipe_Transport_Flow, GC_A_Statpipe_Flow) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad flow Statpipe A", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad flow Statpipe A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_B.Asgard_Transport_Flow, GC_B_Asgard_Flow) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad flow Asgard B", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad flow Asgard B", DateTime.Now);
                 errors_B++;
             }
             if (Molweight_Stdev(PO_B.Statpipe_Transport_Flow, GC_B_Statpipe_Flow) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad flow Statpipe B", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad flow Statpipe B", DateTime.Now);
                 errors_B++;
             }
             if (Molweight_Stdev(PO_A.Statpipe_Cross_Over_Flow, GC_A_Statpipe_Cross_Over_Flow) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad flow Statpipe cross over A", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad flow Statpipe cross over A", DateTime.Now);
             }
             if (Molweight_Stdev(PO_B.Statpipe_Cross_Over_Flow, GC_B_Statpipe_Cross_Over_Flow) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad flow Statpipe cross over B", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad flow Statpipe cross over B", DateTime.Now);
             }
             if (Molweight_Stdev(PO_A.Mix_To_T100_Flow, GC_A_Mix_To_T100_Flow) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now);
                 errors_A++;
             }
             if (Molweight_Stdev(PO_B.Mix_To_T100_Flow, GC_B_Mix_To_T100_Flow) < Stdev_Low_Limit)
             {
                 Console.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now);
+                Log_File.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now);
                 errors_B++;
             }
 
+
+            if (errors_A < 1)
+            {
+                PO_A.Calculate_Karsto();
+                Log_File.WriteLine("{0}: Calculate CCB at Kårstø A", DateTime.Now);
+            }
+            else
+            {
+                Log_File.WriteLine("Errors in A: {0}", errors_A);
+                Log_File.WriteLine("{0}: Errors in A: {1}", DateTime.Now, errors_A);
+            }
+
+            if (errors_B < 1)
+            {
+                PO_B.Calculate_Karsto();
+                Log_File.WriteLine("{0}: Calculate CCB at Kårstø B", DateTime.Now);
+            }
+            else
+            {
+                Log_File.WriteLine("Errors in B: {0}", errors_B);
+                Log_File.WriteLine("{0}: Errors in B: {1}", DateTime.Now, errors_B);
+            }
+
             PO_A.Read_Current_Kalsto_Composition();
+            Log_File.WriteLine("{0}: Read current composition from IP21 A", DateTime.Now);
             PO_B.Read_Current_Kalsto_Composition();
+            Log_File.WriteLine("{0}: Read current composition from IP21 B", DateTime.Now);
 
             if (Composition_Stdev(PO_A.Composition_Values_Statpipe_Current, GC_A_Comp_Statpipe) > Stdev_Low_Limit &&
                 Check_Composition(PO_A.Composition_Values_Statpipe_Current))
             {
                 PO_A.Calculate_Kalsto_Statpipe();
+                Log_File.WriteLine("{0}: Calculate Statpipe stream at Kalstø A", DateTime.Now);
             }
             else
             {
@@ -193,6 +247,7 @@ public static class Main_Class
                 Check_Composition(PO_A.Composition_Values_Asgard_Current))
             {
                 PO_A.Calculate_Kalsto_Asgard();
+                Log_File.WriteLine("{0}: Calculate Åsgard stream at Kalstø A", DateTime.Now);
             }
             else
             {
@@ -203,6 +258,7 @@ public static class Main_Class
                 Check_Composition(PO_B.Composition_Values_Statpipe_Current))
             {
                 PO_B.Calculate_Kalsto_Statpipe();
+                Log_File.WriteLine("{0}: Calculate Statpipe stream at Kalstø B", DateTime.Now);
             }
             else
             {
@@ -213,29 +269,13 @@ public static class Main_Class
                 Check_Composition(PO_B.Composition_Values_Asgard_Current))
             {
                 PO_B.Calculate_Kalsto_Asgard();
+                Log_File.WriteLine("{0}: Calculate Åsgard stream at Kalstø B", DateTime.Now);
             }
             else
             {
                 Log_File.WriteLine("{0}: Errors in Asgard current composition B", DateTime.Now);
             }
 
-            if (errors_A < 1)
-            {
-                PO_A.Calculate_Karsto();
-            }
-            else
-            {
-                Log_File.WriteLine("Errors in A: {0}", errors_A);
-            }
-
-            if (errors_B < 1)
-            {
-                PO_B.Calculate_Karsto();
-            }
-            else
-            {
-                Log_File.WriteLine("Errors in B: {0}", errors_B);
-            }
 
             Log_File.Flush();
             double Sleep_Time = (Start_Time.AddMinutes(3) - DateTime.Now).TotalMilliseconds;
