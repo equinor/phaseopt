@@ -54,7 +54,7 @@ public static class Main_Class
         }
 
         System.IO.StreamWriter Log_File;
-        Log_File = System.IO.File.AppendText(@"stdev.log");
+        Log_File = System.IO.File.AppendText(@"PhaseOpt_Kar_Main.log");
 
         Log_File.WriteLine("{0}: PhaseOpt startup", DateTime.Now); Log_File.Flush();
 
