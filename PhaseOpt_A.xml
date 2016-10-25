@@ -11,6 +11,9 @@
 
   <streams>
     <stream name="statpipe" type="input">
+      <status name="Application 1" tag="31XI0157_21"/>
+      <status name="Application 3" tag="31XI0157_23"/>
+
       <component name="CO2"  id="1"  tag="31AI0157A_K" scale-factor="1.0"/>
       <component name="N2"   id="2"  tag="31AI0157A_J" scale-factor="1.0"/>
       <component name="CH4"  id="3"  tag="31AI0157A_A" scale-factor="1.0"/>
@@ -45,6 +48,9 @@
     </stream>
 
     <stream name="asgard" type="input">
+      <status name="Application 1" tag="31XI0157_21"/>
+      <status name="Application 3" tag="31XI0157_23"/>
+
       <component name="CO2"  id="1"  tag="31AI0161B_K" scale-factor="1.0"/>
       <component name="N2"   id="2"  tag="31AI0161B_J" scale-factor="1.0"/>
       <component name="CH4"  id="3"  tag="31AI0161B_A" scale-factor="1.0"/>

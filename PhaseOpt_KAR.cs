@@ -48,6 +48,7 @@ public class PhaseOpt_KAR
     public double Asgard_Molweight;
     private double Asgard_Mol_Flow;
     private List<string> Asgard_Cricondenbar_Tags = new List<string>();
+    private List<string> Asgard_Status_Tags = new List<string>();
 
     public List<Component> Statpipe_Comp = new List<Component>();
     public List<double> Composition_Values_Statpipe_Current = new List<double>();
@@ -60,6 +61,7 @@ public class PhaseOpt_KAR
     public double Statpipe_Molweight;
     private double Statpipe_Mol_Flow;
     private List<string> Statpipe_Cricondenbar_Tags = new List<string>();
+    private List<string> Statpipe_Status_Tags = new List<string>();
     public double Statpipe_Cross_Over_Flow;
     private double Statpipe_Cross_Over_Mol_Flow;
 
@@ -88,7 +90,7 @@ public class PhaseOpt_KAR
         Log_File = System.IO.File.AppendText(Log_File_Name);
     }
 
-    public void Read_Composition()
+    public bool Read_Composition()
     {
         // Read velocities
         // There might not be values in IP21 at Now, so we fetch slightly older values.
@@ -140,7 +142,7 @@ public class PhaseOpt_KAR
 #if DEBUG
             Console.WriteLine("Velocity below threshold 0.1 m/s");
 #endif
-            return;
+            return false;
         }
         Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard_Pipe_Length / Asgard_Average_Velocity));
         Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe_Pipe_Length / Statpipe_Average_Velocity));
@@ -150,6 +152,18 @@ public class PhaseOpt_KAR
         Console.WriteLine("Åsgard delay: {0}", Asgard_Pipe_Length / Asgard_Average_Velocity);
         Console.WriteLine("Statpipe delay: {0}", Statpipe_Pipe_Length / Statpipe_Average_Velocity);
 #endif
+
+        // Read GC status
+        Hashtable Asgard_Status = Read_Values(Asgard_Status_Tags.ToArray(), Asgard_Timestamp);
+        foreach (DictionaryEntry Status in Asgard_Status)
+        {
+            if ((float)Status.Value < 999.9)
+            {
+                Log_File.WriteLine("GC bad status");
+                return false;
+            }
+        }
+
 
         // Read composition
         Tags = new List<string>();
@@ -195,6 +209,7 @@ public class PhaseOpt_KAR
             Log_File.Flush();
             //Environment.Exit(13);
         }
+        return true;
     }
 
     public void Read_From_IP21()
@@ -566,6 +581,10 @@ public class PhaseOpt_KAR
                             {
                                 if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "stream")
                                     break;
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "status")
+                                {
+                                    Asgard_Status_Tags.Add(reader.GetAttribute("tag"));
+                                }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
                                     Asgard_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
@@ -611,6 +630,10 @@ public class PhaseOpt_KAR
                             {
                                 if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "stream")
                                     break;
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "status")
+                                {
+                                    Statpipe_Status_Tags.Add(reader.GetAttribute("tag"));
+                                }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
                                     Statpipe_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
