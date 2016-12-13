@@ -80,6 +80,15 @@ public static class Main_Class
         Queue GC_B_Statpipe_Cross_Over_Flow = new Queue();
         Queue GC_A_Mix_To_T100_Flow = new Queue();
         Queue GC_B_Mix_To_T100_Flow = new Queue();
+        Queue Velocity_1_A_Asgard = new Queue();
+        Queue Velocity_2_A_Asgard = new Queue();
+        Queue Velocity_1_B_Asgard = new Queue();
+        Queue Velocity_2_B_Asgard = new Queue();
+        Queue Velocity_1_A_Statpipe = new Queue();
+        Queue Velocity_2_A_Statpipe = new Queue();
+        Queue Velocity_1_B_Statpipe = new Queue();
+        Queue Velocity_2_B_Statpipe = new Queue();
+
 
         //int memory = 5;
 
@@ -193,6 +202,54 @@ public static class Main_Class
             {
                 Console.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                 Log_File.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_A.Asgard_Velocity[0], Velocity_1_A_Asgard, 30) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("{0}: Bad gas velocity Åsgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                Log_File.WriteLine("{0}: Bad gas velocity Åsgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_B.Asgard_Velocity[0], Velocity_1_B_Asgard, 30) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("{0}: Bad gas velocity Åsgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                Log_File.WriteLine("{0}: Bad gas velocity Åsgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_A.Asgard_Velocity[1], Velocity_2_A_Asgard, 30) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("{0}: Bad gas velocity Åsgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                Log_File.WriteLine("{0}: Bad gas velocity Åsgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_B.Asgard_Velocity[1], Velocity_2_B_Asgard, 30) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("{0}: Bad gas velocity Åsgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                Log_File.WriteLine("{0}: Bad gas velocity Åsgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_A.Statpipe_Velocity[0], Velocity_1_A_Statpipe, 30) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("{0}: Bad gas velocity Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                Log_File.WriteLine("{0}: Bad gas velocity Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_B.Statpipe_Velocity[0], Velocity_1_B_Statpipe, 30) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("{0}: Bad gas velocity Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                Log_File.WriteLine("{0}: Bad gas velocity Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                errors_B++;
+            }
+            if (Molweight_Stdev(PO_A.Statpipe_Velocity[1], Velocity_2_A_Statpipe, 30) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("{0}: Bad gas velocity Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                Log_File.WriteLine("{0}: Bad gas velocity Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                errors_A++;
+            }
+            if (Molweight_Stdev(PO_B.Statpipe_Velocity[1], Velocity_2_B_Statpipe, 30) < Stdev_Low_Limit)
+            {
+                Console.WriteLine("{0}: Bad gas velocity Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                Log_File.WriteLine("{0}: Bad gas velocity Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 errors_B++;
             }
 

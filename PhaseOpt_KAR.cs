@@ -84,6 +84,8 @@ public class PhaseOpt_KAR
     private DateTime Timestamp;
     private DateTime Asgard_Timestamp;
     private DateTime Statpipe_Timestamp;
+    public List<double> Asgard_Velocity = new List<double>();
+    public List<double> Statpipe_Velocity = new List<double>();
 
     public PhaseOpt_KAR(string Log_File_Name)
     {
@@ -103,6 +105,8 @@ public class PhaseOpt_KAR
         {
             Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
                                                 (float)A_Velocity[Asgard_Velocity_Tags[1]]) / 2.0;
+            Asgard_Velocity.Add((float)A_Velocity[Asgard_Velocity_Tags[0]]);
+            Asgard_Velocity.Add((float)A_Velocity[Asgard_Velocity_Tags[1]]);
             Log_File.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
@@ -120,6 +124,8 @@ public class PhaseOpt_KAR
         {
             Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
                                                 (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
+            Statpipe_Velocity.Add((float)S_Velocity[Statpipe_Velocity_Tags[0]]);
+            Statpipe_Velocity.Add((float)S_Velocity[Statpipe_Velocity_Tags[1]]);
             Log_File.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
