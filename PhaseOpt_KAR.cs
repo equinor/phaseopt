@@ -440,11 +440,13 @@ public class PhaseOpt_KAR
 
     public void Read_Current_Kalsto_Composition()
     {
+        if (Tags == null) Tags = new List<string>();
+
         // Åsgard
         Composition_Values_Asgard_Current.Clear();
         Composition_IDs_Asgard.Clear();
         Tags.Clear();
-        Comp_Values.Clear();
+        if (Comp_Values != null) Comp_Values.Clear();
         foreach (Component c in Asgard_Comp)
         {
             Tags.Add(c.Tag);
@@ -814,6 +816,23 @@ WHERE
 
         Cmd.CommandText =
 @"UPDATE ip_analogdef
+  SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
+  WHERE name = '" + Tag_Name + @"'";
+
+        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
+        Cmd.Connection.Close();
+    }
+
+    public void Write_Value(string Tag_Name, int Value, string Quality = "Good")
+    {
+        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
+
+        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
+        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
+        Cmd.Connection.Open();
+
+        Cmd.CommandText =
+@"UPDATE ip_discretedef
   SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
