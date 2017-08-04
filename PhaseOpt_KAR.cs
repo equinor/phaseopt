@@ -90,6 +90,8 @@ public class PhaseOpt_KAR
     public PhaseOpt_KAR(string Log_File_Name)
     {
         Log_File = System.IO.File.AppendText(Log_File_Name);
+        Asgard_Velocity.Add(0.0); Asgard_Velocity.Add(0.0);
+        Statpipe_Velocity.Add(0.0); Statpipe_Velocity.Add(0.0);
     }
 
     public bool Read_Composition()
@@ -105,8 +107,8 @@ public class PhaseOpt_KAR
         {
             Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
                                                 (float)A_Velocity[Asgard_Velocity_Tags[1]]) / 2.0;
-            Asgard_Velocity.Add((float)A_Velocity[Asgard_Velocity_Tags[0]]);
-            Asgard_Velocity.Add((float)A_Velocity[Asgard_Velocity_Tags[1]]);
+            Asgard_Velocity[0] = (float)A_Velocity[Asgard_Velocity_Tags[0]];
+            Asgard_Velocity[1] = (float)A_Velocity[Asgard_Velocity_Tags[1]];
             Log_File.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
@@ -124,8 +126,8 @@ public class PhaseOpt_KAR
         {
             Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
                                                 (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
-            Statpipe_Velocity.Add((float)S_Velocity[Statpipe_Velocity_Tags[0]]);
-            Statpipe_Velocity.Add((float)S_Velocity[Statpipe_Velocity_Tags[1]]);
+            Statpipe_Velocity[0] = (float)S_Velocity[Statpipe_Velocity_Tags[0]];
+            Statpipe_Velocity[1] = (float)S_Velocity[Statpipe_Velocity_Tags[1]];
             Log_File.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
@@ -834,6 +836,23 @@ WHERE
         Cmd.CommandText =
 @"UPDATE ip_discretedef
   SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
+  WHERE name = '" + Tag_Name + @"'";
+
+        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
+        Cmd.Connection.Close();
+    }
+
+    public void Write_Value(string Tag_Name, string Value, string Quality = "Good")
+    {
+        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
+
+        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
+        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
+        Cmd.Connection.Open();
+
+        Cmd.CommandText =
+@"UPDATE ip_textdef
+  SET ip_input_value = '" + Value + @"', ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
         System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();

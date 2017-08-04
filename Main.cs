@@ -335,6 +335,8 @@ public static class Main_Class
                 Log_File.WriteLine("{0}: Errors in Asgard current composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
             }
 
+            PO_A.Write_Value("PhaseOpt.ST", Start_Time.ToString("yyy-MM-dd HH:mm:ss"));
+
             double Sleep_Time = (Start_Time.AddMinutes(3) - DateTime.Now).TotalMilliseconds;
             if (Sleep_Time > 1.0)
             {
