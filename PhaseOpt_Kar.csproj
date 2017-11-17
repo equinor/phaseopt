@@ -21,8 +21,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Console</RootNamespace>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
-    <StartupObject>
-    </StartupObject>
+    <StartupObject>Test_Space.Testing</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -114,10 +113,12 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IP21_Comm.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="PhaseOpt.cs" />
     <Compile Include="PhaseOpt_KAR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Testing.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
