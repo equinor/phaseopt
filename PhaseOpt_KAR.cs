@@ -39,7 +39,7 @@ public class PhaseOpt_KAR
 
     public List<Component> Asgard_Comp = new List<Component>();
     public List<double> Composition_Values_Asgard_Current = new List<double>();
-    private List<int> Composition_IDs_Asgard = new List<int>();
+    private List<Int32> Composition_IDs_Asgard = new List<Int32>();
     private List<string> Asgard_Velocity_Tags = new List<string>();
     private List<string> Asgard_Mass_Flow_Tags = new List<string>();
     public double Asgard_Transport_Flow;
@@ -52,7 +52,7 @@ public class PhaseOpt_KAR
 
     public List<Component> Statpipe_Comp = new List<Component>();
     public List<double> Composition_Values_Statpipe_Current = new List<double>();
-    private List<int> Composition_IDs_Statpipe = new List<int>();
+    private List<Int32> Composition_IDs_Statpipe = new List<Int32>();
     private List<string> Statpipe_Velocity_Tags = new List<string>();
     private List<string> Statpipe_Mass_Flow_Tags = new List<string>();
     public double Statpipe_Transport_Flow;
@@ -383,7 +383,7 @@ public class PhaseOpt_KAR
             Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
-        List<int> Composition_IDs = new List<int>();
+        List<Int32> Composition_IDs = new List<Int32>();
         List<double> Composition_Values = new List<double>();
 
         // Mix to T100 cricondenbar

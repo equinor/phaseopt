@@ -30,7 +30,7 @@ namespace PhaseOpt
         /// inside the phase envelope, for the algorithm to converge.
         /// </para>
         /// </remarks>
-        [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "ccd", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "ccd", CallingConvention = CallingConvention.Winapi)]
         private static extern void Criconden(ref Int32 IND, ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P);
 
@@ -58,7 +58,7 @@ namespace PhaseOpt
         /// After program's execution, the routine returns the calculated value of T.
         /// </para>
         /// </remarks>
-        [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "dewt", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "dewt", CallingConvention = CallingConvention.Winapi)]
         private static extern void Dewt(ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P, double[] XY);
 
@@ -90,7 +90,7 @@ namespace PhaseOpt
         /// If P2 is equal to 0, no second dew point pressure is present.
         /// </para>
         /// </remarks>
-        [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "dewp", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "dewp", CallingConvention = CallingConvention.Winapi)]
         private static extern void Dewp(ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P1, double[] XY1, ref double P2, double[] XY2);
 
@@ -109,10 +109,31 @@ namespace PhaseOpt
         /// <param name="CF2">Compressibility factors [-], DOUBLE PRECISION, Output.</param>
         /// <param name="XY1">Phase composition of phase [in mol/mol], DOUBLE PRECISION array of 50 elements, Output.</param>
         /// <param name="XY2">Phase composition of phase [in mol/mol], DOUBLE PRECISION array of 50 elements, Output.</param>
-        [DllImport(@"C:\UMROL\DLL\umr-ol.dll", EntryPoint = "dens", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "dens", CallingConvention = CallingConvention.Winapi)]
         private static extern void Dens(ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P, ref double D1, ref double D2, ref double CF1,
             ref double CF2, double[] XY1, double[] XY2);
+
+        /// <summary>
+        /// Calculates liquid dropout.
+        /// </summary>
+        /// <param name="NC">Number of mixture components, INTEGER, Input.</param>
+        /// <param name="ID">Identification number of each mixture component, INTEGER array of 100 elements,
+        /// Input (The ID numbers of the compounds, available in UMR database).</param>
+        /// <param name="Z">Mixture composition in mol/mol, DOUBLE PRECISION array of 100 elements, Input.</param>
+        /// <param name="T">System temperature [in K], DOUBLE PRECISION, Input.</param>
+        /// <param name="P">System pressure [in bar], DOUBLE PRECISION, Input.</param>
+        /// <param name="D1">Densities [in kg/m3], DOUBLE PRECISION, Output.</param>
+        /// <param name="D2">Densities [in kg/m3], DOUBLE PRECISION, Output.</param>
+        /// <param name="CF1">Liquid dropout mass [%], DOUBLE PRECISION, Output.</param>
+        /// <param name="CF2">Liquid dropout volume [%], DOUBLE PRECISION, Output.</param>
+        /// <param name="XY1">Phase composition of phase [in mol/mol], DOUBLE PRECISION array of 50 elements, Output.</param>
+        /// <param name="XY2">Phase composition of phase [in mol/mol], DOUBLE PRECISION array of 50 elements, Output.</param>
+        [DllImport(@"umr-ol.dll", EntryPoint = "vpl", CallingConvention = CallingConvention.Winapi)]
+        private static extern void Vpl(ref Int32 NC,
+            Int32[] ID, double[] Z, ref double T, ref double P, ref double D1, ref double D2, ref double CF1,
+            ref double CF2, double[] XY1, double[] XY2);
+
 
         /// <summary>
         /// Scales the sum of Array elements into the range [0..Target].
@@ -239,7 +260,7 @@ namespace PhaseOpt
         /// 318001	nC39
         /// 700900	C7C9 fraction
         /// </remarks>
-        public static double[] Calculate_Dew_Point_Line(int[] IDs, double[] Values, uint Points = 5, uint Units = 1)
+        public static double[] Calculate_Dew_Point_Line(Int32[] IDs, double[] Values, uint Points = 5, uint Units = 1)
         {
             if (Units > 1) Units = 1;
 
@@ -305,7 +326,7 @@ namespace PhaseOpt
         /// <param name="T">Temperature [K]</param>
         /// <returns>An array containing {Vapour density, Liquid density, Vapour compressibility factor, Liquid compressibility factor}.
         /// If there is only one phase the values for the non existing phase will be -1.</returns>
-        public static double[] Calculate_Density_And_Compressibility(int[] IDs, double[] Values, double P = 1.01325, double T = 288.15)
+        public static double[] Calculate_Density_And_Compressibility(Int32[] IDs, double[] Values, double P = 1.01325, double T = 288.15)
         {
             double[] Results = new double[4];
             Int32 Components = IDs.Length;
@@ -337,7 +358,7 @@ namespace PhaseOpt
         /// <param name="T">Temperature</param>
         /// <param name="Units">Sets the engineering units of the outputs. 0: use bara and Kelvin. 1: use barg and ­°C.</param>
         /// <returns>An array containing the cricondenbar pressure and temperature.</returns>
-        public static double[] Cricondenbar(int[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
+        public static double[] Cricondenbar(Int32[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
         {
             double[] Results = new double[2];
 
@@ -374,7 +395,7 @@ namespace PhaseOpt
         /// <param name="T">Temperature</param>
         /// <param name="Units">Sets the engineering units of the outputs. 0: use bara and Kelvin. 1: use barg and ­°C.</param>
         /// <returns>An array containing the cricondentherm pressure and temperature.</returns>
-        public static double[] Cricondentherm(int[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
+        public static double[] Cricondentherm(Int32[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
         {
             if (Units > 1) Units = 1;
 
@@ -395,5 +416,34 @@ namespace PhaseOpt
             return Results;
         }
 
+
+        /// <summary>
+        /// Calculates the liquid dropout of the composition at given pressure and temperature.
+        /// </summary>
+        /// <param name="IDs">Composition IDs</param>
+        /// <param name="Values">Composition Values</param>
+        /// <param name="P">Pressure</param>
+        /// <param name="T">Temperature</param>
+        /// <returns>An array containing the liquid dropout mass and volume fractions.</returns>
+        public static double[] Dropout(Int32[] IDs, double[] Values, double P, double T)
+        {
+            Normalize(Values, 1.0);
+
+            Int32 Components = IDs.Length;
+            double D1 = 0.0;
+            double D2 = 0.0;
+            double CF1 = 0.0;
+            double CF2 = 0.0;
+            double[] XY1 = new double[50];
+            double[] XY2 = new double[50];
+            double[] Results = new double[2];
+
+            Vpl(ref Components, IDs, Values, ref T, ref P, ref D1, ref D2, ref CF1, ref CF2, XY1, XY2);
+
+            Results[0] = CF1;
+            Results[1] = CF2;
+
+            return Results;
+        }
     } 
 }
