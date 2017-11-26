@@ -124,6 +124,12 @@ WHERE
   VALUES (CAST('" + Time_Stamp.ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS'), "
                   + Value.ToString() + @");";
 
+        if (double.IsNaN(Value))
+        {
+            Cmd.CommandText =
+@"INSERT INTO " + Tag_Name + @"(IP_TREND_TIME, IP_TREND_VALUE)
+  VALUES (CAST('" + Time_Stamp.ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS'), 0.0/0.0);";
+        }
         Cmd.ExecuteNonQuery();
     }
 }

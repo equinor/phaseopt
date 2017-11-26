@@ -30,7 +30,7 @@ namespace Main
                 double[] Values = new double[22] { 2.483, 0.738, 81.667, 8.393, 4.22, 0.605, 1.084, 0.24, 0.23, 0.0801, 0.0243, 0.0614,
                     0.0233, 0.0778, 0.0191, 0.0048, 0.0302, 0.0116, 0.0023, 0.0017, 0.0022, 0.0014 };
 
-                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
+                double[] Result = PhaseOpt.PhaseOpt.Dropout(IDs, Values, 95.0, -15 + 273.15); // PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
                 Console.WriteLine("Cricondenbar point");
                 Console.WriteLine("Pressure: {0} barg", Result[0].ToString());

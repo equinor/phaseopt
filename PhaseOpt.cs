@@ -330,6 +330,8 @@ namespace PhaseOpt
         {
             double[] Results = new double[4];
             Int32 Components = IDs.Length;
+            Int32[] ID = Pad(IDs);
+            double[] Z = Pad(Values);
             double D1 = 0.0;
             double D2 = 0.0;
             double CF1 = 0.0;
@@ -339,7 +341,7 @@ namespace PhaseOpt
 
             Normalize(Values, 1.0);
 
-            Dens(ref Components, IDs, Values, ref T, ref P, ref D1, ref D2, ref CF1, ref CF2, XY1, XY2);
+            Dens(ref Components, ID, Z, ref T, ref P, ref D1, ref D2, ref CF1, ref CF2, XY1, XY2);
 
             Results[0] = D1;
             Results[1] = D2;
@@ -364,6 +366,8 @@ namespace PhaseOpt
 
             Int32 IND = 2;
             Int32 Components = IDs.Length;
+            Int32[] ID = Pad(IDs);
+            double[] Z = Pad(Values);
             double CCBT = T;
             double CCBP = P;
 
@@ -372,7 +376,7 @@ namespace PhaseOpt
             Normalize(Values, 1.0);
 
             DateTime Start = DateTime.Now;
-            Criconden(ref IND, ref Components, IDs, Values, ref CCBT, ref CCBP);
+            Criconden(ref IND, ref Components, ID, Z, ref CCBT, ref CCBP);
             DateTime End = DateTime.Now;
 
             System.Console.WriteLine("Cricondenbar runtime: {0}", End - Start);
@@ -404,11 +408,13 @@ namespace PhaseOpt
             // Calculate the cricondentherm point
             Int32 IND = 1;
             Int32 Components = IDs.Length;
+            Int32[] ID = Pad(IDs);
+            double[] Z = Pad(Values);
             double CCTT = T;
             double CCTP = P;
             double[] Results = new double[2];
 
-            Criconden(ref IND, ref Components, IDs, Values, ref CCTT, ref CCTP);
+            Criconden(ref IND, ref Components, ID, Z, ref CCTT, ref CCTP);
 
             Results[0] = (CCTP - (Units * Bara_To_Barg));
             Results[1] = (CCTT - (Units * Kelvin_To_Celcius));
@@ -430,20 +436,71 @@ namespace PhaseOpt
             Normalize(Values, 1.0);
 
             Int32 Components = IDs.Length;
+            Int32[] ID = Pad(IDs);
+            double[] Z = Pad(Values);
             double D1 = 0.0;
             double D2 = 0.0;
             double CF1 = 0.0;
             double CF2 = 0.0;
-            double[] XY1 = new double[50];
-            double[] XY2 = new double[50];
+            double[] XY1 = new double[100];
+            double[] XY2 = new double[100];
             double[] Results = new double[2];
 
-            Vpl(ref Components, IDs, Values, ref T, ref P, ref D1, ref D2, ref CF1, ref CF2, XY1, XY2);
+            Vpl(ref Components, ID, Z, ref T, ref P, ref D1, ref D2, ref CF1, ref CF2, XY1, XY2);
 
             Results[0] = CF1;
             Results[1] = CF2;
 
             return Results;
         }
+
+        /// <summary>
+        /// Calculates the dew point pressure of the composition.
+        /// </summary>
+        /// <param name="IDs">Composition IDs</param>
+        /// <param name="Values">Composition Values</param>
+        /// <param name="P">Pressure</param>
+        /// <param name="T">Temperature</param>
+        /// <returns>An array containing the liquid dropout mass and volume fractions.</returns>
+        public static double DewP(Int32[] IDs, double[] Values, double T)
+        {
+            Normalize(Values, 1.0);
+
+            Int32 Components = IDs.Length;
+            Int32[] ID = Pad(IDs);
+            double[] Z = Pad(Values);
+            double P1 = 0.0;
+            double P2 = 0.0;
+            double[] XY1 = new double[100];
+            double[] XY2 = new double[100];
+
+            Dewp(ref Components, ID, Z, ref T, ref P1, XY1, ref P2, XY2);
+
+            if (P1 > 900.0) P1 = 0.0;
+            if (P2 > 900.0) P2 = 0.0;
+
+            return Math.Max(P1, P2);
+        }
+
+        private static double[] Pad(double[] In)
+        {
+            double[] Out = new double[100];
+            for (int n = 0; n < In.Length; n++)
+            {
+                Out[n] = In[n];
+            }
+            return Out;
+        }
+
+        private static Int32[] Pad(Int32[] In)
+        {
+            Int32[] Out = new Int32[100];
+            for (int n = 0; n < In.Length; n++)
+            {
+                Out[n] = In[n];
+            }
+            return Out;
+        }
+
     } 
 }
