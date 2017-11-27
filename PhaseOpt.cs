@@ -269,18 +269,20 @@ namespace PhaseOpt
             // Calculate the cricondentherm point
             Int32 IND = 1;
             Int32 Components = IDs.Length;
+            Int32[] ID = Pad(IDs);
+            double[] Z = Pad(Values);
             double CCTT = 0.0;
             double CCTP = 0.0;
             double CCBT = 0.0;
             double CCBP = 0.0;
             List<double> Results = new List<double>();
 
-            Criconden(ref IND, ref Components, IDs, Values, ref CCTT, ref CCTP);
+            Criconden(ref IND, ref Components, ID, Z, ref CCTT, ref CCTP);
 
             // Calculate the cricondenbar point
             IND = 2;
 
-            Criconden(ref IND, ref Components, IDs, Values, ref CCBT, ref CCBP);
+            Criconden(ref IND, ref Components, ID, Z, ref CCBT, ref CCBP);
 
             Results.Add(CCBP - (Units * Bara_To_Barg) );
             Results.Add(CCBT - (Units * Kelvin_To_Celcius) );
@@ -295,8 +297,8 @@ namespace PhaseOpt
             {
                 double P = CCTP + P_Interval * i;
                 double T = CCBT;
-                double[] XY = new double[50];
-                Dewt(ref Components, IDs, Values, ref T, ref P, XY);
+                double[] XY = new double[100];
+                Dewt(ref Components, ID, Z, ref T, ref P, XY);
                 Results.Add(P - (Units * Bara_To_Barg)); Results.Add(T - (Units * Kelvin_To_Celcius));
             }
 
@@ -309,9 +311,9 @@ namespace PhaseOpt
                 double T = CCBT + T_Interval * i;
                 double P1 = CCTP;
                 double P2 = CCTP;
-                double[] XY1 = new double[50];
-                double[] XY2 = new double[50];
-                Dewp(ref Components, IDs, Values, ref T, ref P1, XY1, ref P2, XY2);
+                double[] XY1 = new double[100];
+                double[] XY2 = new double[100];
+                Dewp(ref Components, ID, Z, ref T, ref P1, XY1, ref P2, XY2);
                 Results.Add(P1 - (Units * Bara_To_Barg)); Results.Add(T - (Units * Kelvin_To_Celcius));
             }
             return Results.ToArray();
