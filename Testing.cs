@@ -26,7 +26,7 @@ namespace Test_Space
             {
                 for (int j = 0; j < Temperature.Length; j++)
                 {
-                    Pres[i+1, j] = Dropout_Search(IDs, Values, Dropout[i], Temperature[j] + 273.15, Pres[0, j]);
+                    Pres[i + 1, j] = PhaseOpt.PhaseOpt.Dropout_Search(IDs, Values, Dropout[i], Temperature[j] + 273.15, Pres[0, j]);
                     System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i+1, j]);
                 }
             }
@@ -50,41 +50,6 @@ namespace Test_Space
                 if (j == Temperature.Length - 1) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
             }
             DB_Connection.Disconnect();
-        }
-
-        public static double Dropout_Search(Int32[] IDs, double[] Values, double Dropout, double T, double P_Max, double limit = 0.01)
-        {
-            double PMax = P_Max;
-            double PMin = PMax - 40.0;
-            double P = double.NaN;
-            double diff = double.MaxValue;
-            double Result = double.NaN;
-            Int32 n = 0;
-
-            while (diff > limit && n < 50)
-            {
-                n++;
-                if (Result > Dropout)
-                {
-                    PMin = P;
-                }
-                else if (Result < Dropout)
-                {
-                    PMax = P;
-                }
-
-                P = PMin + (PMax - PMin) / 2;
-
-                Result = PhaseOpt.PhaseOpt.Dropout(IDs, Values, P, T)[0] * 100.0;
-                diff = Math.Abs(Result - Dropout);
-
-                System.Console.WriteLine("dropout: {0}", Result);
-                System.Console.WriteLine("diff:    {0}", diff);
-            }
-
-            if (n == 50) P = double.NaN;
-
-            return P;
         }
     }
 }
