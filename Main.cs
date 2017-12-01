@@ -10,7 +10,7 @@ namespace Main
     {
         public static void Main(String[] args)
         {
-            bool Test_UMR = false;
+            bool Test_UMR = true;
             foreach (string arg in args)
             {
                 if (arg.Equals(@"/u"))
@@ -19,18 +19,16 @@ namespace Main
                 }
             }
 
-            Test_UMR = true;
             if (Test_UMR)
             {
                 Test_Space.Testing.Main_Test();
 
-                Int32[] IDs = new Int32[22] { 1, 2, 3, 4, 5, 6, 7, 10, 11, 16, 17, 18, 701, 705, 707, 801, 806, 810, 901, 906, 911, 101101 };
-                IDs = new Int32[22] { 1, 2, 101, 201, 301, 401, 402, 503, 504, 603, 604, 605, 701, 606, 608, 801, 707, 710, 901, 806, 809, 1016 };
+                Int32[] IDs = new Int32[22] { 1, 2, 101, 201, 301, 401, 402, 503, 504, 603, 604, 605, 701, 606, 608, 801, 707, 710, 901, 806, 809, 1016 };
 
                 double[] Values = new double[22] { 2.483, 0.738, 81.667, 8.393, 4.22, 0.605, 1.084, 0.24, 0.23, 0.0801, 0.0243, 0.0614,
                     0.0233, 0.0778, 0.0191, 0.0048, 0.0302, 0.0116, 0.0023, 0.0017, 0.0022, 0.0014 };
 
-                double[] Result = PhaseOpt.PhaseOpt.Dropout(IDs, Values, 95.0, -15 + 273.15); // PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
+                double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
                 Console.WriteLine("Cricondenbar point");
                 Console.WriteLine("Pressure: {0} barg", Result[0].ToString());
