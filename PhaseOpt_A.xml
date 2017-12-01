@@ -110,6 +110,23 @@
       <component name="nC10"            id="1016" tag="20AY7146A_05" scale-factor="10000.0"/>
 
       <cricondenbar temperature-tag="20TY7146_A" pressure-tag="20PY7146_A"/>
+
+      <liquid-dropout update-interval="180">
+        <temperature values="-25.0, -22.5, -20.0, -17.5, -15.0, -12.5, -10.0, -7.5, -5.0, -2.5, 0.0, 2.5, 5.0" tag="PO_E_T"/>
+        <dropout value="0.1" tag="PO_E_P_1"/>
+        <dropout value="0.5" tag="PO_E_P_2"/>
+        <dropout value="1.0" tag="PO_E_P_3"/>
+        <dropout value="2.0" tag="PO_E_P_4"/>
+        <dropout value="3.0" tag="PO_E_P_5"/>
+
+        <operating-points update-interval="30">
+          <point name="point 1" temperature-tag="20TIXXXX" pressure-tag="20PIXXXX"/>
+          <point name="point 2" temperature-tag="20TIXXXX" pressure-tag="20PIXXXX"/>
+          <point name="point 3" temperature-tag="20TIXXXX" pressure-tag="20PIXXXX"/>
+        </operating-points>
+
+      </liquid-dropout>
+
     </stream>
 
     <stream name="DIXO-mix to T100/T200" type="output">
