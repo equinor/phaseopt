@@ -120,9 +120,9 @@
         <dropout value="3.0" tag="PO_E_P_5"/>
 
         <operating-points update-interval="30">
-          <point name="point 1" temperature-tag="20TIXXXX" pressure-tag="20PIXXXX"/>
+          <point name="point 1" temperature-tag="21TI5044" pressure-tag="21PI5108"/>
           <point name="point 2" temperature-tag="20TIXXXX" pressure-tag="20PIXXXX"/>
-          <point name="point 3" temperature-tag="20TIXXXX" pressure-tag="20PIXXXX"/>
+          <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230"/>
         </operating-points>
 
       </liquid-dropout>
