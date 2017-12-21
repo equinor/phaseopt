@@ -1,1 +1,1 @@
-PahseOpt Kårstø
+Extended PahseOpt Kårstø
