@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 namespace Main
 {
@@ -31,19 +32,19 @@ namespace Main
                 double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
                 Console.WriteLine("Cricondenbar point");
-                Console.WriteLine("Pressure: {0} barg", Result[0].ToString());
-                Console.WriteLine("Temperature: {0} °C", Result[1].ToString());
+                Console.WriteLine("Pressure: {0} barg", Result[0].ToString("G", CultureInfo.InvariantCulture));
+                Console.WriteLine("Temperature: {0} °C", Result[1].ToString("G", CultureInfo.InvariantCulture));
                 Console.WriteLine();
 
                 Console.WriteLine("Cricondentherm point");
-                Console.WriteLine("Pressure: {0} barg", Result[2].ToString());
-                Console.WriteLine("Temperature: {0} °C", Result[3].ToString());
+                Console.WriteLine("Pressure: {0} barg", Result[2].ToString("G", CultureInfo.InvariantCulture));
+                Console.WriteLine("Temperature: {0} °C", Result[3].ToString("G", CultureInfo.InvariantCulture));
 
                 Console.WriteLine("Dew Point Line");
                 for (int i = 4; i < Result.Length; i += 2)
                 {
-                    Console.WriteLine("Pressure: {0} barg", Result[i].ToString());
-                    Console.WriteLine("Temperature: {0} °C", Result[i + 1].ToString());
+                    Console.WriteLine("Pressure: {0} barg", Result[i].ToString("G", CultureInfo.InvariantCulture));
+                    Console.WriteLine("Temperature: {0} °C", Result[i + 1].ToString("G", CultureInfo.InvariantCulture));
                     Console.WriteLine();
                 }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 
 public class IP21_Comm
 {
@@ -76,7 +77,7 @@ WHERE
 
         Cmd.CommandText =
 @"UPDATE ip_analogdef
-  SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
+  SET ip_input_value = " + Value.ToString("G", CultureInfo.InvariantCulture) + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
         System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
@@ -122,7 +123,7 @@ WHERE
         Cmd.CommandText =
 @"INSERT INTO " + Tag_Name + @"(IP_TREND_TIME, IP_TREND_VALUE)
   VALUES (CAST('" + Time_Stamp.ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS'), "
-                  + Value.ToString() + @");";
+                  + Value.ToString("G", CultureInfo.InvariantCulture) + @");";
 
         if (double.IsNaN(Value))
         {

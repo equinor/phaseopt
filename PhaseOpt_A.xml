@@ -113,6 +113,7 @@
 
       <liquid-dropout update-interval="180">
         <temperature values="-25.0, -22.5, -20.0, -17.5, -15.0, -12.5, -10.0, -7.5, -5.0, -2.5, 0.0, 2.5, 5.0" tag="PO_E_T"/>
+        <dew-point           tag="PO_E_P_0"/>
         <dropout value="0.1" tag="PO_E_P_1"/>
         <dropout value="0.5" tag="PO_E_P_2"/>
         <dropout value="1.0" tag="PO_E_P_3"/>

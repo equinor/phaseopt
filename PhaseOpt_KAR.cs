@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
+using System.Globalization;
 
 public class Component
 {
@@ -818,7 +819,7 @@ WHERE
 
         Cmd.CommandText =
 @"UPDATE ip_analogdef
-  SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
+  SET ip_input_value = " + Value.ToString("G", CultureInfo.InvariantCulture) + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
         System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
