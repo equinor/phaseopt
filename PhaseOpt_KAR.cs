@@ -88,11 +88,15 @@ public class PhaseOpt_KAR
     public List<double> Asgard_Velocity = new List<double>();
     public List<double> Statpipe_Velocity = new List<double>();
 
+    public IP21_Comm DB_Connection;
+
     public PhaseOpt_KAR(string Log_File_Name)
     {
         Log_File = System.IO.File.AppendText(Log_File_Name);
         Asgard_Velocity.Add(0.0); Asgard_Velocity.Add(0.0);
         Statpipe_Velocity.Add(0.0); Statpipe_Velocity.Add(0.0);
+        DB_Connection = new IP21_Comm("KAR-IP21.statoil.net", "10014");
+        DB_Connection.Connect();
     }
 
     public bool Read_Composition()
@@ -102,7 +106,7 @@ public class PhaseOpt_KAR
         Timestamp = DateTime.Now.AddSeconds(-15);
         Log_File.WriteLine();
         Log_File.WriteLine(Timestamp.ToString("yyyy-MM-dd HH:mm:ss"));
-        Hashtable A_Velocity = Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
+        Hashtable A_Velocity = DB_Connection.Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
         double Asgard_Average_Velocity = 0.0;
         try
         {
@@ -121,7 +125,7 @@ public class PhaseOpt_KAR
             Log_File.Flush();
             //Environment.Exit(13);
         }
-        Hashtable S_Velocity = Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
+        Hashtable S_Velocity = DB_Connection.Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
         double Statpipe_Average_Velocity = 0.0;
         try
         {
@@ -163,7 +167,7 @@ public class PhaseOpt_KAR
 #endif
 
         // Read GC status
-        Hashtable Asgard_Status = Read_Values(Asgard_Status_Tags.ToArray(), Asgard_Timestamp);
+        Hashtable Asgard_Status = DB_Connection.Read_Values(Asgard_Status_Tags.ToArray(), Asgard_Timestamp);
         foreach (DictionaryEntry Status in Asgard_Status)
         {
             if ((double)Status.Value < 999.9)
@@ -180,7 +184,7 @@ public class PhaseOpt_KAR
         {
             Tags.Add(c.Tag);
         }
-        Comp_Values = Read_Values(Tags.ToArray(), Asgard_Timestamp);
+        Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Asgard_Timestamp);
         string Tag_Name = "";
         try
         {
@@ -203,7 +207,7 @@ public class PhaseOpt_KAR
         {
             Tags.Add(c.Tag);
         }
-        Comp_Values = Read_Values(Tags.ToArray(), Statpipe_Timestamp);
+        Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Statpipe_Timestamp);
         try
         {
             foreach (Component c in Statpipe_Comp)
@@ -224,7 +228,7 @@ public class PhaseOpt_KAR
     public void Read_From_IP21()
     {
         // Read molweight
-        Hashtable Molweight = Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
+        Hashtable Molweight = DB_Connection.Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
         Asgard_Molweight = 0.0;
         try
         {
@@ -236,7 +240,7 @@ public class PhaseOpt_KAR
             Log_File.Flush();
             //Environment.Exit(13);
         }
-        Molweight = Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
+        Molweight = DB_Connection.Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
         Statpipe_Molweight = 0.0;
         try
         {
@@ -248,7 +252,7 @@ public class PhaseOpt_KAR
             Log_File.Flush();
             //Environment.Exit(13);
         }
-        Molweight = Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
+        Molweight = DB_Connection.Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
         double Mix_To_T100_Molweight = 0.0;
         try
         {
@@ -262,7 +266,7 @@ public class PhaseOpt_KAR
         }
 
         // Read mass flow
-        Hashtable Mass_Flow = Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
+        Hashtable Mass_Flow = DB_Connection.Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
         Asgard_Transport_Flow = 0.0;
 #if DEBUG
         Console.WriteLine("\nÅsgard flow:");
@@ -282,7 +286,7 @@ public class PhaseOpt_KAR
         }
         Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
-        Mass_Flow = Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
+        Mass_Flow = DB_Connection.Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
         Statpipe_Transport_Flow = 0.0;
 #if DEBUG
         Console.WriteLine("\nStatpipe flow:");
@@ -302,7 +306,7 @@ public class PhaseOpt_KAR
         }
         Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
-        Mass_Flow = Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
+        Mass_Flow = DB_Connection.Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
         Mix_To_T100_Flow = 0.0;
         Statpipe_Cross_Over_Flow = 0.0;
         try
@@ -376,12 +380,12 @@ public class PhaseOpt_KAR
 
         foreach (Component c in Mix_To_T100_Comp)
         {
-            Write_Value(c.Tag, c.Get_Scaled_Value());
+            DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
         foreach (Component c in Mix_To_T410_Comp)
         {
-            Write_Value(c.Tag, c.Get_Scaled_Value());
+            DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
         List<Int32> Composition_IDs = new List<Int32>();
@@ -404,7 +408,7 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
+                DB_Connection.Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
             }
             Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -429,7 +433,7 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+                DB_Connection.Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
             }
             Log_File.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -454,7 +458,7 @@ public class PhaseOpt_KAR
         {
             Tags.Add(c.Tag);
         }
-        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
+        Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
         Log_File.WriteLine("Åsgard:");
         string Tag_Name = "";
         try
@@ -484,7 +488,7 @@ public class PhaseOpt_KAR
         {
             Tags.Add(c.Tag);
         }
-        Comp_Values = Read_Values(Tags.ToArray(), Timestamp);
+        Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
         Log_File.WriteLine("Statpipe:");
         try
         {
@@ -514,7 +518,7 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+                DB_Connection.Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
             }
             Log_File.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -530,7 +534,7 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+                DB_Connection.Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
             }
             Log_File.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -771,92 +775,5 @@ public class PhaseOpt_KAR
             Log_File.Flush();
             Environment.Exit(1);
         }
-    }
-
-    private Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
-    {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-
-        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
-
-        string Tag_cond = "(FALSE"; // Makes it easier to add OR conditions.
-        foreach (string Tag in Tag_Name)
-        {
-            Tag_cond += "\n  OR NAME = '" + Tag + "'";
-        }
-        Tag_cond += ")";
-        Cmd.CommandText =
-@"SELECT
-  NAME, VALUE
-FROM
-  History
-WHERE
-  " + Tag_cond + @"
-  AND TS > CAST('" + Time_Stamp.AddSeconds(-1).ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS')
-  AND TS < CAST('" + Time_Stamp.AddSeconds(1).ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS')
-  AND PERIOD = 000:0:01.0;
-";
-
-        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
-        Hashtable Result = new Hashtable();
-        while (DR.Read())
-        {
-            Result.Add(DR.GetValue(0), DR.GetValue(1));
-        }
-        Cmd.Connection.Close();
-        return Result;
-    }
-
-    private void Write_Value(string Tag_Name, double Value, string Quality = "Good")
-    {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-
-        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
-
-        Cmd.CommandText =
-@"UPDATE ip_analogdef
-  SET ip_input_value = " + Value.ToString("G", CultureInfo.InvariantCulture) + @", ip_input_quality = '" + Quality + @"'
-  WHERE name = '" + Tag_Name + @"'";
-
-        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
-        Cmd.Connection.Close();
-    }
-
-    public void Write_Value(string Tag_Name, int Value, string Quality = "Good")
-    {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-
-        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
-
-        Cmd.CommandText =
-@"UPDATE ip_discretedef
-  SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
-  WHERE name = '" + Tag_Name + @"'";
-
-        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
-        Cmd.Connection.Close();
-    }
-
-    public void Write_Value(string Tag_Name, string Value, string Quality = "Good")
-    {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-
-        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
-
-        Cmd.CommandText =
-@"UPDATE ip_textdef
-  SET ip_input_value = '" + Value + @"', ip_input_quality = '" + Quality + @"'
-  WHERE name = '" + Tag_Name + @"'";
-
-        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
-        Cmd.Connection.Close();
     }
 }

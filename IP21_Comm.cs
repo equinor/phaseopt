@@ -33,12 +33,6 @@ public class IP21_Comm
 
     public Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
     {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-
-        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
-
         string Tag_cond = "(FALSE"; // Makes it easier to add OR conditions.
         foreach (string Tag in Tag_Name)
         {
@@ -63,59 +57,39 @@ WHERE
         {
             Result.Add(DR.GetValue(0), DR.GetValue(1));
         }
-        Cmd.Connection.Close();
+
+        DR.Close();
         return Result;
     }
 
     public void Write_Value(string Tag_Name, double Value, string Quality = "Good")
     {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-
-        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
-
         Cmd.CommandText =
 @"UPDATE ip_analogdef
   SET ip_input_value = " + Value.ToString("G", CultureInfo.InvariantCulture) + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
-        Cmd.Connection.Close();
+        Cmd.ExecuteNonQuery();
     }
 
     public void Write_Value(string Tag_Name, int Value, string Quality = "Good")
     {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-
-        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
-
         Cmd.CommandText =
 @"UPDATE ip_discretedef
   SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
-        Cmd.Connection.Close();
+        Cmd.ExecuteNonQuery();
     }
 
     public void Write_Value(string Tag_Name, string Value, string Quality = "Good")
     {
-        string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-
-        System.Data.Odbc.OdbcCommand Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
-
         Cmd.CommandText =
 @"UPDATE ip_textdef
   SET ip_input_value = '" + Value + @"', ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
-        Cmd.Connection.Close();
+        Cmd.ExecuteNonQuery();
     }
 
     public void Insert_Value(string Tag_Name, double Value, DateTime Time_Stamp)
