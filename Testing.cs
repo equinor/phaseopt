@@ -15,6 +15,11 @@ namespace Test_Space
             double[] Temperature = new double[13] { -25.0, -22.5, -20.0, -17.5, -15.0, -12.5, -10.0, -7.5, -5.0, -2.5, 0.0, 2.5, 5.0 };
             double[] Dropout = new double[5] { 0.1, 0.5, 1.0, 2.0, 5.0 };
             double[,] Pres = new double[Dropout.Length + 1, Temperature.Length];
+            double[,] Operation_Point = new double[3, 2]; // [Pressure, Temperature]
+
+            Operation_Point[0, 0] = 107.3; Operation_Point[0, 1] = -3.8;
+            Operation_Point[1, 0] = 106.6; Operation_Point[1, 1] = -9.3;
+            Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;
 
             // Dew point line. We use this later to set the max value when searching for drop out pressures
             for (int i = 0; i < Temperature.Length; i++)
@@ -31,10 +36,33 @@ namespace Test_Space
                 }
             }
             DateTime Start_Time = DateTime.Now;
+            Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
             IP21_Comm DB_Connection = new IP21_Comm("KAR-IP21.statoil.net", "10014");
             DB_Connection.Connect();
             String Tag;
-            Int32 Interval = 5;
+            Int32 Interval = 3;
+
+            for (int j = 0; j < Operation_Point.GetUpperBound(0) + 1; j++)
+            {
+                if (j == 0)
+                {
+                    DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time);
+                    DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time);
+                }
+
+                DB_Connection.Insert_Value("PO_OP" + (j).ToString(), Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 1)));
+                DB_Connection.Insert_Value("PO_E_T", Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 1)));
+
+                DB_Connection.Insert_Value("PO_OP" + (j).ToString(), Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 2)));
+                DB_Connection.Insert_Value("PO_E_T", Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 2)));
+
+                DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
+                DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
+
+            }
+
+            Start_Time = Start_Time.AddSeconds(-(Interval * (Operation_Point.GetUpperBound(0) + 1) + 1));
+            Interval = 5;
             for (int j = 0; j < Temperature.Length; j++)
             {
                 if (j == 0) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * j));
