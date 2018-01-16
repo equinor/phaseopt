@@ -106,10 +106,10 @@ public class PhaseOpt_KAR
         double Asgard_Average_Velocity = 0.0;
         try
         {
-            Asgard_Average_Velocity = ((float)A_Velocity[Asgard_Velocity_Tags[0]] +
-                                                (float)A_Velocity[Asgard_Velocity_Tags[1]]) / 2.0;
-            Asgard_Velocity[0] = (float)A_Velocity[Asgard_Velocity_Tags[0]];
-            Asgard_Velocity[1] = (float)A_Velocity[Asgard_Velocity_Tags[1]];
+            Asgard_Average_Velocity = ((double)A_Velocity[Asgard_Velocity_Tags[0]] +
+                                                (double)A_Velocity[Asgard_Velocity_Tags[1]]) / 2.0;
+            Asgard_Velocity[0] = (double)A_Velocity[Asgard_Velocity_Tags[0]];
+            Asgard_Velocity[1] = (double)A_Velocity[Asgard_Velocity_Tags[1]];
             Log_File.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
@@ -125,10 +125,10 @@ public class PhaseOpt_KAR
         double Statpipe_Average_Velocity = 0.0;
         try
         {
-            Statpipe_Average_Velocity = ((float)S_Velocity[Statpipe_Velocity_Tags[0]] +
-                                                (float)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
-            Statpipe_Velocity[0] = (float)S_Velocity[Statpipe_Velocity_Tags[0]];
-            Statpipe_Velocity[1] = (float)S_Velocity[Statpipe_Velocity_Tags[1]];
+            Statpipe_Average_Velocity = ((double)S_Velocity[Statpipe_Velocity_Tags[0]] +
+                                                (double)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
+            Statpipe_Velocity[0] = (double)S_Velocity[Statpipe_Velocity_Tags[0]];
+            Statpipe_Velocity[1] = (double)S_Velocity[Statpipe_Velocity_Tags[1]];
             Log_File.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
@@ -166,7 +166,7 @@ public class PhaseOpt_KAR
         Hashtable Asgard_Status = Read_Values(Asgard_Status_Tags.ToArray(), Asgard_Timestamp);
         foreach (DictionaryEntry Status in Asgard_Status)
         {
-            if ((float)Status.Value < 999.9)
+            if ((double)Status.Value < 999.9)
             {
                 Log_File.WriteLine("GC bad status");
                 return false;
@@ -187,7 +187,7 @@ public class PhaseOpt_KAR
             foreach (Component c in Asgard_Comp)
             {
                 Tag_Name = c.Tag;
-                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+                c.Value = (double)Comp_Values[c.Tag] * c.Scale_Factor;
             }
         }
         catch
@@ -209,7 +209,7 @@ public class PhaseOpt_KAR
             foreach (Component c in Statpipe_Comp)
             {
                 Tag_Name = c.Tag;
-                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+                c.Value = (double)Comp_Values[c.Tag] * c.Scale_Factor;
             }
         }
         catch
@@ -228,7 +228,7 @@ public class PhaseOpt_KAR
         Asgard_Molweight = 0.0;
         try
         {
-            Asgard_Molweight = (float)Molweight[Asgard_Molweight_Tag];
+            Asgard_Molweight = (double)Molweight[Asgard_Molweight_Tag];
         }
         catch
         {
@@ -240,7 +240,7 @@ public class PhaseOpt_KAR
         Statpipe_Molweight = 0.0;
         try
         {
-            Statpipe_Molweight = (float)Molweight[Statpipe_Molweight_Tag];
+            Statpipe_Molweight = (double)Molweight[Statpipe_Molweight_Tag];
         }
         catch
         {
@@ -252,7 +252,7 @@ public class PhaseOpt_KAR
         double Mix_To_T100_Molweight = 0.0;
         try
         {
-            Mix_To_T100_Molweight = (float)Molweight[Mix_To_T100_Molweight_Tag];
+            Mix_To_T100_Molweight = (double)Molweight[Mix_To_T100_Molweight_Tag];
         }
         catch
         {
@@ -269,7 +269,7 @@ public class PhaseOpt_KAR
 #endif
         try
         {
-            Asgard_Transport_Flow = (float)Mass_Flow[Asgard_Mass_Flow_Tags[0]];
+            Asgard_Transport_Flow = (double)Mass_Flow[Asgard_Mass_Flow_Tags[0]];
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Asgard_Mass_Flow_Tags[0], Asgard_Transport_Flow);
 #endif
@@ -289,7 +289,7 @@ public class PhaseOpt_KAR
 #endif
         try
         {
-            Statpipe_Transport_Flow = (float)Mass_Flow[Statpipe_Mass_Flow_Tags[0]];
+            Statpipe_Transport_Flow = (double)Mass_Flow[Statpipe_Mass_Flow_Tags[0]];
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Statpipe_Mass_Flow_Tags[0], Statpipe_Transport_Flow);
 #endif
@@ -307,8 +307,8 @@ public class PhaseOpt_KAR
         Statpipe_Cross_Over_Flow = 0.0;
         try
         {
-            Mix_To_T100_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]];
-            Statpipe_Cross_Over_Flow = (float)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[1]];
+            Mix_To_T100_Flow = (double)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]];
+            Statpipe_Cross_Over_Flow = (double)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[1]];
         }
         catch
         {
@@ -462,7 +462,7 @@ public class PhaseOpt_KAR
             foreach (Component c in Asgard_Comp)
             {
                 Tag_Name = c.Tag;
-                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+                c.Value = (double)Comp_Values[c.Tag] * c.Scale_Factor;
                 Composition_IDs_Asgard.Add(c.ID);
                 Composition_Values_Asgard_Current.Add(c.Value);
                 Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
@@ -491,7 +491,7 @@ public class PhaseOpt_KAR
             foreach (Component c in Statpipe_Comp)
             {
                 Tag_Name = c.Tag;
-                c.Value = (float)Comp_Values[c.Tag] * c.Scale_Factor;
+                c.Value = (double)Comp_Values[c.Tag] * c.Scale_Factor;
                 Composition_IDs_Statpipe.Add(c.ID);
                 Composition_Values_Statpipe_Current.Add(c.Value);
                 Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);

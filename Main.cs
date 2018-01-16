@@ -11,7 +11,7 @@ namespace Main
     {
         public static void Main(String[] args)
         {
-            bool Test_UMR = true;
+            bool Test_UMR = false;
             foreach (string arg in args)
             {
                 if (arg.Equals(@"/u"))
