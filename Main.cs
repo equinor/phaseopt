@@ -69,6 +69,9 @@ namespace Main
             PO_A.Read_Config("PhaseOpt_A.xml");
             PO_B.Read_Config("PhaseOpt_B.xml");
 
+            PO_A.Connect_DB();
+            PO_B.Connect_DB();
+
             Queue GC_A_Comp_Asgard = new Queue();
             Queue GC_A_Comp_Statpipe = new Queue();
             Queue GC_B_Comp_Asgard = new Queue();
@@ -94,16 +97,26 @@ namespace Main
             Queue Velocity_1_B_Statpipe = new Queue();
             Queue Velocity_2_B_Statpipe = new Queue();
 
-
-            //int memory = 5;
+            DateTime Start_Time;
+            double Sleep_Time = 0.0;
+            double Stdev_Low_Limit = 1.0E-10;
+            int errors_A = 0;
+            int errors_B = 0;
 
             while (true)
             {
-                DateTime Start_Time = DateTime.Now;
-                double Stdev_Low_Limit = 1.0E-10;
-                int errors_A = 0;
-                int errors_B = 0;
+                Start_Time = DateTime.Now;
+                errors_A = 0;
+                errors_B = 0;
 
+                // Zero out the composition since we are using the same instance
+                // for delayed and current compositions
+                foreach (Component c in PO_A.Asgard_Comp)   c.Value = 0.0;
+                foreach (Component c in PO_A.Statpipe_Comp) c.Value = 0.0;
+                foreach (Component c in PO_B.Asgard_Comp)   c.Value = 0.0;
+                foreach (Component c in PO_B.Statpipe_Comp) c.Value = 0.0;
+
+                // Read the delayed compositions
                 PO_A.Read_Composition();
                 Log_File.WriteLine("{0}: Read composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 PO_B.Read_Composition();
@@ -134,6 +147,7 @@ namespace Main
                     errors_B++;
                 }
 
+                // Read misc flow and molweight values
                 PO_A.Read_From_IP21();
                 Log_File.WriteLine("{0}: Read from IP21 A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 PO_B.Read_From_IP21();
@@ -258,7 +272,7 @@ namespace Main
                     errors_B++;
                 }
 
-
+                // Calculate composition mixes, cricondenbar and set status flag
                 if (errors_A < 1)
                 {
                     PO_A.Calculate_Karsto();
@@ -283,6 +297,8 @@ namespace Main
                     Log_File.WriteLine("{0}: Errors in B: {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), errors_B); Log_File.Flush();
                 }
 
+                // Read and calculate cricondenbar for current
+                // compositions at Kalstø
                 PO_A.Read_Current_Kalsto_Composition();
                 Log_File.WriteLine("{0}: Read current composition from IP21 A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 PO_B.Read_Current_Kalsto_Composition();
@@ -342,7 +358,7 @@ namespace Main
 
                 PO_A.DB_Connection.Write_Value("PhaseOpt.ST", Start_Time.ToString("yyy-MM-dd HH:mm:ss"));
 
-                double Sleep_Time = (Start_Time.AddMinutes(3) - DateTime.Now).TotalMilliseconds;
+                Sleep_Time = (Start_Time.AddMinutes(3) - DateTime.Now).TotalMilliseconds;
                 if (Sleep_Time > 1.0)
                 {
                     System.Threading.Thread.Sleep((int)Sleep_Time);
