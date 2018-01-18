@@ -239,6 +239,8 @@ namespace PhaseOpt
         /// If there is only one phase the values for the non existing phase will be -1.</returns>
         public static double[] Calculate_Density_And_Compressibility(Int32[] IDs, double[] Values, double P = 1.01325, double T = 288.15)
         {
+            Normalize(Values, 1.0);
+
             double[] Results = new double[4];
             Int32 Components = IDs.Length;
             Int32[] ID = Pad(IDs);
@@ -249,8 +251,6 @@ namespace PhaseOpt
             double CF2 = 0.0;
             double[] XY1 = new double[50];
             double[] XY2 = new double[50];
-
-            Normalize(Values, 1.0);
 
             Dens(ref Components, ID, Z, ref T, ref P, ref D1, ref D2, ref CF1, ref CF2, XY1, XY2);
 
@@ -273,8 +273,9 @@ namespace PhaseOpt
         /// <returns>An array containing the cricondenbar pressure and temperature.</returns>
         public static double[] Cricondenbar(Int32[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
         {
-            double[] Results = new double[2];
+            Normalize(Values, 1.0);
 
+            double[] Results = new double[2];
             Int32 IND = 2;
             Int32 Components = IDs.Length;
             Int32[] ID = Pad(IDs);
@@ -283,8 +284,6 @@ namespace PhaseOpt
             double CCBP = P;
 
             if (Units > 1) Units = 1;
-
-            Normalize(Values, 1.0);
 
             DateTime Start = DateTime.Now;
             Criconden(ref IND, ref Components, ID, Z, ref CCBT, ref CCBP);
