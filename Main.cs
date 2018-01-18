@@ -358,6 +358,8 @@ namespace Main
 
                 PO_A.DB_Connection.Write_Value("PhaseOpt.ST", Start_Time.ToString("yyy-MM-dd HH:mm:ss"));
 
+                PO_A.Calculate_Dropout_Curves();
+
                 Sleep_Time = (Start_Time.AddMinutes(3) - DateTime.Now).TotalMilliseconds;
                 if (Sleep_Time > 1.0)
                 {

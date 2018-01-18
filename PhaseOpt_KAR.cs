@@ -566,6 +566,92 @@ public class PhaseOpt_KAR
         }
 
     }
+
+    public void Calculate_Dropout_Curves()
+    {
+        List<Int32> Composition_IDs = new List<Int32>();
+        List<double> Composition_Values = new List<double>();
+
+        // Mix to T400 dropout
+        foreach (Component c in Mix_To_T410_Comp)
+        {
+            Composition_IDs.Add(c.ID);
+            Composition_Values.Add(c.Value);
+            Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+        }
+
+        double[] Temperature = new double[13] { -25.0, -22.5, -20.0, -17.5, -15.0, -12.5, -10.0, -7.5, -5.0, -2.5, 0.0, 2.5, 5.0 };
+        double[] Dropout = new double[5] { 0.1, 0.5, 1.0, 2.0, 5.0 };
+        double[,] Pres = new double[Dropout.Length + 1, Temperature.Length];
+        double[,] Operation_Point = new double[3, 2]; // [Pressure, Temperature]
+
+        DateTime Time_Stamp = DateTime.Now.AddSeconds(-15);
+        Hashtable OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5044" }, Time_Stamp);
+        Operation_Point[0, 0] = (double)OP["21PI5108"];
+        Operation_Point[0, 1] = (double)OP["21TI5044"];
+
+        OP = DB_Connection.Read_Values(new string[] { "21PI5230", "21TC5236" }, Time_Stamp);
+        Operation_Point[1, 0] = (double)OP["21PI5230"];
+        Operation_Point[1, 1] = (double)OP["21TC5236"];
+
+        Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;
+
+        // Dew point line. We use this later to set the max value when searching for drop out pressures
+        for (int i = 0; i < Temperature.Length; i++)
+        {
+            Pres[0, i] = PhaseOpt.PhaseOpt.DewP(Composition_IDs.ToArray(), Composition_Values.ToArray(), Temperature[i] + 273.15);
+            System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", Temperature[i], Pres[0, i]);
+        }
+
+        for (int i = 0; i < Dropout.Length; i++)
+        {
+            for (int j = 0; j < Temperature.Length; j++)
+            {
+                Pres[i + 1, j] = PhaseOpt.PhaseOpt.Dropout_Search(Composition_IDs.ToArray(), Composition_Values.ToArray(), Dropout[i], Temperature[j] + 273.15, Pres[0, j]);
+                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i+1, j]);
+            }
+        }
+        DateTime Start_Time = DateTime.Now;
+        Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
+        String Tag;
+        Int32 Interval = 3;
+
+        for (int j = 0; j < Operation_Point.GetUpperBound(0) + 1; j++)
+        {
+            if (j == 0)
+            {
+                DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time);
+                DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time);
+            }
+
+            DB_Connection.Insert_Value("PO_OP" + (j).ToString(), Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 1)));
+            DB_Connection.Insert_Value("PO_E_T", Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 1)));
+
+            DB_Connection.Insert_Value("PO_OP" + (j).ToString(), Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 2)));
+            DB_Connection.Insert_Value("PO_E_T", Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 2)));
+
+            DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
+            DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
+        }
+
+        Start_Time = Start_Time.AddSeconds(-(Interval * (Operation_Point.GetUpperBound(0) + 1) + 1));
+        Interval = 5;
+        for (int j = 0; j < Temperature.Length; j++)
+        {
+            if (j == 0) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * j));
+            DB_Connection.Insert_Value("PO_E_T", Temperature[j], Start_Time.AddSeconds(-Interval * (j + 1)));
+
+            for (int i = 0; i < Dropout.Length + 1; i++)
+            {
+                Tag = "PO_E_P" +  (i).ToString();
+                if (j == 0) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
+                DB_Connection.Insert_Value(Tag, Pres[i, j] - 1.01325, Start_Time.AddSeconds(-Interval * (j + 1)));
+                if (j == Temperature.Length - 1) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
+            }
+            if (j == Temperature.Length - 1) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
+        }
+    }
+
     public void Read_Config(string Config_File)
     {
         XmlReaderSettings settings = new XmlReaderSettings();
