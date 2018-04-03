@@ -427,7 +427,7 @@ public class PhaseOpt_KAR
         }
 
         Log_File.Flush();
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(),Composition_Values.ToArray()));
         for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
         {
             if (!Composition_Result[i].Equals(double.NaN))
@@ -452,7 +452,7 @@ public class PhaseOpt_KAR
         }
 
         Log_File.Flush();
-        Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), Composition_Values.ToArray());
+        Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray()));
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
         {
             if (!Composition_Result[i].Equals(double.NaN))
@@ -536,7 +536,7 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Asgard()
     {
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Asgard.ToArray(), Composition_Values_Asgard_Current.ToArray());
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Asgard.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Asgard.ToArray(), Composition_Values_Asgard_Current.ToArray()));
         for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
         {
             if (!Composition_Result[i].Equals(double.NaN))
@@ -552,7 +552,7 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Statpipe()
     {
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray());
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
             if (!Composition_Result[i].Equals(double.NaN))
@@ -596,10 +596,13 @@ public class PhaseOpt_KAR
 
         Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;
 
+        double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray());
+
+
         // Dew point line. We use this later to set the max value when searching for drop out pressures
         for (int i = 0; i < Temperature.Length; i++)
         {
-            Pres[0, i] = PhaseOpt.PhaseOpt.DewP(Composition_IDs.ToArray(), Composition_Values.ToArray(), Temperature[i] + 273.15);
+            Pres[0, i] = PhaseOpt.PhaseOpt.DewP(Composition_IDs.ToArray(), Z, Temperature[i] + 273.15);
             System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", Temperature[i], Pres[0, i]);
         }
 
@@ -607,7 +610,7 @@ public class PhaseOpt_KAR
         {
             for (int j = 0; j < Temperature.Length; j++)
             {
-                Pres[i + 1, j] = PhaseOpt.PhaseOpt.Dropout_Search(Composition_IDs.ToArray(), Composition_Values.ToArray(), Dropout[i], Temperature[j] + 273.15, Pres[0, j]);
+                Pres[i + 1, j] = PhaseOpt.PhaseOpt.Dropout_Search(Composition_IDs.ToArray(), Z, Dropout[i], Temperature[j] + 273.15, Pres[0, j]);
                 System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i+1, j]);
             }
         }

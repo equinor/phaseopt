@@ -134,6 +134,19 @@ namespace PhaseOpt
             Int32[] ID, double[] Z, ref double T, ref double P, ref double D1, ref double D2, ref double CF1,
             ref double CF2, double[] XY1, double[] XY2);
 
+        /// <summary>
+        /// New fluid where the amount of C5+ for the returned fluid is tuned so the new fluid has a cricondenbar pressure 2.4 bar higher than that of the original fluid.
+        /// </summary>
+        /// <param name="NC">Number of mixture components, INTEGER, Input.</param>
+        /// <param name="ID">Identification number of each mixture component, INTEGER array of 100 elements,
+        /// Input (The ID numbers of the compounds, available in UMR database).</param>
+        /// <param name="Z">Mixture composition in mol/mol, DOUBLE PRECISION array of 100 elements, Input/Output.</param>
+        /// <param name="T">Cricondenbar temperature [in K] of the tuned fluid, DOUBLE PRECISION, Output.</param>
+        /// <param name="P">Cricondenbar pressure [in bar] of the tuned fluid, DOUBLE PRECISION, Output.</param>
+        [DllImport(@"umr-ol.dll", EntryPoint = "tf", CallingConvention = CallingConvention.Winapi)]
+        private static extern void Ft(ref Int32 NC,
+            Int32[] ID, double[] Z, ref double T, ref double P);
+
 
         /// <summary>
         /// Scales the sum of Array elements into the range [0..Target].
@@ -426,6 +439,21 @@ namespace PhaseOpt
             if (P2 > 900.0) P2 = 0.0;
 
             return Math.Max(P1, P2);
+        }
+
+        public static double[] Fluid_Tune(Int32[] IDs, double[] Values)
+        {
+            Normalize(Values, 1.0);
+
+            Int32 Components = IDs.Length;
+            Int32[] ID = Pad(IDs);
+            double[] Z = Pad(Values);
+            double T = 0.0;
+            double P = 0.0;
+
+            Ft(ref Components, ID, Z, ref T, ref P);
+
+            return Z;
         }
 
         private static double[] Pad(double[] In)

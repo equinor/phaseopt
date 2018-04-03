@@ -21,6 +21,11 @@ namespace Test_Space
             Operation_Point[1, 0] = 106.6; Operation_Point[1, 1] = -9.3;
             Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;
 
+            Double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(IDs, Values);
+
+            Values = Z;
+
+
             // Dew point line. We use this later to set the max value when searching for drop out pressures
             for (int i = 0; i < Temperature.Length; i++)
             {
@@ -35,6 +40,8 @@ namespace Test_Space
                     System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i+1, j]);
                 }
             }
+
+
             DateTime Start_Time = DateTime.Now;
             Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
             IP21_Comm DB_Connection = new IP21_Comm("KAR-IP21.statoil.net", "10014");
@@ -67,10 +74,10 @@ namespace Test_Space
             {
                 if (j == 0) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * j));
                 DB_Connection.Insert_Value("PO_E_T", Temperature[j], Start_Time.AddSeconds(-Interval * (j + 1)));
-                
+
                 for (int i = 0; i < Dropout.Length + 1; i++)
                 {
-                    Tag = "PO_E_P" +  (i).ToString();
+                    Tag = "PO_E_P" + (i).ToString();
                     if (j == 0) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
                     DB_Connection.Insert_Value(Tag, Pres[i, j], Start_Time.AddSeconds(-Interval * (j + 1)));
                     if (j == Temperature.Length - 1) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
