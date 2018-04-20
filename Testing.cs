@@ -17,6 +17,31 @@ namespace Test_Space
             double[,] Pres = new double[Dropout.Length + 1, Temperature.Length];
             double[,] Operation_Point = new double[3, 2]; // [Pressure, Temperature]
 
+            Values[0] = 0.019589630031103186;
+            Values[1] = 0.0069316153019771043;
+            Values[2] = 0.85927475631962247;
+            Values[3] = 0.066976027653551679;
+            Values[4] = 0.027726113415945896;
+            Values[5] = 0.0041137726628022253;
+            Values[6] = 0.0075626129494001451;
+            Values[7] = 0.0019319335825040585;
+            Values[8] = 0.00200034452952193;
+            Values[9] = 0.00077486680187614494;
+            Values[10] = 0.00023703678307125027;
+            Values[11] = 0.00062108276271134418;
+            Values[12] = 0.00031021799009610152;
+            Values[13] = 0.00087619108295439586;
+            Values[14] = 0.0002509733272680488;
+            Values[15] = 8.3306340077155677E-05;
+            Values[16] = 0.00042925548924499968;
+            Values[17] = 0.00017954942822573852;
+            Values[18] = 3.310099045445734E-05;
+            Values[19] = 3.1032777420227576E-05;
+            Values[20] = 5.0705449690578696E-05;
+            Values[21] = 1.5874330480810202E-05;
+
+            double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(IDs, Values);
+
             Operation_Point[0, 0] = 107.3; Operation_Point[0, 1] = -3.8;
             Operation_Point[1, 0] = 106.6; Operation_Point[1, 1] = -9.3;
             Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;

@@ -1,13 +1,28 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
-public class IP21_Comm
+public class IP21_Comm: IDisposable
 {
     public string IP21_Host;
     public string IP21_Port;
     private System.Data.Odbc.OdbcCommand Cmd;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            // dispose managed resources
+            Cmd.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
     public IP21_Comm(string Host, string Port)
     {
@@ -36,7 +51,10 @@ public class IP21_Comm
         string Tag_cond = "(FALSE"; // Makes it easier to add OR conditions.
         foreach (string Tag in Tag_Name)
         {
-            Tag_cond += "\n  OR NAME = '" + Tag + "'";
+            if (Sanitize(Tag))
+            {
+                Tag_cond += "\n  OR NAME = '" + Tag + "'";
+            }
         }
         Tag_cond += ")";
         Cmd.CommandText =
@@ -106,5 +124,19 @@ WHERE
   VALUES (CAST('" + Time_Stamp.ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS'), 0.0/0.0);";
         }
         Cmd.ExecuteNonQuery();
+    }
+
+    private bool Sanitize(string stringValue)
+    {
+        if (Regex.Match(stringValue, "-{2,}").Success  ||
+            Regex.Match(stringValue, @"[*/]+").Success ||
+            Regex.Match(stringValue, @"(;|\s)(exec|execute|select|insert|update|delete|create|alter|drop|rename|truncate|backup|restore)\s", RegexOptions.IgnoreCase).Success)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 }

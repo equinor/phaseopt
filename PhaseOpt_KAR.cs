@@ -603,7 +603,7 @@ public class PhaseOpt_KAR
         for (int i = 0; i < Temperature.Length; i++)
         {
             Pres[0, i] = PhaseOpt.PhaseOpt.DewP(Composition_IDs.ToArray(), Z, Temperature[i] + 273.15);
-            System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", Temperature[i], Pres[0, i]);
+            System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", Temperature[i], Pres[0, i] - 1.01325);
         }
 
         for (int i = 0; i < Dropout.Length; i++)
@@ -611,7 +611,7 @@ public class PhaseOpt_KAR
             for (int j = 0; j < Temperature.Length; j++)
             {
                 Pres[i + 1, j] = PhaseOpt.PhaseOpt.Dropout_Search(Composition_IDs.ToArray(), Z, Dropout[i], Temperature[j] + 273.15, Pres[0, j]);
-                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i+1, j]);
+                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i+1, j] - 1.01325);
             }
         }
         DateTime Start_Time = DateTime.Now;

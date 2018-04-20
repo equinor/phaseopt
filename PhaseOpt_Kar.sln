@@ -1,25 +1,52 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhaseOpt_Kar", "PhaseOpt_Kar.csproj", "{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6} = {FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{45556E4A-F5C0-4BCF-BB35-415CA7517BE5}"
 EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "UMR-OL", "..\UMR\UMR-OL.vfproj", "{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}.Debug|x64.ActiveCfg = Debug|x64
+		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}.Debug|x64.Build.0 = Debug|x64
 		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}.Debug|x86.ActiveCfg = Debug|x86
 		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}.Debug|x86.Build.0 = Debug|x86
+		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}.Release|x64.ActiveCfg = Release|x64
+		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}.Release|x64.Build.0 = Release|x64
 		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}.Release|x86.ActiveCfg = Release|x86
 		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}.Release|x86.Build.0 = Release|x86
+		{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}.Debug|x64.ActiveCfg = Debug|x64
+		{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}.Debug|x64.Build.0 = Debug|x64
+		{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}.Debug|x86.ActiveCfg = Debug|Win32
+		{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}.Debug|x86.Build.0 = Debug|Win32
+		{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}.Release|x64.ActiveCfg = Release|Win32
+		{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}.Release|x86.ActiveCfg = Release|Win32
+		{FF60D75A-E39F-403F-BCF0-DB4ABC21DDE6}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A413E33F-705E-4376-BDC4-CF7508BD7845}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

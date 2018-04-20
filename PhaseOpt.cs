@@ -30,7 +30,7 @@ namespace PhaseOpt
         /// inside the phase envelope, for the algorithm to converge.
         /// </para>
         /// </remarks>
-        [DllImport(@"umr-ol.dll", EntryPoint = "ccd", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "ccd", CallingConvention = CallingConvention.StdCall)]
         private static extern void Criconden(ref Int32 IND, ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P);
 
@@ -58,7 +58,7 @@ namespace PhaseOpt
         /// After program's execution, the routine returns the calculated value of T.
         /// </para>
         /// </remarks>
-        [DllImport(@"umr-ol.dll", EntryPoint = "dewt", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "dewt", CallingConvention = CallingConvention.StdCall)]
         private static extern void Dewt(ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P, double[] XY);
 
@@ -90,7 +90,7 @@ namespace PhaseOpt
         /// If P2 is equal to 0, no second dew point pressure is present.
         /// </para>
         /// </remarks>
-        [DllImport(@"umr-ol.dll", EntryPoint = "dewp", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "dewp", CallingConvention = CallingConvention.StdCall)]
         private static extern void Dewp(ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P1, double[] XY1, ref double P2, double[] XY2);
 
@@ -109,7 +109,7 @@ namespace PhaseOpt
         /// <param name="CF2">Compressibility factors [-], DOUBLE PRECISION, Output.</param>
         /// <param name="XY1">Phase composition of phase [in mol/mol], DOUBLE PRECISION array of 50 elements, Output.</param>
         /// <param name="XY2">Phase composition of phase [in mol/mol], DOUBLE PRECISION array of 50 elements, Output.</param>
-        [DllImport(@"umr-ol.dll", EntryPoint = "dens", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "dens", CallingConvention = CallingConvention.StdCall)]
         private static extern void Dens(ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P, ref double D1, ref double D2, ref double CF1,
             ref double CF2, double[] XY1, double[] XY2);
@@ -129,7 +129,7 @@ namespace PhaseOpt
         /// <param name="CF2">Liquid dropout volume [%], DOUBLE PRECISION, Output.</param>
         /// <param name="XY1">Phase composition of phase [in mol/mol], DOUBLE PRECISION array of 50 elements, Output.</param>
         /// <param name="XY2">Phase composition of phase [in mol/mol], DOUBLE PRECISION array of 50 elements, Output.</param>
-        [DllImport(@"umr-ol.dll", EntryPoint = "vpl", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "vpl", CallingConvention = CallingConvention.StdCall)]
         private static extern void Vpl(ref Int32 NC,
             Int32[] ID, double[] Z, ref double T, ref double P, ref double D1, ref double D2, ref double CF1,
             ref double CF2, double[] XY1, double[] XY2);
@@ -143,9 +143,9 @@ namespace PhaseOpt
         /// <param name="Z">Mixture composition in mol/mol, DOUBLE PRECISION array of 100 elements, Input/Output.</param>
         /// <param name="T">Cricondenbar temperature [in K] of the tuned fluid, DOUBLE PRECISION, Output.</param>
         /// <param name="P">Cricondenbar pressure [in bar] of the tuned fluid, DOUBLE PRECISION, Output.</param>
-        [DllImport(@"umr-ol.dll", EntryPoint = "tf", CallingConvention = CallingConvention.Winapi)]
+        [DllImport(@"umr-ol.dll", EntryPoint = "tf", CallingConvention = CallingConvention.StdCall)]
         private static extern void Ft(ref Int32 NC,
-            Int32[] ID, double[] Z, ref double T, ref double P);
+            Int32[] ID, double[] Z, ref double T, ref double P); //, ref Int32 I); //, ref double P1, double[] Z1);
 
 
         /// <summary>
@@ -445,13 +445,39 @@ namespace PhaseOpt
         {
             Normalize(Values, 1.0);
 
+            //Values[0] = 0.019589630031103186;
+            //Values[1] = 0.0069316153019771043;
+            //Values[2] = 0.85927475631962247;
+            //Values[3] = 0.066976027653551679;
+            //Values[4] = 0.027726113415945896;
+            //Values[5] = 0.0041137726628022253;
+            //Values[6] = 0.0075626129494001451;
+            //Values[7] = 0.0019319335825040585;
+            //Values[8] = 0.00200034452952193;
+            //Values[9] = 0.00077486680187614494;
+            //Values[10] = 0.00023703678307125027;
+            //Values[11] = 0.00062108276271134418;
+            //Values[12] = 0.00031021799009610152;
+            //Values[13] = 0.00087619108295439586;
+            //Values[14] = 0.0002509733272680488;
+            //Values[15] = 8.3306340077155677E-05;
+            //Values[16] = 0.00042925548924499968;
+            //Values[17] = 0.00017954942822573852;
+            //Values[18] = 3.310099045445734E-05;
+            //Values[19] = 3.1032777420227576E-05;
+            //Values[20] = 5.0705449690578696E-05;
+            //Values[21] = 1.5874330480810202E-05;
+
             Int32 Components = IDs.Length;
             Int32[] ID = Pad(IDs);
             double[] Z = Pad(Values);
+            //double[] Z1 = Z;
             double T = 0.0;
             double P = 0.0;
+            //double P1 = 0.0;
+            //int It = 0;
 
-            Ft(ref Components, ID, Z, ref T, ref P);
+            Ft(ref Components, ID, Z, ref T, ref P); //, ref It); //, ref P1, Z1);
 
             return Z;
         }
