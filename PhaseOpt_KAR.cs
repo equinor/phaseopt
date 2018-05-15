@@ -109,16 +109,18 @@ public class PhaseOpt_KAR
         // Read velocities
         // There might not be values in IP21 at Now, so we fetch slightly older values.
         Timestamp = DateTime.Now.AddSeconds(-15);
+        Hashtable A_Velocity;
         Log_File.WriteLine();
         Log_File.WriteLine(Timestamp.ToString("yyyy-MM-dd HH:mm:ss"));
-        Hashtable A_Velocity = DB_Connection.Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
+
         double Asgard_Average_Velocity = 0.0;
         try
         {
-            Asgard_Average_Velocity = ((double)A_Velocity[Asgard_Velocity_Tags[0]] +
-                                       (double)A_Velocity[Asgard_Velocity_Tags[1]]) / 2.0;
-            Asgard_Velocity[0] = (double)A_Velocity[Asgard_Velocity_Tags[0]];
-            Asgard_Velocity[1] = (double)A_Velocity[Asgard_Velocity_Tags[1]];
+            A_Velocity = DB_Connection.Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
+            Asgard_Average_Velocity = (Convert.ToDouble(A_Velocity[Asgard_Velocity_Tags[0]]) +
+                                       Convert.ToDouble(A_Velocity[Asgard_Velocity_Tags[1]])) / 2.0;
+            Asgard_Velocity[0] = Convert.ToDouble(A_Velocity[Asgard_Velocity_Tags[0]]);
+            Asgard_Velocity[1] = Convert.ToDouble(A_Velocity[Asgard_Velocity_Tags[1]]);
             Log_File.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
@@ -129,14 +131,15 @@ public class PhaseOpt_KAR
             Log_File.WriteLine("Tag {0} and/or {1} not valid", Asgard_Velocity_Tags[0], Asgard_Velocity_Tags[1]);
             Log_File.Flush();
         }
-        Hashtable S_Velocity = DB_Connection.Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
         double Statpipe_Average_Velocity = 0.0;
+        Hashtable S_Velocity;
         try
         {
-            Statpipe_Average_Velocity = ((double)S_Velocity[Statpipe_Velocity_Tags[0]] +
-                                                (double)S_Velocity[Statpipe_Velocity_Tags[1]]) / 2.0;
-            Statpipe_Velocity[0] = (double)S_Velocity[Statpipe_Velocity_Tags[0]];
-            Statpipe_Velocity[1] = (double)S_Velocity[Statpipe_Velocity_Tags[1]];
+            S_Velocity = DB_Connection.Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
+            Statpipe_Average_Velocity = (Convert.ToDouble(S_Velocity[Statpipe_Velocity_Tags[0]]) +
+                                                Convert.ToDouble(S_Velocity[Statpipe_Velocity_Tags[1]])) / 2.0;
+            Statpipe_Velocity[0] = Convert.ToDouble(S_Velocity[Statpipe_Velocity_Tags[0]]);
+            Statpipe_Velocity[1] = Convert.ToDouble(S_Velocity[Statpipe_Velocity_Tags[1]]);
             Log_File.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
@@ -170,17 +173,25 @@ public class PhaseOpt_KAR
 #endif
 
         // Read Åsgard composition
-        bool Asgard_Stat = true;
-        bool Statpipe_Stat = true;
-
-        Hashtable Asgard_Status = DB_Connection.Read_Values(Asgard_Status_Tags.ToArray(), Asgard_Timestamp);
-        foreach (DictionaryEntry Status in Asgard_Status)
+        bool Asgard_Stat = false;
+        bool Statpipe_Stat = false;
+        Hashtable Asgard_Status;
+        try
         {
-            if ((double)Status.Value < 999.9)
+            Asgard_Status = DB_Connection.Read_Values(Asgard_Status_Tags.ToArray(), Asgard_Timestamp);
+            foreach (DictionaryEntry Status in Asgard_Status)
             {
-                Asgard_Stat = false;
-                Log_File.WriteLine("GC bad status {0}", Status.Key);
+                if (Convert.ToDouble(Status.Value) > 999.9)
+                {
+                    Asgard_Stat = true;
+                }
             }
+        }
+        catch
+        {
+            Log_File.WriteLine("Tag {0} and/or {1} not valid", Asgard_Status_Tags[0], Asgard_Status_Tags[1]);
+            Log_File.WriteLine("GC bad status ");
+            Log_File.Flush();
         }
 
         Tags = new List<string>();
@@ -192,14 +203,14 @@ public class PhaseOpt_KAR
             {
                 Tags.Add(c.Tag);
             }
-            Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Asgard_Timestamp);
 
             try
             {
+                Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Asgard_Timestamp);
                 foreach (Component c in Asgard_Comp)
                 {
                     Tag_Name = c.Tag;
-                    c.Value = (double)Comp_Values[c.Tag] * c.Scale_Factor;
+                    c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
                 }
             }
             catch
@@ -213,14 +224,23 @@ public class PhaseOpt_KAR
         if (Comp_Values != null) Comp_Values.Clear();
 
         // Read Statpipe composition
-        Hashtable Statpipe_Status = DB_Connection.Read_Values(Statpipe_Status_Tags.ToArray(), Statpipe_Timestamp);
-        foreach (DictionaryEntry Status in Statpipe_Status)
+        Hashtable Statpipe_Status;
+        try
         {
-            if ((double)Status.Value < 999.9)
+            Statpipe_Status = DB_Connection.Read_Values(Statpipe_Status_Tags.ToArray(), Statpipe_Timestamp);
+            foreach (DictionaryEntry Status in Statpipe_Status)
             {
-                Statpipe_Stat = false;
-                Log_File.WriteLine("GC bad status {0}", Status.Key);
+                if (Convert.ToDouble(Status.Value) > 999.9)
+                {
+                    Statpipe_Stat = true;
+                }
             }
+        }
+        catch
+        {
+            Log_File.WriteLine("Tag {0} and/or {1} not valid", Statpipe_Status_Tags[0], Statpipe_Status_Tags[1]);
+            Log_File.WriteLine("GC bad status ");
+            Log_File.Flush();
         }
 
         if (Statpipe_Stat)
@@ -229,13 +249,13 @@ public class PhaseOpt_KAR
             {
                 Tags.Add(c.Tag);
             }
-            Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Statpipe_Timestamp);
             try
             {
+                Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Statpipe_Timestamp);
                 foreach (Component c in Statpipe_Comp)
                 {
                     Tag_Name = c.Tag;
-                    c.Value = (double)Comp_Values[c.Tag] * c.Scale_Factor;
+                    c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
                 }
             }
             catch
@@ -250,52 +270,51 @@ public class PhaseOpt_KAR
     public void Read_From_IP21()
     {
         // Read molweight
-        Hashtable Molweight = DB_Connection.Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
+        Hashtable Molweight;
         Asgard_Molweight = 0.0;
         try
         {
-            Asgard_Molweight = (double)Molweight[Asgard_Molweight_Tag];
+            Molweight = DB_Connection.Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
+            Asgard_Molweight = Convert.ToDouble(Molweight[Asgard_Molweight_Tag]);
         }
         catch
         {
             Log_File.WriteLine("Tag {0} not valid", Asgard_Molweight_Tag);
             Log_File.Flush();
-            //Environment.Exit(13);
         }
-        Molweight = DB_Connection.Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
         Statpipe_Molweight = 0.0;
         try
         {
-            Statpipe_Molweight = (double)Molweight[Statpipe_Molweight_Tag];
+            Molweight = DB_Connection.Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
+            Statpipe_Molweight = Convert.ToDouble(Molweight[Statpipe_Molweight_Tag]);
         }
         catch
         {
             Log_File.WriteLine("Tag {0} not valid", Statpipe_Molweight_Tag);
             Log_File.Flush();
-            //Environment.Exit(13);
         }
-        Molweight = DB_Connection.Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
         double Mix_To_T100_Molweight = 0.0;
         try
         {
-            Mix_To_T100_Molweight = (double)Molweight[Mix_To_T100_Molweight_Tag];
+            Molweight = DB_Connection.Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
+            Mix_To_T100_Molweight = Convert.ToDouble(Molweight[Mix_To_T100_Molweight_Tag]);
         }
         catch
         {
             Log_File.WriteLine("Tag {0} not valid", Mix_To_T100_Molweight_Tag);
             Log_File.Flush();
-            //Environment.Exit(13);
         }
 
         // Read mass flow
-        Hashtable Mass_Flow = DB_Connection.Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
+        Hashtable Mass_Flow;
         Asgard_Transport_Flow = 0.0;
 #if DEBUG
         Console.WriteLine("\nÅsgard flow:");
 #endif
         try
         {
-            Asgard_Transport_Flow = (double)Mass_Flow[Asgard_Mass_Flow_Tags[0]];
+            Mass_Flow = DB_Connection.Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
+            Asgard_Transport_Flow = Convert.ToDouble(Mass_Flow[Asgard_Mass_Flow_Tags[0]]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Asgard_Mass_Flow_Tags[0], Asgard_Transport_Flow);
 #endif
@@ -304,18 +323,17 @@ public class PhaseOpt_KAR
         {
             Log_File.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
             Log_File.Flush();
-            //Environment.Exit(13);
         }
         Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
-        Mass_Flow = DB_Connection.Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
         Statpipe_Transport_Flow = 0.0;
 #if DEBUG
         Console.WriteLine("\nStatpipe flow:");
 #endif
         try
         {
-            Statpipe_Transport_Flow = (double)Mass_Flow[Statpipe_Mass_Flow_Tags[0]];
+            Mass_Flow = DB_Connection.Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
+            Statpipe_Transport_Flow = Convert.ToDouble(Mass_Flow[Statpipe_Mass_Flow_Tags[0]]);
 #if DEBUG
             Console.WriteLine("{0}\t{1}", Statpipe_Mass_Flow_Tags[0], Statpipe_Transport_Flow);
 #endif
@@ -324,23 +342,21 @@ public class PhaseOpt_KAR
         {
             Log_File.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
             Log_File.Flush();
-            //Environment.Exit(13);
         }
         Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
-        Mass_Flow = DB_Connection.Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
         Mix_To_T100_Flow = 0.0;
         Statpipe_Cross_Over_Flow = 0.0;
         try
         {
-            Mix_To_T100_Flow = (double)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]];
-            Statpipe_Cross_Over_Flow = (double)Mass_Flow[Mix_To_T100_Mass_Flow_Tags[1]];
+            Mass_Flow = DB_Connection.Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
+            Mix_To_T100_Flow = Convert.ToDouble(Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]]);
+            Statpipe_Cross_Over_Flow = Convert.ToDouble(Mass_Flow[Mix_To_T100_Mass_Flow_Tags[1]]);
         }
         catch
         {
             Log_File.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100_Mass_Flow_Tags[0], Mix_To_T100_Mass_Flow_Tags[1]);
             Log_File.Flush();
-            //Environment.Exit(13);
         }
         Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
         Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
@@ -481,15 +497,15 @@ public class PhaseOpt_KAR
         {
             Tags.Add(c.Tag);
         }
-        Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
         Log_File.WriteLine("Åsgard:");
         string Tag_Name = "";
         try
         {
+            Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
             foreach (Component c in Asgard_Comp)
             {
                 Tag_Name = c.Tag;
-                c.Value = (double)Comp_Values[c.Tag] * c.Scale_Factor;
+                c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
                 Composition_IDs_Asgard.Add(c.ID);
                 Composition_Values_Asgard_Current.Add(c.Value);
                 Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
@@ -511,14 +527,14 @@ public class PhaseOpt_KAR
         {
             Tags.Add(c.Tag);
         }
-        Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
         Log_File.WriteLine("Statpipe:");
         try
         {
+            Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
             foreach (Component c in Statpipe_Comp)
             {
                 Tag_Name = c.Tag;
-                c.Value = (double)Comp_Values[c.Tag] * c.Scale_Factor;
+                c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
                 Composition_IDs_Statpipe.Add(c.ID);
                 Composition_Values_Statpipe_Current.Add(c.Value);
                 Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
@@ -587,12 +603,12 @@ public class PhaseOpt_KAR
 
         DateTime Time_Stamp = DateTime.Now.AddSeconds(-15);
         Hashtable OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5044" }, Time_Stamp);
-        Operation_Point[0, 0] = (double)OP["21PI5108"];
-        Operation_Point[0, 1] = (double)OP["21TI5044"];
+        Operation_Point[0, 0] = Convert.ToDouble(OP["21PI5108"]);
+        Operation_Point[0, 1] = Convert.ToDouble(OP["21TI5044"]);
 
         OP = DB_Connection.Read_Values(new string[] { "21PI5230", "21TC5236" }, Time_Stamp);
-        Operation_Point[1, 0] = (double)OP["21PI5230"];
-        Operation_Point[1, 1] = (double)OP["21TC5236"];
+        Operation_Point[1, 0] = Convert.ToDouble(OP["21PI5230"]);
+        Operation_Point[1, 1] = Convert.ToDouble(OP["21TC5236"]);
 
         Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;
 
