@@ -634,6 +634,7 @@ public class PhaseOpt_KAR
         Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
         String Tag;
         Int32 Interval = 3;
+        Double Result = 0.0;
 
         for (int j = 0; j < Operation_Point.GetUpperBound(0) + 1; j++)
         {
@@ -651,6 +652,9 @@ public class PhaseOpt_KAR
 
             DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
             DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
+
+            Result = PhaseOpt.PhaseOpt.Dropout(Composition_IDs.ToArray(), Z, Operation_Point[j, 0] + 1.01325, Operation_Point[j, 1] + 273.15)[0] * 100.0;
+            DB_Connection.Write_Value("PO_LD" + (j).ToString(), Result);
         }
 
         Start_Time = Start_Time.AddSeconds(-(Interval * (Operation_Point.GetUpperBound(0) + 1) + 1));
