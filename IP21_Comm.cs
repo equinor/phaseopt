@@ -59,7 +59,7 @@ public class IP21_Comm: IDisposable
         Tag_cond += ")";
         Cmd.CommandText =
 @"SELECT
-  NAME, VALUE
+  NAME, VALUE, STATUS
 FROM
   History
 WHERE
@@ -73,21 +73,24 @@ WHERE
         Hashtable Result = new Hashtable();
         while (DR.Read())
         {
-            Result.Add(DR.GetValue(0), DR.GetValue(1));
+            if (DR.GetValue(2).ToString() == "0") // if status is good
+            {
+                Result.Add(DR.GetValue(0).ToString(), DR.GetValue(1));
+            }
         }
 
         DR.Close();
         return Result;
     }
 
-    public void Write_Value(string Tag_Name, double Value, string Quality = "Good")
+    public int Write_Value(string Tag_Name, double Value, string Quality = "Good")
     {
         Cmd.CommandText =
 @"UPDATE ip_analogdef
   SET ip_input_value = " + Value.ToString("G", CultureInfo.InvariantCulture) + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        Cmd.ExecuteNonQuery();
+        return Cmd.ExecuteNonQuery();
     }
 
     public void Write_Value(string Tag_Name, int Value, string Quality = "Good")
