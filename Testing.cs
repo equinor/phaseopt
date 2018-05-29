@@ -17,6 +17,10 @@ namespace Test_Space
             double[,] Pres = new double[Dropout.Length + 1, Temperature.Length];
             double[,] Operation_Point = new double[3, 2]; // [Pressure, Temperature]
 
+            Operation_Point[0, 0] = 107.3; Operation_Point[0, 1] = -3.8;
+            Operation_Point[1, 0] = 106.6; Operation_Point[1, 1] = -9.3;
+            Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;
+
             Values[0] = 0.019589630031103186;
             Values[1] = 0.0069316153019771043;
             Values[2] = 0.85927475631962247;
@@ -42,13 +46,11 @@ namespace Test_Space
 
             double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(IDs, Values);
 
-            Operation_Point[0, 0] = 107.3; Operation_Point[0, 1] = -3.8;
-            Operation_Point[1, 0] = 106.6; Operation_Point[1, 1] = -9.3;
-            Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;
+            //Double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(IDs, Values);
+            //Values = Z;
 
-            Double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(IDs, Values);
-
-            Values = Z;
+            Environment.Exit(0);
+            
 
 
             // Dew point line. We use this later to set the max value when searching for drop out pressures
@@ -67,7 +69,7 @@ namespace Test_Space
             }
 
 
-            DateTime Start_Time = DateTime.Now;
+           DateTime Start_Time = DateTime.Now;
             Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
             IP21_Comm DB_Connection = new IP21_Comm("KAR-IP21.statoil.net", "10014");
             DB_Connection.Connect();

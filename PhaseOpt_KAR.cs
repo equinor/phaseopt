@@ -420,12 +420,12 @@ public class PhaseOpt_KAR
         // Write mixed compositions to IP21
         foreach (Component c in Mix_To_T100_Comp)
         {
-            DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
+            //DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
         foreach (Component c in Mix_To_T410_Comp)
         {
-            DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
+            //DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
         }
 
         List<Int32> Composition_IDs = new List<Int32>();
@@ -448,7 +448,7 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
+                //DB_Connection.Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
             }
             Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -473,7 +473,7 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+                //DB_Connection.Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
             }
             Log_File.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -557,7 +557,7 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+                //DB_Connection.Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
             }
             Log_File.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -573,7 +573,7 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+                //DB_Connection.Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
             }
             Log_File.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
