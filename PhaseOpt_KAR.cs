@@ -606,11 +606,14 @@ public class PhaseOpt_KAR
         Operation_Point[0, 0] = Convert.ToDouble(OP["21PI5108"]);
         Operation_Point[0, 1] = Convert.ToDouble(OP["21TI5044"]);
 
-        OP = DB_Connection.Read_Values(new string[] { "21PI5230", "21TC5236" }, Time_Stamp);
-        Operation_Point[1, 0] = Convert.ToDouble(OP["21PI5230"]);
-        Operation_Point[1, 1] = Convert.ToDouble(OP["21TC5236"]);
+        OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5206" }, Time_Stamp);
+        Operation_Point[1, 0] = Convert.ToDouble(OP["21PI5108"]);
+        Operation_Point[1, 1] = Convert.ToDouble(OP["21TI5206"]);
 
-        Operation_Point[2, 0] = 108.1; Operation_Point[2, 1] = -1.5;
+        OP = DB_Connection.Read_Values(new string[] { "21PI5230", "21TC5236" }, Time_Stamp);
+        Operation_Point[2, 0] = Convert.ToDouble(OP["21PI5230"]);
+        Operation_Point[2, 1] = Convert.ToDouble(OP["21TC5236"]);
+
 
         double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray());
 
