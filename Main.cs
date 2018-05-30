@@ -379,7 +379,7 @@ namespace Main
                     Log_File.WriteLine("{0}: Errors in Asgard current composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 }
 
-                //PO_A.DB_Connection.Write_Value("PhaseOpt.ST", Start_Time.ToString("yyy-MM-dd HH:mm:ss"));
+                PO_A.DB_Connection.Write_Value("PhaseOpt.ST", Start_Time.ToString("yyy-MM-dd HH:mm:ss"));
 
                 PO_A.Calculate_Dropout_Curves();
 
