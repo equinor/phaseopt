@@ -568,7 +568,9 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Statpipe()
     {
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
+        //double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray());
+
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
             if (!Composition_Result[i].Equals(double.NaN))
@@ -676,6 +678,40 @@ public class PhaseOpt_KAR
             }
             if (j == Temperature.Length - 1) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
         }
+
+        // Mix to T100/200 dropout
+        Composition_IDs.Clear();
+        Composition_Values.Clear();
+
+        foreach (Component c in Mix_To_T100_Comp)
+        {
+            Composition_IDs.Add(c.ID);
+            Composition_Values.Add(c.Value);
+            Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+        }
+
+        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TI1025" }, Time_Stamp);
+        Operation_Point[0, 0] = Convert.ToDouble(OP["21PC1002A"]);
+        Operation_Point[0, 1] = Convert.ToDouble(OP["21TI1025"]);
+
+        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TI1015" }, Time_Stamp);
+        Operation_Point[1, 0] = Convert.ToDouble(OP["21PC1002A"]);
+        Operation_Point[1, 1] = Convert.ToDouble(OP["21TI1015"]);
+
+        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TC1017" }, Time_Stamp);
+        Operation_Point[2, 0] = Convert.ToDouble(OP["21PC1002A"]);
+        Operation_Point[2, 1] = Convert.ToDouble(OP["21TC1017"]);
+
+        Z = PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray());
+
+        Result = 0.0;
+
+        for (int j = 0; j < Operation_Point.GetUpperBound(0) + 1; j++)
+        {
+            Result = PhaseOpt.PhaseOpt.Dropout(Composition_IDs.ToArray(), Z, Operation_Point[j, 0] + 1.01325, Operation_Point[j, 1] + 273.15)[0] * 100.0;
+            DB_Connection.Write_Value("PO_LD" + (j+3).ToString(), Result);
+        }
+
     }
 
     public void Read_Config(string Config_File)
