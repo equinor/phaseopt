@@ -568,8 +568,7 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Statpipe()
     {
-        //double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray());
+        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
 
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
