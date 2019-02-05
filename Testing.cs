@@ -46,8 +46,8 @@ namespace Test_Space
 
             double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(IDs, Values);
 
-            //Double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(IDs, Values);
-            //Values = Z;
+            Double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(IDs, Values);
+            Values = Z;
 
             Environment.Exit(0);
             
@@ -69,7 +69,7 @@ namespace Test_Space
             }
 
 
-           DateTime Start_Time = DateTime.Now;
+            DateTime Start_Time = DateTime.Now;
             Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
             IP21_Comm DB_Connection = new IP21_Comm("KAR-IP21.statoil.net", "10014");
             DB_Connection.Connect();
