@@ -447,7 +447,7 @@ public class PhaseOpt_KAR
 
         List<Int32> Composition_IDs = new List<Int32>();
         List<double> Composition_Values = new List<double>();
-
+        /*
         // Mix to T100 cricondenbar
         Composition_IDs.Clear();
         Composition_Values.Clear();
@@ -734,8 +734,9 @@ public class PhaseOpt_KAR
 
         var th = new Thread(Draw_Dropout_Curves);
         th.Start();
+        */
     }
-
+    /*
     public void Draw_Dropout_Curves()
     {
         DateTime Time_Stamp;
@@ -806,6 +807,7 @@ public class PhaseOpt_KAR
             }
         }
     }
+*/
     public void Read_Config(string Config_File)
     {
         XmlReaderSettings settings = new XmlReaderSettings();

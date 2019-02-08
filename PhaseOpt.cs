@@ -2,13 +2,21 @@
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
-
 namespace PhaseOpt
 {
     public class PhaseOpt
     {
         private const double Bara_To_Barg = 1.01325;
         private const double Kelvin_To_Celcius = 273.15;
+
+        private double[] Composition_Values;
+        private Int32[]  Composition_IDs;
+
+        public PhaseOpt(Int32[] IDs, double[] Values)
+        {
+            this.Composition_IDs    = IDs;
+            this.Composition_Values = Values;
+        }
 
         /// <summary>
         /// Calculates the criconden points (bar and/or therm).
@@ -153,7 +161,7 @@ namespace PhaseOpt
         /// </summary>
         /// <param name="Array"></param>
         /// <param name="Target"></param>
-        private static void Normalize(double[] Array, double Target = 1.0)
+        private void Normalize(double[] Array, double Target = 1.0)
         {
             double Sum = 0.0;
 
@@ -182,7 +190,7 @@ namespace PhaseOpt
         /// <returns>An array of (pressure, temperature) pairs. The first pair is the Cricondenbar point.
         /// The second pair is the Cricondentherm point. The following pairs are points on the dew point line. If the
         /// Points parameter is zero, only the two criconden points are returned</returns>
-        public static double[] Calculate_Dew_Point_Line(Int32[] IDs, double[] Values, uint Points = 5, uint Units = 1)
+        public double[] Calculate_Dew_Point_Line(Int32[] IDs, double[] Values, uint Points = 5, uint Units = 1)
         {
             if (Units > 1) Units = 1;
 
@@ -250,7 +258,7 @@ namespace PhaseOpt
         /// <param name="T">Temperature [K]</param>
         /// <returns>An array containing {Vapour density, Liquid density, Vapour compressibility factor, Liquid compressibility factor}.
         /// If there is only one phase the values for the non existing phase will be -1.</returns>
-        public static double[] Calculate_Density_And_Compressibility(Int32[] IDs, double[] Values, double P = 1.01325, double T = 288.15)
+        public double[] Calculate_Density_And_Compressibility(Int32[] IDs, double[] Values, double P = 1.01325, double T = 288.15)
         {
             Normalize(Values, 1.0);
 
@@ -284,15 +292,15 @@ namespace PhaseOpt
         /// <param name="T">Temperature</param>
         /// <param name="Units">Sets the engineering units of the outputs. 0: use bara and Kelvin. 1: use barg and ­°C.</param>
         /// <returns>An array containing the cricondenbar pressure and temperature.</returns>
-        public static double[] Cricondenbar(Int32[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
+        public double[] Cricondenbar(double P = 0.0, double T = 0.0, uint Units = 1)
         {
-            Normalize(Values, 1.0);
+            Normalize(Composition_Values, 1.0);
 
             double[] Results = new double[2];
             Int32 IND = 2;
-            Int32 Components = IDs.Length;
-            Int32[] ID = Pad(IDs);
-            double[] Z = Pad(Values);
+            Int32 Components = Composition_IDs.Length;
+            Int32[] ID = Pad(Composition_IDs);
+            double[] Z = Pad(Composition_Values);
             double CCBT = T;
             double CCBP = P;
 
@@ -322,7 +330,7 @@ namespace PhaseOpt
         /// <param name="T">Temperature</param>
         /// <param name="Units">Sets the engineering units of the outputs. 0: use bara and Kelvin. 1: use barg and ­°C.</param>
         /// <returns>An array containing the cricondentherm pressure and temperature.</returns>
-        public static double[] Cricondentherm(Int32[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
+        public double[] Cricondentherm(Int32[] IDs, double[] Values, double P = 0.0, double T = 0.0, uint Units = 1)
         {
             if (Units > 1) Units = 1;
 
@@ -354,7 +362,7 @@ namespace PhaseOpt
         /// <param name="P">Pressure</param>
         /// <param name="T">Temperature</param>
         /// <returns>An array containing the liquid dropout mass and volume fractions.</returns>
-        public static double[] Dropout(Int32[] IDs, double[] Values, double P, double T)
+        public double[] Dropout(Int32[] IDs, double[] Values, double P, double T)
         {
             Normalize(Values, 1.0);
 
@@ -377,7 +385,7 @@ namespace PhaseOpt
             return Results;
         }
 
-        public static double Dropout_Search(Int32[] IDs, double[] Values, double wd, double T, double P_Max, double limit = 0.01)
+        public double Dropout_Search(Int32[] IDs, double[] Values, double wd, double T, double P_Max, double limit = 0.01)
         {
             double PMax = P_Max;
             double PMin = PMax - 40.0;
@@ -421,7 +429,7 @@ namespace PhaseOpt
         /// <param name="P">Pressure</param>
         /// <param name="T">Temperature</param>
         /// <returns>An array containing the liquid dropout mass and volume fractions.</returns>
-        public static double DewP(Int32[] IDs, double[] Values, double T)
+        public double DewP(Int32[] IDs, double[] Values, double T)
         {
             Normalize(Values, 1.0);
 
@@ -441,7 +449,7 @@ namespace PhaseOpt
             return Math.Max(P1, P2);
         }
 
-        public static double[] Fluid_Tune(Int32[] IDs, double[] Values)
+        public double[] Fluid_Tune(Int32[] IDs, double[] Values)
         {
             Normalize(Values, 1.0);
 
@@ -456,7 +464,7 @@ namespace PhaseOpt
             return Z;
         }
 
-        private static double[] Pad(double[] In)
+        private double[] Pad(double[] In)
         {
             double[] Out = new double[100];
             for (int n = 0; n < In.Length; n++)
@@ -466,7 +474,7 @@ namespace PhaseOpt
             return Out;
         }
 
-        private static Int32[] Pad(Int32[] In)
+        private Int32[] Pad(Int32[] In)
         {
             Int32[] Out = new Int32[100];
             for (int n = 0; n < In.Length; n++)

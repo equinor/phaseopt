@@ -58,7 +58,8 @@ namespace Main
                 Values[19] = 3.1032777420227576E-05;
                 Values[20] = 5.0705449690578696E-05;
                 Values[21] = 1.5874330480810202E-05;
-                
+
+                /*
                 double[] Result = PhaseOpt.PhaseOpt.Calculate_Dew_Point_Line(IDs, Values, 5);
 
                 Console.WriteLine("Cricondenbar point");
@@ -78,13 +79,13 @@ namespace Main
                     Console.WriteLine();
                 }
 
-                double[] Dens_Result = PhaseOpt.PhaseOpt.Calculate_Density_And_Compressibility(IDs, Values);
+                //double[] Dens_Result = PhaseOpt.PhaseOpt.Calculate_Density_And_Compressibility(IDs, Values);
 
                 Console.WriteLine("Vapour density: {0} kg/m­³", Dens_Result[0]);
                 Console.WriteLine("Compressibility factor: {0}", Dens_Result[2]);
                 Console.WriteLine("Liquid density: {0} kg/m­³", Dens_Result[1]);
                 Console.WriteLine("Compressibility factor: {0}", Dens_Result[3]);
-
+                */
                 return;
             }
 
@@ -385,7 +386,7 @@ namespace Main
                 {
                     PO_B.DB_Connection.Write_Value("20XI7146_B", 0);
                     Log_File.WriteLine("{0}: Errors in B: {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), errors_B); Log_File.Flush();
-                } */
+                } 
 
                 // Read and calculate cricondenbar for current
                 // compositions at Kalstø
@@ -455,6 +456,7 @@ namespace Main
                 {
                     System.Threading.Thread.Sleep((int)Sleep_Time);
                 }
+                */
             }
         }
 

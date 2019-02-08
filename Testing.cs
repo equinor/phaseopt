@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+
 
 namespace Test_Space
 {
@@ -16,6 +18,8 @@ namespace Test_Space
             double[] Dropout = new double[5] { 0.1, 0.5, 1.0, 2.0, 5.0 };
             double[,] Pres = new double[Dropout.Length + 1, Temperature.Length];
             double[,] Operation_Point = new double[3, 2]; // [Pressure, Temperature]
+
+            PhaseOpt.PhaseOpt Test_PhaseOpt_1 = new PhaseOpt.PhaseOpt(IDs.ToArray(), Values.ToArray());
 
             Operation_Point[0, 0] = 107.3; Operation_Point[0, 1] = -3.8;
             Operation_Point[1, 0] = 106.6; Operation_Point[1, 1] = -9.3;
@@ -44,15 +48,32 @@ namespace Test_Space
             Values[20] = 5.0705449690578696E-05;
             Values[21] = 1.5874330480810202E-05;
 
-            double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(IDs, Values);
+            PhaseOpt.PhaseOpt Test_PhaseOpt_2 = new PhaseOpt.PhaseOpt(IDs.ToArray(), Values.ToArray());
 
-            Double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(IDs, Values);
+            double[] Composition_Result_1; // = Test_PhaseOpt_1.Cricondenbar();
+            double[] Composition_Result_2;
+
+            // Read misc flow and molweight values
+            Parallel.Invoke(
+                () =>
+                {
+                    Composition_Result_1 = Test_PhaseOpt_1.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_2 = Test_PhaseOpt_2.Cricondenbar();
+                }
+            );
+
+
+            Double[] Z = Test_PhaseOpt_1.Fluid_Tune(IDs, Values);
             Values = Z;
 
             Environment.Exit(0);
             
 
-
+            /*
             // Dew point line. We use this later to set the max value when searching for drop out pressures
             for (int i = 0; i < Temperature.Length; i++)
             {
@@ -67,7 +88,7 @@ namespace Test_Space
                     System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i+1, j]);
                 }
             }
-
+            */
 
             DateTime Start_Time = DateTime.Now;
             Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
