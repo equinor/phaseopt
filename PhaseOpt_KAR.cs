@@ -88,6 +88,8 @@ public class PhaseOpt_KAR
     public List<double> Asgard_Velocity = new List<double>();
     public List<double> Statpipe_Velocity = new List<double>();
 
+    private bool Cross_Over_Status = false;
+
     public IP21_Comm DB_Connection;
 
     public PhaseOpt_KAR(string Log_File_Name)
@@ -269,6 +271,20 @@ public class PhaseOpt_KAR
 
     public void Read_From_IP21()
     {
+        // Read Cross over selector
+        Hashtable Status;
+        try
+        {
+            Status = DB_Connection.Read_Values(new string[] { "15HS0105" }, Timestamp);
+            Cross_Over_Status = Convert.ToBoolean(Status["15HS0105"]);
+        }
+        catch
+        {
+            Log_File.WriteLine("Tag {0} not valid", "15HS0105");
+            Log_File.Flush();
+        }
+
+
         // Read molweight
         Hashtable Molweight;
         Asgard_Molweight = 0.0;
@@ -359,7 +375,15 @@ public class PhaseOpt_KAR
             Log_File.Flush();
         }
         Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
-        Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
+
+        if (Cross_Over_Status)
+        {
+            Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Statpipe_Molweight;
+        }
+        else
+        {
+            Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Asgard_Molweight;
+        }
     }
 
     public void Calculate_Karsto()
@@ -393,10 +417,23 @@ public class PhaseOpt_KAR
 
         List<Component> CY2007_Component_Flow = new List<Component>();
         double CY2007_Component_Flow_Sum = 0.0;
-        foreach (Component c in Asgard_Comp)
+
+        if (Cross_Over_Status)
         {
-            CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
-            CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
+            foreach (Component c in Statpipe_Comp)
+            {
+                CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
+                CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
+            }
+
+        }
+        else
+        {
+            foreach (Component c in Asgard_Comp)
+            {
+                CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
+                CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
+            }
         }
 
         List<Component> DIXO_Component_Flow = new List<Component>();
