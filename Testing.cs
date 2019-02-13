@@ -53,6 +53,8 @@ namespace Test_Space
             double[] Composition_Result_1; // = Test_PhaseOpt_1.Cricondenbar();
             double[] Composition_Result_2;
 
+            Composition_Result_1 = Test_PhaseOpt_1.Cricondenbar();
+
             // Read misc flow and molweight values
             Parallel.Invoke(
                 () =>
