@@ -7,6 +7,7 @@ public class IP21_Comm: IDisposable
 {
     public string IP21_Host;
     public string IP21_Port;
+    public bool IP21_Read_Only;
     private System.Data.Odbc.OdbcCommand Cmd;
 
     protected virtual void Dispose(bool disposing)
@@ -24,10 +25,11 @@ public class IP21_Comm: IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public IP21_Comm(string Host, string Port)
+    public IP21_Comm(string Host, string Port, bool Read_Only = false)
     {
         IP21_Host = Host;
         IP21_Port = Port;
+        IP21_Read_Only = Read_Only;
     }
 
     public void Connect()
@@ -83,14 +85,14 @@ WHERE
         return Result;
     }
 
-    public int Write_Value(string Tag_Name, double Value, string Quality = "Good")
+    public void Write_Value(string Tag_Name, double Value, string Quality = "Good")
     {
         Cmd.CommandText =
 @"UPDATE ip_analogdef
   SET ip_input_value = " + Value.ToString("G", CultureInfo.InvariantCulture) + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        return Cmd.ExecuteNonQuery();
+        if (!IP21_Read_Only) Cmd.ExecuteNonQuery();
     }
 
     public void Write_Value(string Tag_Name, int Value, string Quality = "Good")
@@ -100,7 +102,7 @@ WHERE
   SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        Cmd.ExecuteNonQuery();
+        if (!IP21_Read_Only) Cmd.ExecuteNonQuery();
     }
 
     public void Write_Value(string Tag_Name, string Value, string Quality = "Good")
@@ -110,7 +112,7 @@ WHERE
   SET ip_input_value = '" + Value + @"', ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        Cmd.ExecuteNonQuery();
+        if (!IP21_Read_Only) Cmd.ExecuteNonQuery();
     }
 
     public void Insert_Value(string Tag_Name, double Value, DateTime Time_Stamp)
@@ -126,7 +128,8 @@ WHERE
 @"INSERT INTO " + Tag_Name + @"(IP_TREND_TIME, IP_TREND_VALUE)
   VALUES (CAST('" + Time_Stamp.ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS'), 0.0/0.0);";
         }
-        Cmd.ExecuteNonQuery();
+
+        if (!IP21_Read_Only) Cmd.ExecuteNonQuery();
     }
 
     private bool Sanitize(string stringValue)

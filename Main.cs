@@ -12,11 +12,17 @@ namespace Main
         public static void Main(String[] args)
         {
             bool Test_UMR = false;
+            bool Read_Only = false;
+
             foreach (string arg in args)
             {
                 if (arg.Equals(@"/u"))
                 {
                     Test_UMR = true;
+                }
+                if (arg.Equals(@"/r"))
+                {
+                    Read_Only = true;
                 }
             }
 
@@ -94,6 +100,12 @@ namespace Main
 
             PO_A.Connect_DB();
             PO_B.Connect_DB();
+
+            if (Read_Only)
+            {
+                PO_A.DB_Connection.IP21_Read_Only = true;
+                PO_B.DB_Connection.IP21_Read_Only = true;
+            }
 
             Queue GC_A_Comp_Asgard = new Queue();
             Queue GC_A_Comp_Statpipe = new Queue();
