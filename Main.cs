@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using System.Globalization;
+using System.Threading;
 
 namespace Main
 {
@@ -140,6 +141,11 @@ namespace Main
             int errors_A = 0;
             int errors_B = 0;
 
+            Thread IP_21_Reader_Thread_A = new Thread(PO_A.IP21_Reader);
+            Thread IP_21_Reader_Thread_B = new Thread(PO_B.IP21_Reader);
+            IP_21_Reader_Thread_A.Start();
+            IP_21_Reader_Thread_B.Start();
+
             while (true)
             {
                 Start_Time = DateTime.Now;
@@ -148,23 +154,12 @@ namespace Main
 
                 // Zero out the composition since we are using the same instance
                 // for delayed and current compositions
-                foreach (Component c in PO_A.Asgard_Comp)   c.Value = 0.0;
-                foreach (Component c in PO_A.Statpipe_Comp) c.Value = 0.0;
-                foreach (Component c in PO_B.Asgard_Comp)   c.Value = 0.0;
-                foreach (Component c in PO_B.Statpipe_Comp) c.Value = 0.0;
+                //foreach (Component c in PO_A.Asgard_Comp)   c.Value = 0.0;
+                //foreach (Component c in PO_A.Statpipe_Comp) c.Value = 0.0;
+                //foreach (Component c in PO_B.Asgard_Comp)   c.Value = 0.0;
+                //foreach (Component c in PO_B.Statpipe_Comp) c.Value = 0.0;
 
                 // Read the delayed compositions
-                Parallel.Invoke(
-                    () =>
-                    {
-                        PO_A.Read_Composition();
-                    },
-
-                    () =>
-                    {
-                        PO_B.Read_Composition();
-                    }
-                );
 
                 Log_File.WriteLine("{0}: Read composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 Log_File.WriteLine("{0}: Read composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
@@ -195,18 +190,6 @@ namespace Main
                 }
 
                 // Read misc flow and molweight values
-                Parallel.Invoke(
-                    () =>
-                    {
-                        PO_A.Read_From_IP21();
-                    },
-
-                    () =>
-                    {
-                        PO_B.Read_From_IP21();
-                    }
-                );
-
                 
                 Log_File.WriteLine("{0}: Read from IP21 A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 Log_File.WriteLine("{0}: Read from IP21 B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
@@ -364,7 +347,8 @@ namespace Main
                 );
 
 
-/*               if (errors_A < 1)
+                /*
+                if (errors_A < 1)
                 {
                     PO_A.Calculate_Karsto();
                     PO_A.DB_Connection.Write_Value("20XI7146_A", 1);
@@ -457,6 +441,8 @@ namespace Main
                     System.Threading.Thread.Sleep((int)Sleep_Time);
                 }
                 */
+
+                Thread.Sleep(90_000);
             }
         }
 

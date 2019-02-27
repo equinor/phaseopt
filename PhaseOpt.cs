@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Diagnostics;
+
+
 
 namespace PhaseOpt
 {
@@ -9,13 +13,15 @@ namespace PhaseOpt
         private const double Bara_To_Barg = 1.01325;
         private const double Kelvin_To_Celcius = 273.15;
 
-        private double[] Composition_Values;
-        private Int32[]  Composition_IDs;
+        public double[] Composition_Values;
+        public Int32[]  Composition_IDs;
 
+        public PhaseOpt()
+        { }
         public PhaseOpt(Int32[] IDs, double[] Values)
         {
-            this.Composition_IDs    = IDs;
-            this.Composition_Values = Values;
+            Composition_IDs = IDs;
+            Composition_Values = Values;
         }
 
         /// <summary>
@@ -294,23 +300,41 @@ namespace PhaseOpt
         /// <returns>An array containing the cricondenbar pressure and temperature.</returns>
         public double[] Cricondenbar(double P = 0.0, double T = 0.0, uint Units = 1)
         {
-            Normalize(Composition_Values, 1.0);
-
             double[] Results = new double[2];
-            Int32 IND = 2;
-            Int32 Components = Composition_IDs.Length;
-            Int32[] ID = Pad(Composition_IDs);
-            double[] Z = Pad(Composition_Values);
             double CCBT = T;
             double CCBP = P;
+            string Arguments = "-ccd -ind 2 -id";
+            string output;
+            Process p = new Process();
 
             if (Units > 1) Units = 1;
 
-            DateTime Start = DateTime.Now;
-            Criconden(ref IND, ref Components, ID, Z, ref CCBT, ref CCBP);
-            DateTime End = DateTime.Now;
+            foreach (int i in Composition_IDs)
+            {
+                Arguments += " " + i.ToString();
+            }
+            Arguments += " -z";
+            foreach (double v in Composition_Values)
+            {
+                string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
 
-            System.Console.WriteLine("Cricondenbar runtime: {0}", End - Start);
+                if (!val.Contains("D"))
+                    val += "D0";
+
+                Arguments += val;
+            }
+
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.Arguments = Arguments;
+            p.Start();
+            p.PriorityClass = ProcessPriorityClass.BelowNormal;
+            output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            CCBP = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+            CCBT = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
 
             if (CCBP < 0.0) CCBP = double.NaN;
             if (CCBT < 0.0) CCBT = double.NaN;

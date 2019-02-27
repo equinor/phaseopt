@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,8 +54,45 @@ namespace Test_Space
 
             double[] Composition_Result_1; // = Test_PhaseOpt_1.Cricondenbar();
             double[] Composition_Result_2;
+            double[] Composition_Result_3;
+            double[] Composition_Result_4;
+            double[] Composition_Result_5;
+            double[] Composition_Result_6;
+            double[] Composition_Result_7;
+            double[] Composition_Result_8;
+            double[] Composition_Result_9;
+            double[] Composition_Result_10;
 
             Composition_Result_1 = Test_PhaseOpt_1.Cricondenbar();
+
+            string Arguments = "-ccd -ind 2 -id";
+            foreach (int i in IDs)
+            {
+                Arguments += " " + i.ToString();
+            }
+            Arguments += " -z";
+            foreach (double v in Values)
+            {
+                string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
+
+                if (!val.Contains('D'))
+                    val += "D0";
+
+                Arguments += val;
+            }
+
+
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.Arguments = Arguments;
+            p.Start();
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            double Pressure = double.Parse(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+
 
             // Read misc flow and molweight values
             Parallel.Invoke(
@@ -65,6 +104,46 @@ namespace Test_Space
                 () =>
                 {
                     Composition_Result_2 = Test_PhaseOpt_2.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_3 = Test_PhaseOpt_2.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_4 = Test_PhaseOpt_2.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_5 = Test_PhaseOpt_2.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_6 = Test_PhaseOpt_2.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_7 = Test_PhaseOpt_2.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_8 = Test_PhaseOpt_2.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_9 = Test_PhaseOpt_2.Cricondenbar();
+                },
+
+                () =>
+                {
+                    Composition_Result_10 = Test_PhaseOpt_2.Cricondenbar();
                 }
             );
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Threading;
 using System.Globalization;
+using System.Threading.Tasks;
 
 public class Component
 {
@@ -56,6 +57,7 @@ public class PhaseOpt_KAR
     private Hashtable Comp_Values;
 
     public List<Component> Asgard_Comp = new List<Component>();
+    public List<Component> Asgard_Comp_Kalsto = new List<Component>();
     public List<double> Composition_Values_Asgard_Current = new List<double>();
     private List<Int32> Composition_IDs_Asgard = new List<Int32>();
     private List<string> Asgard_Velocity_Tags = new List<string>();
@@ -68,7 +70,11 @@ public class PhaseOpt_KAR
     private List<string> Asgard_Cricondenbar_Tags = new List<string>();
     private List<string> Asgard_Status_Tags = new List<string>();
 
+    PhaseOpt.PhaseOpt T100 = new PhaseOpt.PhaseOpt();
+    PhaseOpt.PhaseOpt T400 = new PhaseOpt.PhaseOpt();
+
     public List<Component> Statpipe_Comp = new List<Component>();
+    public List<Component> Statpipe_Comp_Kalsto = new List<Component>();
     public List<double> Composition_Values_Statpipe_Current = new List<double>();
     private List<Int32> Composition_IDs_Statpipe = new List<Int32>();
     private List<string> Statpipe_Velocity_Tags = new List<string>();
@@ -105,7 +111,11 @@ public class PhaseOpt_KAR
     public List<double> Asgard_Velocity = new List<double>();
     public List<double> Statpipe_Velocity = new List<double>();
 
+    private bool Cross_Over_Status = false;
+
     public IP21_Comm DB_Connection;
+
+    //private Thread IP_21_Reader_Thread = new Thread(IP21_Reader());
 
     public PhaseOpt_KAR(string Log_File_Name)
     {
@@ -120,6 +130,17 @@ public class PhaseOpt_KAR
         DB_Connection.Connect();
     }
 
+    public void IP21_Reader()
+    {
+        while (true)
+        {
+            Read_Composition();
+            Read_From_IP21();
+            Read_Current_Kalsto_Composition();
+
+            Thread.Sleep(500);
+        }
+    }
 
     public bool Read_Composition()
     {
@@ -286,6 +307,19 @@ public class PhaseOpt_KAR
 
     public void Read_From_IP21()
     {
+        // Read Cross over selector
+        Hashtable Status;
+        try
+        {
+            Status = DB_Connection.Read_Values(new string[] { "15HS0105" }, Timestamp);
+            Cross_Over_Status = Convert.ToBoolean(Status["15HS0105"]);
+        }
+        catch
+        {
+            Log_File.WriteLine("Tag {0} not valid", "15HS0105");
+            Log_File.Flush();
+        }
+
         // Read molweight
         Hashtable Molweight;
         Asgard_Molweight = 0.0;
@@ -376,7 +410,15 @@ public class PhaseOpt_KAR
             Log_File.Flush();
         }
         Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
-        Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Mix_To_T100_Molweight;
+
+        if (Cross_Over_Status)
+        {
+            Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Statpipe_Molweight;
+        }
+        else
+        {
+            Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Asgard_Molweight;
+        }
     }
 
     public void Calculate_Karsto()
@@ -410,10 +452,23 @@ public class PhaseOpt_KAR
 
         List<Component> CY2007_Component_Flow = new List<Component>();
         double CY2007_Component_Flow_Sum = 0.0;
-        foreach (Component c in Asgard_Comp)
+
+        if (Cross_Over_Status)
         {
-            CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
-            CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
+            foreach (Component c in Statpipe_Comp)
+            {
+                CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
+                CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
+            }
+
+        }
+        else
+        {
+            foreach (Component c in Asgard_Comp)
+            {
+                CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
+                CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
+            }
         }
 
         List<Component> DIXO_Component_Flow = new List<Component>();
@@ -447,7 +502,7 @@ public class PhaseOpt_KAR
 
         List<Int32> Composition_IDs = new List<Int32>();
         List<double> Composition_Values = new List<double>();
-        /*
+
         // Mix to T100 cricondenbar
         Composition_IDs.Clear();
         Composition_Values.Clear();
@@ -460,18 +515,9 @@ public class PhaseOpt_KAR
         }
 
         Log_File.Flush();
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(),Composition_Values.ToArray()));
-        for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
-        {
-            if (!Composition_Result[i].Equals(double.NaN))
-            {
-                DB_Connection.Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
-            }
-            Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
-#if DEBUG
-            Console.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result[i]);
-#endif
-        }
+
+        T100.Composition_IDs = Composition_IDs.ToArray();
+        T100.Composition_Values = Composition_Values.ToArray();
 
         // Mix to T400 cricondenbar
         Composition_IDs.Clear();
@@ -485,16 +531,45 @@ public class PhaseOpt_KAR
         }
 
         Log_File.Flush();
-        Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray()));
+
+        T400.Composition_IDs = Composition_IDs.ToArray();
+        T400.Composition_Values = Composition_Values.ToArray();
+
+        double[] Composition_Result_T100 = { 0.0, 0.0 };
+        double[] Composition_Result_T400 = { 0.0, 0.0 };
+        Parallel.Invoke(
+            () =>
+            {
+                Composition_Result_T100 = T100.Cricondenbar();
+            },
+
+            () =>
+            {
+                Composition_Result_T400 = T400.Cricondenbar();
+            }
+        );
+
+        for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
+        {
+            if (!Composition_Result_T100[i].Equals(double.NaN))
+            {
+                DB_Connection.Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
+            }
+            Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
+#if DEBUG
+            Console.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
+#endif
+        }
+
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
         {
-            if (!Composition_Result[i].Equals(double.NaN))
+            if (!Composition_Result_T400[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+                DB_Connection.Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result_T400[i]);
             }
-            Log_File.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+            Log_File.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result_T400[i]);
 #if DEBUG
-            Console.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result[i]);
+            Console.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result_T400[i]);
 #endif
         }
 
@@ -510,7 +585,7 @@ public class PhaseOpt_KAR
         Composition_IDs_Asgard.Clear();
         Tags.Clear();
         if (Comp_Values != null) Comp_Values.Clear();
-        foreach (Component c in Asgard_Comp)
+        foreach (Component c in Asgard_Comp_Kalsto)
         {
             Tags.Add(c.Tag);
         }
@@ -519,7 +594,7 @@ public class PhaseOpt_KAR
         try
         {
             Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
-            foreach (Component c in Asgard_Comp)
+            foreach (Component c in Asgard_Comp_Kalsto)
             {
                 Tag_Name = c.Tag;
                 c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
@@ -540,7 +615,7 @@ public class PhaseOpt_KAR
         Composition_IDs_Statpipe.Clear();
         Tags.Clear();
         Comp_Values.Clear();
-        foreach (Component c in Statpipe_Comp)
+        foreach (Component c in Statpipe_Comp_Kalsto)
         {
             Tags.Add(c.Tag);
         }
@@ -548,7 +623,7 @@ public class PhaseOpt_KAR
         try
         {
             Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
-            foreach (Component c in Statpipe_Comp)
+            foreach (Component c in Statpipe_Comp_Kalsto)
             {
                 Tag_Name = c.Tag;
                 c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
@@ -567,6 +642,7 @@ public class PhaseOpt_KAR
         Log_File.Flush();
     }
 
+    /*
     public void Calculate_Kalsto_Asgard()
     {
         double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Asgard.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Asgard.ToArray(), Composition_Values_Asgard_Current.ToArray()));
@@ -600,7 +676,8 @@ public class PhaseOpt_KAR
         }
 
     }
-
+    */
+    /*
     private Dropout_Curve Curve;
     public void Calculate_Dropout_Curves()
     {
@@ -734,8 +811,8 @@ public class PhaseOpt_KAR
 
         var th = new Thread(Draw_Dropout_Curves);
         th.Start();
-        */
     }
+*/
     /*
     public void Draw_Dropout_Curves()
     {
@@ -870,6 +947,9 @@ public class PhaseOpt_KAR
                                     Asgard_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
                                                              reader.GetAttribute("tag"),
                                                              XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
+                                    Asgard_Comp_Kalsto.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                                             reader.GetAttribute("tag"),
+                                                             XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "velocity")
                                 {
@@ -917,6 +997,9 @@ public class PhaseOpt_KAR
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
                                     Statpipe_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                                               reader.GetAttribute("tag"),
+                                                               XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
+                                    Statpipe_Comp_Kalsto.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
                                                                reader.GetAttribute("tag"),
                                                                XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
 
