@@ -75,6 +75,8 @@ public class PhaseOpt_KAR
     PhaseOpt.PhaseOpt Asgard_Kalsto = new PhaseOpt.PhaseOpt();
     PhaseOpt.PhaseOpt Statpipe_Kalsto = new PhaseOpt.PhaseOpt();
 
+    public readonly object locker = new object();
+
     public List<Component> Statpipe_Comp = new List<Component>();
     public List<Component> Statpipe_Comp_Kalsto = new List<Component>();
     public List<double> Composition_Values_Statpipe_Current = new List<double>();
@@ -582,63 +584,66 @@ public class PhaseOpt_KAR
     {
         if (Tags == null) Tags = new List<string>();
 
-        // Åsgard
-        Composition_Values_Asgard_Current.Clear();
-        Composition_IDs_Asgard.Clear();
-        Tags.Clear();
-        if (Comp_Values != null) Comp_Values.Clear();
-        foreach (Component c in Asgard_Comp_Kalsto)
+        lock (locker)
         {
-            Tags.Add(c.Tag);
-        }
-        Log_File.WriteLine("Åsgard:");
-        string Tag_Name = "";
-        try
-        {
-            Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
+            // Åsgard
+            Composition_Values_Asgard_Current.Clear();
+            Composition_IDs_Asgard.Clear();
+            Tags.Clear();
+            if (Comp_Values != null) Comp_Values.Clear();
             foreach (Component c in Asgard_Comp_Kalsto)
             {
-                Tag_Name = c.Tag;
-                c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
-                Composition_IDs_Asgard.Add(c.ID);
-                Composition_Values_Asgard_Current.Add(c.Value);
-                Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+                Tags.Add(c.Tag);
             }
-        }
-        catch
-        {
-            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
-            Log_File.Flush();
-            //Environment.Exit(13);
-        }
+            Log_File.WriteLine("Åsgard:");
+            string Tag_Name = "";
+            try
+            {
+                Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
+                foreach (Component c in Asgard_Comp_Kalsto)
+                {
+                    Tag_Name = c.Tag;
+                    c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
+                    Composition_IDs_Asgard.Add(c.ID);
+                    Composition_Values_Asgard_Current.Add(c.Value);
+                    Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+                }
+            }
+            catch
+            {
+                Log_File.WriteLine("Tag {0} not valid", Tag_Name);
+                Log_File.Flush();
+                //Environment.Exit(13);
+            }
 
-        // Statpipe
-        Composition_Values_Statpipe_Current.Clear();
-        Composition_IDs_Statpipe.Clear();
-        Tags.Clear();
-        Comp_Values.Clear();
-        foreach (Component c in Statpipe_Comp_Kalsto)
-        {
-            Tags.Add(c.Tag);
-        }
-        Log_File.WriteLine("Statpipe:");
-        try
-        {
-            Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
+            // Statpipe
+            Composition_Values_Statpipe_Current.Clear();
+            Composition_IDs_Statpipe.Clear();
+            Tags.Clear();
+            Comp_Values.Clear();
             foreach (Component c in Statpipe_Comp_Kalsto)
             {
-                Tag_Name = c.Tag;
-                c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
-                Composition_IDs_Statpipe.Add(c.ID);
-                Composition_Values_Statpipe_Current.Add(c.Value);
-                Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+                Tags.Add(c.Tag);
             }
-        }
-        catch
-        {
-            Log_File.WriteLine("Tag {0} not valid", Tag_Name);
-            Log_File.Flush();
-            //Environment.Exit(13);
+            Log_File.WriteLine("Statpipe:");
+            try
+            {
+                Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Timestamp);
+                foreach (Component c in Statpipe_Comp_Kalsto)
+                {
+                    Tag_Name = c.Tag;
+                    c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
+                    Composition_IDs_Statpipe.Add(c.ID);
+                    Composition_Values_Statpipe_Current.Add(c.Value);
+                    Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+                }
+            }
+            catch
+            {
+                Log_File.WriteLine("Tag {0} not valid", Tag_Name);
+                Log_File.Flush();
+                //Environment.Exit(13);
+            }
         }
 
         Log_File.Flush();

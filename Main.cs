@@ -337,65 +337,77 @@ namespace Main
                     // compositions at Kalstø
                     () =>
                     {
-                        if (Composition_Stdev(PO_A.Composition_Values_Statpipe_Current, GC_A_Comp_Statpipe) > Stdev_Low_Limit &&
-                                            Check_Composition(PO_A.Composition_Values_Statpipe_Current))
+                        lock (PO_A.locker)
                         {
-                            PO_A.Calculate_Kalsto_Statpipe();
-                            PO_A.DB_Connection.Write_Value("31XI0157_A", 1);
-                            Log_File.WriteLine("{0}: Calculate Statpipe stream at Kalstø A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-                        }
-                        else
-                        {
-                            PO_A.DB_Connection.Write_Value("31XI0157_A", 0);
-                            Log_File.WriteLine("{0}: Errors in Statpipe current composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-                        }
-                    },
-
-                    () =>
-                    {
-                        if (Composition_Stdev(PO_A.Composition_Values_Asgard_Current, GC_A_Comp_Asgard) > Stdev_Low_Limit &&
-                            Check_Composition(PO_A.Composition_Values_Asgard_Current))
-                        {
-                            PO_A.Calculate_Kalsto_Asgard();
-                            PO_A.DB_Connection.Write_Value("31XI0161_A", 1);
-                            Log_File.WriteLine("{0}: Calculate Åsgard stream at Kalstø A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-                        }
-                        else
-                        {
-                            PO_A.DB_Connection.Write_Value("31XI0161_A", 0);
-                            Log_File.WriteLine("{0}: Errors in Asgard current composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            if (Composition_Stdev(PO_A.Composition_Values_Statpipe_Current, GC_A_Comp_Statpipe) > Stdev_Low_Limit &&
+                                                Check_Composition(PO_A.Composition_Values_Statpipe_Current))
+                            {
+                                PO_A.Calculate_Kalsto_Statpipe();
+                                PO_A.DB_Connection.Write_Value("31XI0157_A", 1);
+                                Log_File.WriteLine("{0}: Calculate Statpipe stream at Kalstø A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            }
+                            else
+                            {
+                                PO_A.DB_Connection.Write_Value("31XI0157_A", 0);
+                                Log_File.WriteLine("{0}: Errors in Statpipe current composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            }
                         }
                     },
 
                     () =>
                     {
-                        if (Composition_Stdev(PO_B.Composition_Values_Statpipe_Current, GC_B_Comp_Statpipe) > Stdev_Low_Limit &&
-                            Check_Composition(PO_B.Composition_Values_Statpipe_Current))
+                        lock (PO_A.locker)
                         {
-                            PO_B.Calculate_Kalsto_Statpipe();
-                            PO_B.DB_Connection.Write_Value("31XI0157_B", 1);
-                            Log_File.WriteLine("{0}: Calculate Statpipe stream at Kalstø B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-                        }
-                        else
-                        {
-                            PO_B.DB_Connection.Write_Value("31XI0157_B", 0);
-                            Log_File.WriteLine("{0}: Errors in Statpipe current composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            if (Composition_Stdev(PO_A.Composition_Values_Asgard_Current, GC_A_Comp_Asgard) > Stdev_Low_Limit &&
+                                Check_Composition(PO_A.Composition_Values_Asgard_Current))
+                            {
+                                PO_A.Calculate_Kalsto_Asgard();
+                                PO_A.DB_Connection.Write_Value("31XI0161_A", 1);
+                                Log_File.WriteLine("{0}: Calculate Åsgard stream at Kalstø A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            }
+                            else
+                            {
+                                PO_A.DB_Connection.Write_Value("31XI0161_A", 0);
+                                Log_File.WriteLine("{0}: Errors in Asgard current composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            }
                         }
                     },
 
                     () =>
                     {
-                        if (Composition_Stdev(PO_B.Composition_Values_Asgard_Current, GC_B_Comp_Asgard) > Stdev_Low_Limit &&
-                            Check_Composition(PO_B.Composition_Values_Asgard_Current))
+                        lock (PO_B.locker)
                         {
-                            PO_B.Calculate_Kalsto_Asgard();
-                            PO_B.DB_Connection.Write_Value("31XI0161_B", 1);
-                            Log_File.WriteLine("{0}: Calculate Åsgard stream at Kalstø B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            if (Composition_Stdev(PO_B.Composition_Values_Statpipe_Current, GC_B_Comp_Statpipe) > Stdev_Low_Limit &&
+                                Check_Composition(PO_B.Composition_Values_Statpipe_Current))
+                            {
+                                PO_B.Calculate_Kalsto_Statpipe();
+                                PO_B.DB_Connection.Write_Value("31XI0157_B", 1);
+                                Log_File.WriteLine("{0}: Calculate Statpipe stream at Kalstø B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            }
+                            else
+                            {
+                                PO_B.DB_Connection.Write_Value("31XI0157_B", 0);
+                                Log_File.WriteLine("{0}: Errors in Statpipe current composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            }
                         }
-                        else
+                    },
+
+                    () =>
+                    {
+                        lock (PO_B.locker)
                         {
-                            PO_B.DB_Connection.Write_Value("31XI0161_B", 0);
-                            Log_File.WriteLine("{0}: Errors in Asgard current composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            if (Composition_Stdev(PO_B.Composition_Values_Asgard_Current, GC_B_Comp_Asgard) > Stdev_Low_Limit &&
+                                Check_Composition(PO_B.Composition_Values_Asgard_Current))
+                            {
+                                PO_B.Calculate_Kalsto_Asgard();
+                                PO_B.DB_Connection.Write_Value("31XI0161_B", 1);
+                                Log_File.WriteLine("{0}: Calculate Åsgard stream at Kalstø B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            }
+                            else
+                            {
+                                PO_B.DB_Connection.Write_Value("31XI0161_B", 0);
+                                Log_File.WriteLine("{0}: Errors in Asgard current composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            }
                         }
                     }
                 );
