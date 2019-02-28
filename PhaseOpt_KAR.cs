@@ -77,6 +77,9 @@ public class PhaseOpt_KAR
 
     public readonly object locker = new object();
 
+    // Dropout curve operation points
+    private double[,] Operation_Point = new double[3, 2]; // [Pressure, Temperature]
+
     public List<Component> Statpipe_Comp = new List<Component>();
     public List<Component> Statpipe_Comp_Kalsto = new List<Component>();
     public List<double> Composition_Values_Statpipe_Current = new List<double>();
@@ -423,6 +426,19 @@ public class PhaseOpt_KAR
         {
             Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Asgard_Molweight;
         }
+
+        // Read operation points
+        Hashtable OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5044" }, Timestamp);
+        Operation_Point[0, 0] = Convert.ToDouble(OP["21PI5108"]);
+        Operation_Point[0, 1] = Convert.ToDouble(OP["21TI5044"]);
+
+        OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5206" }, Timestamp);
+        Operation_Point[1, 0] = Convert.ToDouble(OP["21PI5108"]);
+        Operation_Point[1, 1] = Convert.ToDouble(OP["21TI5206"]);
+
+        OP = DB_Connection.Read_Values(new string[] { "21PI5230", "21TC5236" }, Timestamp);
+        Operation_Point[2, 0] = Convert.ToDouble(OP["21PI5230"]);
+        Operation_Point[2, 1] = Convert.ToDouble(OP["21TC5236"]);
     }
 
     public void Calculate_Karsto()
@@ -694,7 +710,6 @@ public class PhaseOpt_KAR
 
     }
 
-    /*
     private Dropout_Curve Curve;
     public void Calculate_Dropout_Curves()
     {
@@ -715,40 +730,29 @@ public class PhaseOpt_KAR
         double[] Temperature = new double[13] { -25.0, -22.5, -20.0, -17.5, -15.0, -12.5, -10.0, -7.5, -5.0, -2.5, 0.0, 2.5, 5.0 };
         double[] Dropout = new double[5] { 0.1, 0.5, 1.0, 2.0, 5.0 };
         double[,] Pres = new double[Dropout.Length + 1, Temperature.Length];
-        double[,] Operation_Point = new double[3, 2]; // [Pressure, Temperature]
-
-        DateTime Time_Stamp = DateTime.Now.AddSeconds(-15);
-        Hashtable OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5044" }, Time_Stamp);
-        Operation_Point[0, 0] = Convert.ToDouble(OP["21PI5108"]);
-        Operation_Point[0, 1] = Convert.ToDouble(OP["21TI5044"]);
-
-        OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5206" }, Time_Stamp);
-        Operation_Point[1, 0] = Convert.ToDouble(OP["21PI5108"]);
-        Operation_Point[1, 1] = Convert.ToDouble(OP["21TI5206"]);
-
-        OP = DB_Connection.Read_Values(new string[] { "21PI5230", "21TC5236" }, Time_Stamp);
-        Operation_Point[2, 0] = Convert.ToDouble(OP["21PI5230"]);
-        Operation_Point[2, 1] = Convert.ToDouble(OP["21TC5236"]);
 
 
-        double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray());
+
+        //double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray());
 
 
         // Dew point line. We use this later to set the max value when searching for drop out pressures
-        for (int i = 0; i < Temperature.Length; i++)
+        Parallel.For (0, Temperature.Length, i =>
         {
-            Pres[0, i] = PhaseOpt.PhaseOpt.DewP(Composition_IDs.ToArray(), Z, Temperature[i] + 273.15);
+            Pres[0, i] = T400.DewP(Temperature[i] + 273.15);
             System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", Temperature[i], Pres[0, i] - 1.01325);
-        }
+        });
 
         for (int i = 0; i < Dropout.Length; i++)
         {
-            for (int j = 0; j < Temperature.Length; j++)
+            Parallel.For(0, Temperature.Length, j =>
             {
-                Pres[i + 1, j] = PhaseOpt.PhaseOpt.Dropout_Search(Composition_IDs.ToArray(), Z, Dropout[i], Temperature[j] + 273.15, Pres[0, j], 0.1);
-                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i+1, j] - 1.01325);
-            }
+                Pres[i + 1, j] = T400.Dropout_Search(Dropout[i], Temperature[j] + 273.15, Pres[0, j], 0.1);
+                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Dropout[i], Temperature[j], Pres[i + 1, j] - 1.01325);
+            });
         }
+
+        /*
         DateTime Start_Time = DateTime.Now;
         Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
         String Tag;
@@ -828,8 +832,9 @@ public class PhaseOpt_KAR
 
         var th = new Thread(Draw_Dropout_Curves);
         th.Start();
+        */
     }
-*/
+
     /*
     public void Draw_Dropout_Curves()
     {

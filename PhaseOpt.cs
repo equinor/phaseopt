@@ -386,39 +386,88 @@ namespace PhaseOpt
         /// <param name="P">Pressure</param>
         /// <param name="T">Temperature</param>
         /// <returns>An array containing the liquid dropout mass and volume fractions.</returns>
-        public double[] Dropout(Int32[] IDs, double[] Values, double P, double T)
+        public double[] Dropout(double P, double T)
         {
-            Normalize(Values, 1.0);
 
-            Int32 Components = IDs.Length;
-            Int32[] ID = Pad(IDs);
-            double[] Z = Pad(Values);
-            double D1 = 0.0;
-            double D2 = 0.0;
-            double CF1 = 0.0;
-            double CF2 = 0.0;
-            double[] XY1 = new double[100];
-            double[] XY2 = new double[100];
             double[] Results = new double[2];
 
-            Vpl(ref Components, ID, Z, ref T, ref P, ref D1, ref D2, ref CF1, ref CF2, XY1, XY2);
+            string Arguments = "-vpl -id";
+            string output;
+            Process p = new Process();
 
-            Results[0] = CF1;
-            Results[1] = CF2;
+            foreach (int i in Composition_IDs)
+            {
+                Arguments += " " + i.ToString();
+            }
+            Arguments += " -z";
+            foreach (double v in Composition_Values)
+            {
+                // Make the value string into a Fortran style double presicion literal
+                string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
+                if (!val.Contains("D"))
+                    val += "D0";
+
+                Arguments += val;
+            }
+            Arguments += " -p " + P.ToString("G", CultureInfo.InvariantCulture) + "D0";
+            Arguments += " -t " + T.ToString("G", CultureInfo.InvariantCulture) + "D0";
+
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.Arguments = Arguments;
+            p.Start();
+            p.PriorityClass = ProcessPriorityClass.Idle;
+            output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            Results[0] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+            Results[1] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
 
             return Results;
         }
 
-        public double Dropout_Search(Int32[] IDs, double[] Values, double wd, double T, double P_Max, double limit = 0.01)
+        public double Dropout_Search(double wd, double T, double P_Max, double limit = 0.01, int max_iterations = 25)
         {
-            double PMax = P_Max;
-            double PMin = PMax - 40.0;
             double P = double.NaN;
-            double diff = double.MaxValue;
-            double Result = double.NaN;
-            Int32 n = 0;
 
-            while (diff > limit && n < 50)
+            string Arguments = "-ds -id";
+            string output;
+            Process p = new Process();
+
+            foreach (int i in Composition_IDs)
+            {
+                Arguments += " " + i.ToString();
+            }
+            Arguments += " -z";
+            foreach (double v in Composition_Values)
+            {
+                // Make the value string into a Fortran style double presicion literal
+                string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
+                if (!val.Contains("D"))
+                    val += "D0";
+
+                Arguments += val;
+            }
+            Arguments += " -wd "      + wd.ToString("G", CultureInfo.InvariantCulture)    + "D0";
+            Arguments += " -p "       + P_Max.ToString("G", CultureInfo.InvariantCulture) + "D0";
+            Arguments += " -t "       + T.ToString("G", CultureInfo.InvariantCulture)     + "D0";
+            Arguments += " -limit "   + limit.ToString("G", CultureInfo.InvariantCulture) + "D0";
+            Arguments += " -max-itr " + max_iterations.ToString();
+
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.Arguments = Arguments;
+            p.Start();
+            p.PriorityClass = ProcessPriorityClass.Idle;
+            output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            P = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+
+            /*
+            while (diff > limit && n < 15)
             {
                 n++;
                 if (Result > wd)
@@ -432,15 +481,15 @@ namespace PhaseOpt
 
                 P = PMin + (PMax - PMin) / 2;
 
-                Result = Dropout(IDs, Values, P, T)[0] * 100.0;
+                Result = Dropout(P, T)[0] * 100.0;
                 diff = Math.Abs(Result - wd);
 
                 System.Console.WriteLine("dropout: {0}", Result);
                 System.Console.WriteLine("diff:    {0}", diff);
             }
 
-            if (n == 50) P = double.NaN;
-
+            if (n == 15) P = double.NaN;
+            */
             return P;
         }
 
@@ -453,19 +502,44 @@ namespace PhaseOpt
         /// <param name="P">Pressure</param>
         /// <param name="T">Temperature</param>
         /// <returns>An array containing the liquid dropout mass and volume fractions.</returns>
-        public double DewP(Int32[] IDs, double[] Values, double T)
+        public double DewP(double T)
         {
-            Normalize(Values, 1.0);
-
-            Int32 Components = IDs.Length;
-            Int32[] ID = Pad(IDs);
-            double[] Z = Pad(Values);
             double P1 = 0.0;
             double P2 = 0.0;
             double[] XY1 = new double[100];
             double[] XY2 = new double[100];
 
-            Dewp(ref Components, ID, Z, ref T, ref P1, XY1, ref P2, XY2);
+            string Arguments = "-dewp -id";
+            string output;
+            Process p = new Process();
+
+            foreach (int i in Composition_IDs)
+            {
+                Arguments += " " + i.ToString();
+            }
+            Arguments += " -z";
+            foreach (double v in Composition_Values)
+            {
+                // Make the value string into a Fortran style double presicion literal
+                string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
+                if (!val.Contains("D"))
+                    val += "D0";
+
+                Arguments += val;
+            }
+            Arguments += " -t " + T.ToString("G", CultureInfo.InvariantCulture) + "D0";
+
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.Arguments = Arguments;
+            p.Start();
+            p.PriorityClass = ProcessPriorityClass.Idle;
+            output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+
+            P1 = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+            P2 = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
 
             if (P1 > 900.0) P1 = 0.0;
             if (P2 > 900.0) P2 = 0.0;
