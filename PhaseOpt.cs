@@ -316,8 +316,8 @@ namespace PhaseOpt
             Arguments += " -z";
             foreach (double v in Composition_Values)
             {
+                // Make the value string into a Fortran style double presicion literal
                 string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
-
                 if (!val.Contains("D"))
                     val += "D0";
 
@@ -329,7 +329,7 @@ namespace PhaseOpt
             p.StartInfo.FileName = "ccd.exe";
             p.StartInfo.Arguments = Arguments;
             p.Start();
-            p.PriorityClass = ProcessPriorityClass.BelowNormal;
+            p.PriorityClass = ProcessPriorityClass.Idle;
             output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
 

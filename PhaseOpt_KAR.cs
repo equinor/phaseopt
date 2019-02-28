@@ -72,6 +72,8 @@ public class PhaseOpt_KAR
 
     PhaseOpt.PhaseOpt T100 = new PhaseOpt.PhaseOpt();
     PhaseOpt.PhaseOpt T400 = new PhaseOpt.PhaseOpt();
+    PhaseOpt.PhaseOpt Asgard_Kalsto = new PhaseOpt.PhaseOpt();
+    PhaseOpt.PhaseOpt Statpipe_Kalsto = new PhaseOpt.PhaseOpt();
 
     public List<Component> Statpipe_Comp = new List<Component>();
     public List<Component> Statpipe_Comp_Kalsto = new List<Component>();
@@ -642,10 +644,15 @@ public class PhaseOpt_KAR
         Log_File.Flush();
     }
 
-    /*
     public void Calculate_Kalsto_Asgard()
     {
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Asgard.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Asgard.ToArray(), Composition_Values_Asgard_Current.ToArray()));
+        Asgard_Kalsto.Composition_IDs = Composition_IDs_Asgard.ToArray();
+        Asgard_Kalsto.Composition_Values = Composition_Values_Asgard_Current.ToArray();
+
+        double[] Composition_Result = Asgard_Kalsto.Cricondenbar();
+
+        //double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Asgard.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Asgard.ToArray(), Composition_Values_Asgard_Current.ToArray()));
+
         for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
         {
             if (!Composition_Result[i].Equals(double.NaN))
@@ -661,7 +668,12 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Statpipe()
     {
-        double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
+        Statpipe_Kalsto.Composition_IDs = Composition_IDs_Statpipe.ToArray();
+        Statpipe_Kalsto.Composition_Values = Composition_Values_Statpipe_Current.ToArray();
+
+        double[] Composition_Result = Statpipe_Kalsto.Cricondenbar();
+
+        //double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
 
         for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
         {
@@ -676,7 +688,7 @@ public class PhaseOpt_KAR
         }
 
     }
-    */
+
     /*
     private Dropout_Curve Curve;
     public void Calculate_Dropout_Curves()
