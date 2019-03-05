@@ -76,10 +76,10 @@ namespace PhaseOpt
         public double[] Cricondenbar(uint Units = 1)
         {
             double[] Results = new double[2];
-            double CCBT = 0.0;
-            double CCBP = 0.0;
+            double CCBT = -1.0;
+            double CCBP = -1.0;
             string Arguments = "-ccd -ind 2 -id";
-            string output;
+            string output = "";
             Process umrol = new Process();
 
             if (Units > 1) Units = 1;
@@ -108,8 +108,11 @@ namespace PhaseOpt
             output = umrol.StandardOutput.ReadToEnd();
             umrol.WaitForExit();
 
-            CCBP = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
-            CCBT = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+            if (output.Length > 0)
+            {
+                CCBP = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+                CCBT = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+            }
 
             if (CCBP < 0.0) CCBP = double.NaN;
             if (CCBT < 0.0) CCBT = double.NaN;
@@ -128,11 +131,11 @@ namespace PhaseOpt
         public double[] Cricondentherm(uint Units = 1)
         {
             // Calculate the cricondentherm point
-            double CCTT = 0.0;
-            double CCTP = 0.0;
+            double CCTT = -1.0;
+            double CCTP = -1.0;
             double[] Results = new double[2];
             string Arguments = "-ccd -ind 1 -id";
-            string output;
+            string output = "";
             Process umrol = new Process();
 
             if (Units > 1) Units = 1;
@@ -161,8 +164,14 @@ namespace PhaseOpt
             output = umrol.StandardOutput.ReadToEnd();
             umrol.WaitForExit();
 
-            CCTP = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
-            CCTT = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+            if (output.Length > 0)
+            {
+                CCTP = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+                CCTT = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+            }
+
+            if (CCTP < 0.0) CCTP = double.NaN;
+            if (CCTT < 0.0) CCTT = double.NaN;
 
             Results[0] = (CCTP - (Units * Bara_To_Barg));
             Results[1] = (CCTT - (Units * Kelvin_To_Celcius));
@@ -179,11 +188,9 @@ namespace PhaseOpt
         /// <returns>An array containing the liquid dropout mass and volume fractions.</returns>
         public double[] Dropout(double P, double T)
         {
-
-            double[] Results = new double[2];
-
+            double[] Results = new double[2] { double.NaN, double.NaN };
             string Arguments = "-vpl -id";
-            string output;
+            string output = "";
             Process umrol = new Process();
 
             foreach (int i in Composition_IDs)
@@ -212,8 +219,11 @@ namespace PhaseOpt
             output = umrol.StandardOutput.ReadToEnd();
             umrol.WaitForExit();
 
-            Results[0] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
-            Results[1] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+            if (output.Length > 0)
+            {
+                Results[0] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+                Results[1] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+            }
 
             return Results;
         }
@@ -222,7 +232,7 @@ namespace PhaseOpt
         {
             double P = double.NaN;
             string Arguments = "-ds -id";
-            string output;
+            string output = "";
             Process umrol = new Process();
 
             foreach (int i in Composition_IDs)
@@ -254,7 +264,10 @@ namespace PhaseOpt
             output = umrol.StandardOutput.ReadToEnd();
             umrol.WaitForExit();
 
-            P = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+            if (output.Length > 0)
+            {
+                P = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+            }
 
             return P;
         }
@@ -272,7 +285,7 @@ namespace PhaseOpt
             double[] XY1 = new double[100];
             double[] XY2 = new double[100];
             string Arguments = "-dewp -id";
-            string output;
+            string output = "";
             Process umrol = new Process();
 
             foreach (int i in Composition_IDs)
@@ -300,8 +313,11 @@ namespace PhaseOpt
             output = umrol.StandardOutput.ReadToEnd();
             umrol.WaitForExit();
 
-            P1 = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
-            P2 = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+            if (output.Length > 0)
+            {
+                P1 = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+                P2 = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+            }
 
             if (P1 > 900.0) P1 = 0.0;
             if (P2 > 900.0) P2 = 0.0;
@@ -312,7 +328,7 @@ namespace PhaseOpt
         public int Fluid_Tune()
         {
             string Arguments = "-tf -id";
-            string output;
+            string output = "";
             Process umrol = new Process();
 
             foreach (int i in Composition_IDs)
@@ -339,9 +355,12 @@ namespace PhaseOpt
             output = umrol.StandardOutput.ReadToEnd();
             umrol.WaitForExit();
 
-            for (int i = 0; i < Composition_Values.Length; i++)
+            if (output.Length > 0)
             {
-                Composition_Values[i] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[i], CultureInfo.InvariantCulture);
+                for (int i = 0; i < Composition_Values.Length; i++)
+                {
+                    Composition_Values[i] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[i], CultureInfo.InvariantCulture);
+                }
             }
 
             return 0;
