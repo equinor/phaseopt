@@ -326,7 +326,7 @@ namespace PhaseOpt
 
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.FileName = "umrol.exe";
             p.StartInfo.Arguments = Arguments;
             p.Start();
             p.PriorityClass = ProcessPriorityClass.Idle;
@@ -414,7 +414,7 @@ namespace PhaseOpt
 
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.FileName = "umrol.exe";
             p.StartInfo.Arguments = Arguments;
             p.Start();
             p.PriorityClass = ProcessPriorityClass.Idle;
@@ -457,7 +457,7 @@ namespace PhaseOpt
 
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.FileName = "umrol.exe";
             p.StartInfo.Arguments = Arguments;
             p.Start();
             p.PriorityClass = ProcessPriorityClass.Idle;
@@ -531,7 +531,7 @@ namespace PhaseOpt
 
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
-            p.StartInfo.FileName = "ccd.exe";
+            p.StartInfo.FileName = "umrol.exe";
             p.StartInfo.Arguments = Arguments;
             p.Start();
             p.PriorityClass = ProcessPriorityClass.Idle;
