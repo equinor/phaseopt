@@ -439,6 +439,19 @@ public class PhaseOpt_KAR
         OP = DB_Connection.Read_Values(new string[] { "21PI5230", "21TC5236" }, Timestamp);
         Operation_Point[2, 0] = Convert.ToDouble(OP["21PI5230"]);
         Operation_Point[2, 1] = Convert.ToDouble(OP["21TC5236"]);
+
+        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TI1025" }, Timestamp);
+        Operation_Point[0, 0] = Convert.ToDouble(OP["21PC1002A"]);
+        Operation_Point[0, 1] = Convert.ToDouble(OP["21TI1025"]);
+
+        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TI1015" }, Timestamp);
+        Operation_Point[1, 0] = Convert.ToDouble(OP["21PC1002A"]);
+        Operation_Point[1, 1] = Convert.ToDouble(OP["21TI1015"]);
+
+        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TC1017" }, Timestamp);
+        Operation_Point[2, 0] = Convert.ToDouble(OP["21PC1002A"]);
+        Operation_Point[2, 1] = Convert.ToDouble(OP["21TC1017"]);
+
     }
 
     public void Calculate_Karsto()
@@ -510,14 +523,17 @@ public class PhaseOpt_KAR
         }
 
         // Write mixed compositions to IP21
-        foreach (Component c in Mix_To_T100_Comp)
+        lock (locker)
         {
-            DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
-        }
+            foreach (Component c in Mix_To_T100_Comp)
+            {
+                DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
+            }
 
-        foreach (Component c in Mix_To_T410_Comp)
-        {
-            DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
+            foreach (Component c in Mix_To_T410_Comp)
+            {
+                DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
+            }
         }
 
         List<Int32> Composition_IDs = new List<Int32>();
@@ -573,7 +589,10 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result_T100[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
+                lock (locker)
+                {
+                    DB_Connection.Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
+                }
             }
             Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
 #if DEBUG
@@ -585,7 +604,10 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result_T400[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result_T400[i]);
+                lock (locker)
+                {
+                    DB_Connection.Write_Value(Mix_To_T410_Cricondenbar_Tags[i], Composition_Result_T400[i]);
+                }
             }
             Log_File.WriteLine("{0}\t{1}", Mix_To_T410_Cricondenbar_Tags[i], Composition_Result_T400[i]);
 #if DEBUG
@@ -678,7 +700,10 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+                lock (locker)
+                {
+                    DB_Connection.Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
+                }
             }
             Log_File.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -700,7 +725,10 @@ public class PhaseOpt_KAR
         {
             if (!Composition_Result[i].Equals(double.NaN))
             {
-                DB_Connection.Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+                lock (locker)
+                {
+                    DB_Connection.Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
+                }
             }
             Log_File.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
 #if DEBUG
@@ -730,12 +758,9 @@ public class PhaseOpt_KAR
         double[] Temperature = new double[13] { -25.0, -22.5, -20.0, -17.5, -15.0, -12.5, -10.0, -7.5, -5.0, -2.5, 0.0, 2.5, 5.0 };
         double[] Dropout = new double[5] { 0.1, 0.5, 1.0, 2.0, 5.0 };
         double[,] Pres = new double[Dropout.Length + 1, Temperature.Length];
-
-
-
-        //double[] Z = PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray());
-
-
+        
+        T400.Fluid_Tune();
+        
         // Dew point line. We use this later to set the max value when searching for drop out pressures
         Parallel.For (0, Temperature.Length, i =>
         {
@@ -752,49 +777,55 @@ public class PhaseOpt_KAR
             });
         }
 
-        /*
+        
         DateTime Start_Time = DateTime.Now;
         Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
         String Tag;
         Int32 Interval = 3;
         Double Result = 0.0;
 
-        for (int j = 0; j < Operation_Point.GetUpperBound(0) + 1; j++)
+        lock (locker)
         {
-            if (j == 0)
+            for (int j = 0; j < Operation_Point.GetUpperBound(0) + 1; j++)
             {
-                DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time);
-                DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time);
+                if (j == 0)
+                {
+                    DB_Connection.Insert_Value("T_PO_OP" + (j).ToString(), double.NaN, Start_Time);
+                    DB_Connection.Insert_Value("T_PO_E_T", double.NaN, Start_Time);
+                }
+
+                DB_Connection.Insert_Value("T_PO_OP" + (j).ToString(), Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 1)));
+                DB_Connection.Insert_Value("T_PO_E_T", Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 1)));
+
+                DB_Connection.Insert_Value("T_PO_OP" + (j).ToString(), Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 2)));
+                DB_Connection.Insert_Value("T_PO_E_T", Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 2)));
+
+                DB_Connection.Insert_Value("T_PO_OP" + (j).ToString(), double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
+                DB_Connection.Insert_Value("T_PO_E_T", double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
+
+                Result = T400.Dropout(Operation_Point[j, 0] + 1.01325, Operation_Point[j, 1] + 273.15)[0] * 100.0;
+                lock (locker)
+                {
+                    DB_Connection.Write_Value("T_PO_LD" + (j).ToString(), Result);
+                }
             }
 
-            DB_Connection.Insert_Value("PO_OP" + (j).ToString(), Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 1)));
-            DB_Connection.Insert_Value("PO_E_T", Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 1)));
-
-            DB_Connection.Insert_Value("PO_OP" + (j).ToString(), Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 2)));
-            DB_Connection.Insert_Value("PO_E_T", Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 2)));
-
-            DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
-            DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
-
-            Result = PhaseOpt.PhaseOpt.Dropout(Composition_IDs.ToArray(), Z, Operation_Point[j, 0] + 1.01325, Operation_Point[j, 1] + 273.15)[0] * 100.0;
-            DB_Connection.Write_Value("PO_LD" + (j).ToString(), Result);
-        }
-
-        Start_Time = Start_Time.AddSeconds(-(Interval * (Operation_Point.GetUpperBound(0) + 1) + 1));
-        Interval = 5;
-        for (int j = 0; j < Temperature.Length; j++)
-        {
-            if (j == 0) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * j));
-            DB_Connection.Insert_Value("PO_E_T", Temperature[j], Start_Time.AddSeconds(-Interval * (j + 1)));
-
-            for (int i = 0; i < Dropout.Length + 1; i++)
+            Start_Time = Start_Time.AddSeconds(-(Interval * (Operation_Point.GetUpperBound(0) + 1) + 1));
+            Interval = 5;
+            for (int j = 0; j < Temperature.Length; j++)
             {
-                Tag = "PO_E_P" +  (i).ToString();
-                if (j == 0) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
-                DB_Connection.Insert_Value(Tag, Pres[i, j] - 1.01325, Start_Time.AddSeconds(-Interval * (j + 1)));
-                if (j == Temperature.Length - 1) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
+                if (j == 0) DB_Connection.Insert_Value("T_PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * j));
+                DB_Connection.Insert_Value("T_PO_E_T", Temperature[j], Start_Time.AddSeconds(-Interval * (j + 1)));
+
+                for (int i = 0; i < Dropout.Length + 1; i++)
+                {
+                    Tag = "T_PO_E_P" + (i).ToString();
+                    if (j == 0) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
+                    DB_Connection.Insert_Value(Tag, Pres[i, j] - 1.01325, Start_Time.AddSeconds(-Interval * (j + 1)));
+                    if (j == Temperature.Length - 1) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
+                }
+                if (j == Temperature.Length - 1) DB_Connection.Insert_Value("T_PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
             }
-            if (j == Temperature.Length - 1) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
         }
 
         // Mix to T100/200 dropout
@@ -808,31 +839,22 @@ public class PhaseOpt_KAR
             Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
 
-        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TI1025" }, Time_Stamp);
-        Operation_Point[0, 0] = Convert.ToDouble(OP["21PC1002A"]);
-        Operation_Point[0, 1] = Convert.ToDouble(OP["21TI1025"]);
-
-        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TI1015" }, Time_Stamp);
-        Operation_Point[1, 0] = Convert.ToDouble(OP["21PC1002A"]);
-        Operation_Point[1, 1] = Convert.ToDouble(OP["21TI1015"]);
-
-        OP = DB_Connection.Read_Values(new string[] { "21PC1002A", "21TC1017" }, Time_Stamp);
-        Operation_Point[2, 0] = Convert.ToDouble(OP["21PC1002A"]);
-        Operation_Point[2, 1] = Convert.ToDouble(OP["21TC1017"]);
-
-        Z = PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs.ToArray(), Composition_Values.ToArray());
+        T100.Fluid_Tune();
 
         Result = 0.0;
 
         for (int j = 0; j < Operation_Point.GetUpperBound(0) + 1; j++)
         {
-            Result = PhaseOpt.PhaseOpt.Dropout(Composition_IDs.ToArray(), Z, Operation_Point[j, 0] + 1.01325, Operation_Point[j, 1] + 273.15)[0] * 100.0;
-            DB_Connection.Write_Value("PO_LD" + (j+3).ToString(), Result);
+            Result = T100.Dropout(Operation_Point[j, 0] + 1.01325, Operation_Point[j, 1] + 273.15)[0] * 100.0;
+            lock (locker)
+            {
+                DB_Connection.Write_Value("T_PO_LD" + (j + 3).ToString(), Result);
+            }
         }
 
-        var th = new Thread(Draw_Dropout_Curves);
-        th.Start();
-        */
+        //var th = new Thread(Draw_Dropout_Curves);
+        //th.Start();
+        
     }
 
     /*

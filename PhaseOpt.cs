@@ -103,10 +103,18 @@ namespace PhaseOpt
             umrol.StartInfo.RedirectStandardOutput = true;
             umrol.StartInfo.FileName = "umrol.exe";
             umrol.StartInfo.Arguments = Arguments;
-            umrol.Start();
-            umrol.PriorityClass = ProcessPriorityClass.Idle;
-            output = umrol.StandardOutput.ReadToEnd();
-            umrol.WaitForExit();
+            try
+            {
+                umrol.Start();
+                umrol.PriorityClass = ProcessPriorityClass.Idle;
+                output = umrol.StandardOutput.ReadToEnd();
+                umrol.WaitForExit();
+            }
+            catch
+            {
+                CCBP = -1.0;
+                CCBT = -1.0;
+            }
 
             if (output.Length > 0)
             {
@@ -259,10 +267,17 @@ namespace PhaseOpt
             umrol.StartInfo.RedirectStandardOutput = true;
             umrol.StartInfo.FileName = "umrol.exe";
             umrol.StartInfo.Arguments = Arguments;
-            umrol.Start();
-            umrol.PriorityClass = ProcessPriorityClass.Idle;
-            output = umrol.StandardOutput.ReadToEnd();
-            umrol.WaitForExit();
+            try
+            {
+                umrol.Start();
+                umrol.PriorityClass = ProcessPriorityClass.Idle;
+                output = umrol.StandardOutput.ReadToEnd();
+                umrol.WaitForExit();
+            }
+            catch
+            {
+                P = double.NaN;
+            }
 
             if (output.Length > 0)
             {
