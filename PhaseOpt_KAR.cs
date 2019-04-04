@@ -139,7 +139,7 @@ public class PhaseOpt_KAR
 
     public void IP21_Reader()
     {
-        while (true)
+        while (DB_Connection.isConnected())
         {
             Read_Composition();
             Read_From_IP21();
@@ -366,15 +366,12 @@ public class PhaseOpt_KAR
         // Read mass flow
         Hashtable Mass_Flow;
         Asgard_Transport_Flow = 0.0;
-#if DEBUG
-        Console.WriteLine("\nÅsgard flow:");
-#endif
         try
         {
             Mass_Flow = DB_Connection.Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
             Asgard_Transport_Flow = Convert.ToDouble(Mass_Flow[Asgard_Mass_Flow_Tags[0]]);
 #if DEBUG
-            Console.WriteLine("{0}\t{1}", Asgard_Mass_Flow_Tags[0], Asgard_Transport_Flow);
+            Console.WriteLine("\nÅsgard flow: {0}\t{1}", Asgard_Mass_Flow_Tags[0], Asgard_Transport_Flow);
 #endif
         }
         catch
@@ -385,15 +382,12 @@ public class PhaseOpt_KAR
         Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
 
         Statpipe_Transport_Flow = 0.0;
-#if DEBUG
-        Console.WriteLine("\nStatpipe flow:");
-#endif
         try
         {
             Mass_Flow = DB_Connection.Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
             Statpipe_Transport_Flow = Convert.ToDouble(Mass_Flow[Statpipe_Mass_Flow_Tags[0]]);
 #if DEBUG
-            Console.WriteLine("{0}\t{1}", Statpipe_Mass_Flow_Tags[0], Statpipe_Transport_Flow);
+            Console.WriteLine("\nStatpipe flow: {0}\t{1}", Statpipe_Mass_Flow_Tags[0], Statpipe_Transport_Flow);
 #endif
         }
         catch

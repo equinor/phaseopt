@@ -34,16 +34,31 @@ public class IP21_Comm: IDisposable
         IP21_Read_Only = Read_Only;
     }
 
+    public bool isConnected()
+    {
+        return Cmdr.Connection.State == System.Data.ConnectionState.Open &&
+            Cmdw.Connection.State == System.Data.ConnectionState.Open;
+    }
     public void Connect()
     {
         string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
         Cmdr = new System.Data.Odbc.OdbcCommand();
         Cmdr.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmdr.Connection.Open();
+        Cmdr.CommandTimeout = 15;
 
         Cmdw = new System.Data.Odbc.OdbcCommand();
         Cmdw.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmdw.Connection.Open();
+        Cmdw.CommandTimeout = 15;
+
+        try
+        {
+            Cmdr.Connection.Open();
+            Cmdw.Connection.Open();
+        }
+        catch(System.Data.Odbc.OdbcException e)
+        {
+            Console.WriteLine("Connection failed {0}", e.Message);
+        }
     }
 
     public void Disconnect()
@@ -62,6 +77,7 @@ public class IP21_Comm: IDisposable
 
     public Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
     {
+        Hashtable Result = new Hashtable();
         string Tag_cond = "(FALSE"; // Makes it easier to add OR conditions.
         foreach (string Tag in Tag_Name)
         {
@@ -83,17 +99,23 @@ WHERE
   AND PERIOD = 000:0:01.0;
 ";
 
-        System.Data.Odbc.OdbcDataReader DR = Cmdr.ExecuteReader();
-        Hashtable Result = new Hashtable();
-        while (DR.Read())
-        {
-            if (DR.GetValue(2).ToString() == "0") // if status is good
+        System.Data.Odbc.OdbcDataReader DR = Cmdr.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+
+        Console.WriteLine(DR.ToString());
+
+        //if (DR.HasRows)
+        //{
+            while (DR.Read())
             {
-                Result.Add(DR.GetValue(0).ToString(), DR.GetValue(1));
+                if (DR.GetValue(2).ToString() == "0") // if status is good
+                {
+                    Result.Add(DR.GetValue(0).ToString(), DR.GetValue(1));
+                }
             }
-        }
+        //}
 
         DR.Close();
+
         return Result;
     }
 
@@ -109,7 +131,9 @@ WHERE
             if (!IP21_Read_Only) Cmdw.ExecuteNonQuery();
         }
         catch
-        { }
+        {
+            Console.WriteLine("Write_Value failed");
+        }
     }
 
     public void Write_Value(string Tag_Name, int Value, string Quality = "Good")
@@ -124,7 +148,9 @@ WHERE
             if (!IP21_Read_Only) Cmdw.ExecuteNonQuery();
         }
         catch
-        { }
+        {
+            Console.WriteLine("Write_Value failed");
+        }
     }
 
     public void Write_Value(string Tag_Name, string Value, string Quality = "Good")
@@ -161,7 +187,9 @@ WHERE
             if (!IP21_Read_Only) Cmdw.ExecuteNonQuery();
         }
         catch
-        { }
+        {
+            Console.WriteLine("Insert_Value failed");
+        }
     }
 
     private bool Sanitize(string stringValue)

@@ -143,6 +143,8 @@ namespace Main
 
             Thread IP_21_Reader_Thread_A = new Thread(PO_A.IP21_Reader);
             Thread IP_21_Reader_Thread_B = new Thread(PO_B.IP21_Reader);
+            IP_21_Reader_Thread_A.Name = "IP21 Reader A";
+            IP_21_Reader_Thread_B.Name = "IP21 Reader B";
             IP_21_Reader_Thread_A.Start();
             IP_21_Reader_Thread_B.Start();
 
@@ -428,15 +430,11 @@ namespace Main
                     PO_A.Calculate_Dropout_Curves();
                 }
 
-                /*
-                Sleep_Time = (Start_Time.AddMinutes(3) - DateTime.Now).TotalMilliseconds;
+                Sleep_Time = (Start_Time.AddSeconds(150) - DateTime.Now).TotalMilliseconds;
                 if (Sleep_Time > 1.0)
                 {
                     System.Threading.Thread.Sleep((int)Sleep_Time);
                 }
-                */
-
-                Thread.Sleep(20_000);
             }
         }
 
