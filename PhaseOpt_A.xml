@@ -44,7 +44,7 @@
       <mass-flow>
         <component name="Stasjon Masse strøm" tag="20FI7195SM"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0157_A" pressure-tag="31PY0157_A"/>
+      <cricondenbar temperature-tag="T_31TY0157_A" pressure-tag="T_31PY0157_A"/>
     </stream>
 
     <stream name="asgard" type="input">
@@ -81,10 +81,12 @@
       <mass-flow>
         <component name="Åsgard rikgass før X-over" tag="20FI5506"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0161_A" pressure-tag="31PY0161_A"/>
+      <cricondenbar temperature-tag="T_31TY0161_A" pressure-tag="T_31PY0161_A"/>
     </stream>
 
     <stream name="DIXO-mix to T410/T420/DPCU" type="output">
+	  <status tag="20XI7146_A"/>
+
       <component name="CO2"  id="1"   tag="20AY7146A_K" scale-factor="1.0"/>
       <component name="N2"   id="2"   tag="20AY7146A_J" scale-factor="1.0"/>
       <component name="CH4"  id="101" tag="20AY7146A_A" scale-factor="1.0"/>
@@ -109,7 +111,7 @@
       <component name="C9A / m-xylene"  id="809"  tag="20AY7146A_54" scale-factor="10000.0"/>
       <component name="nC10"            id="1016" tag="20AY7146A_05" scale-factor="10000.0"/>
 
-      <cricondenbar temperature-tag="20TY7146_A" pressure-tag="20PY7146_A"/>
+      <cricondenbar temperature-tag="T_20TY7146_A" pressure-tag="T_20PY7146_A"/>
 
       <liquid-dropout update-interval="180">
         <temperature values="-25.0, -22.5, -20.0, -17.5, -15.0, -12.5, -10.0, -7.5, -5.0, -2.5, 0.0, 2.5, 5.0" tag="PO_E_T"/>
@@ -161,7 +163,13 @@
       </mass-flow>
 
       <molweight tag="15AM5626V"/>
-      <cricondenbar temperature-tag="15TY5626_A" pressure-tag="15PY5626_A"/>
+      <cricondenbar temperature-tag="T_15TY5626_A" pressure-tag="T_15PY5626_A"/>
+
+	  <operating-points update-interval="30">
+        <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="T_PO_OP3"/>
+        <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="T_PO_OP4"/>
+        <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="T_PO_OP5"/>
+      </operating-points>
     </stream>
   </streams>
 </phaseopt>

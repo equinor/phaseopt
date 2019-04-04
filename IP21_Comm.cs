@@ -101,8 +101,6 @@ WHERE
 
         System.Data.Odbc.OdbcDataReader DR = Cmdr.ExecuteReader(System.Data.CommandBehavior.SingleResult);
 
-        Console.WriteLine(DR.ToString());
-
         //if (DR.HasRows)
         //{
             while (DR.Read())

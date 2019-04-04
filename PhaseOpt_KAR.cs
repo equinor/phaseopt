@@ -51,6 +51,65 @@ public class Dropout_Curve
         Operation_Point = new double[3, 2]; // [Pressure, Temperature]
     }
 }
+
+public class Stream
+{
+    public string Name;
+    public List<string> Status_Tags = new List<string>();
+    public List<Component> Comp = new List<Component>();
+    public string Molweight_Tag;
+    public double Molweight;
+    public List<string> Velocity_Tags = new List<string>();
+    public List<string> Mass_Flow_Tags = new List<string>();
+    public double Length;
+    //public List<string> Cricondenbar_Tags = new List<string>();
+    public PT_Point Cricondenbar = new PT_Point();
+    public List<PT_Point> Operating_Points = new List<PT_Point>();
+    public double Flow;
+    public double Mol_Flow;
+
+    public List<Int32> Composition_IDs()
+    {
+        List<Int32> ID = new List<Int32>();
+
+        foreach (Component c in Comp)
+        {
+            ID.Add(c.ID);
+        }
+        return ID;
+    }
+
+    public List<double> Composition_Values()
+    {
+        List<double> v = new List<double>();
+
+        foreach (Component c in Comp)
+        {
+            v.Add(c.Value);
+        }
+        return v;
+    }
+}
+
+public class PT_Point
+{
+    public double pressure;
+    public double temperature;
+    public double result;
+    public string pressure_tag;
+    public string temperature_tag;
+    public string result_tag;
+
+    public PT_Point() { }
+
+    public PT_Point(string pt, string tt, string rt)
+    {
+        pressure_tag = pt;
+        temperature_tag = tt;
+        result_tag = rt;
+    }
+}
+
 public class PhaseOpt_KAR
 {
     private List<string> Tags;
@@ -99,12 +158,14 @@ public class PhaseOpt_KAR
     private List<Component> Mix_To_T410_Comp = new List<Component>();
     private List<string> Mix_To_T410_Cricondenbar_Tags = new List<string>();
 
-    private List<Component> Mix_To_T100_Comp = new List<Component>();
-    private List<string> Mix_To_T100_Cricondenbar_Tags = new List<string>();
-    private List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
-    public double Mix_To_T100_Flow;
-    private string Mix_To_T100_Molweight_Tag;
-    private double Mix_To_T100_Mol_Flow;
+    public Stream Mix_To_T100 = new Stream();
+
+    //private List<Component> Mix_To_T100_Comp = new List<Component>();
+    //private List<string> Mix_To_T100_Cricondenbar_Tags = new List<string>();
+    //private List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
+    //public double Mix_To_T100_Flow;
+    //private string Mix_To_T100_Molweight_Tag;
+    //private double Mix_To_T100_Mol_Flow;
 
     private string IP21_Host;
     private string IP21_Port;
@@ -354,12 +415,12 @@ public class PhaseOpt_KAR
         double Mix_To_T100_Molweight = 0.0;
         try
         {
-            Molweight = DB_Connection.Read_Values(new string[] { Mix_To_T100_Molweight_Tag }, Timestamp);
-            Mix_To_T100_Molweight = Convert.ToDouble(Molweight[Mix_To_T100_Molweight_Tag]);
+            Molweight = DB_Connection.Read_Values(new string[] { Mix_To_T100.Molweight_Tag }, Timestamp);
+            Mix_To_T100_Molweight = Convert.ToDouble(Molweight[Mix_To_T100.Molweight_Tag]);
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Mix_To_T100_Molweight_Tag);
+            Log_File.WriteLine("Tag {0} not valid", Mix_To_T100.Molweight_Tag);
             Log_File.Flush();
         }
 
@@ -397,20 +458,20 @@ public class PhaseOpt_KAR
         }
         Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
 
-        Mix_To_T100_Flow = 0.0;
+        Mix_To_T100.Flow = 0.0;
         Statpipe_Cross_Over_Flow = 0.0;
         try
         {
-            Mass_Flow = DB_Connection.Read_Values(Mix_To_T100_Mass_Flow_Tags.ToArray(), Timestamp);
-            Mix_To_T100_Flow = Convert.ToDouble(Mass_Flow[Mix_To_T100_Mass_Flow_Tags[0]]);
-            Statpipe_Cross_Over_Flow = Convert.ToDouble(Mass_Flow[Mix_To_T100_Mass_Flow_Tags[1]]);
+            Mass_Flow = DB_Connection.Read_Values(Mix_To_T100.Mass_Flow_Tags.ToArray(), Timestamp);
+            Mix_To_T100.Flow = Convert.ToDouble(Mass_Flow[Mix_To_T100.Mass_Flow_Tags[0]]);
+            Statpipe_Cross_Over_Flow = Convert.ToDouble(Mass_Flow[Mix_To_T100.Mass_Flow_Tags[1]]);
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100_Mass_Flow_Tags[0], Mix_To_T100_Mass_Flow_Tags[1]);
+            Log_File.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100.Mass_Flow_Tags[0], Mix_To_T100.Mass_Flow_Tags[1]);
             Log_File.Flush();
         }
-        Mix_To_T100_Mol_Flow = Mix_To_T100_Flow * 1000 / Mix_To_T100_Molweight;
+        Mix_To_T100.Mol_Flow = Mix_To_T100.Flow * 1000 / Mix_To_T100_Molweight;
 
         if (Cross_Over_Status)
         {
@@ -502,11 +563,11 @@ public class PhaseOpt_KAR
         double DIXO_Component_Flow_Sum = 0.0;
         foreach (Component c in Mix_To_T410_Comp)
         {
-            DIXO_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Mix_To_T100_Mol_Flow * c.Value / 100.0));
-            DIXO_Component_Flow_Sum += Mix_To_T100_Mol_Flow * c.Value / 100.0;
+            DIXO_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Mix_To_T100.Mol_Flow * c.Value / 100.0));
+            DIXO_Component_Flow_Sum += Mix_To_T100.Mol_Flow * c.Value / 100.0;
         }
 
-        foreach (Component c in Mix_To_T100_Comp)
+        foreach (Component c in Mix_To_T100.Comp)
         {
             if (CY2007_Component_Flow_Sum + DIXO_Component_Flow_Sum > 0.0)
             {
@@ -519,7 +580,7 @@ public class PhaseOpt_KAR
         // Write mixed compositions to IP21
         lock (locker)
         {
-            foreach (Component c in Mix_To_T100_Comp)
+            foreach (Component c in Mix_To_T100.Comp)
             {
                 DB_Connection.Write_Value(c.Tag, c.Get_Scaled_Value());
             }
@@ -537,7 +598,7 @@ public class PhaseOpt_KAR
         Composition_IDs.Clear();
         Composition_Values.Clear();
         Log_File.WriteLine("Mix to T100:");
-        foreach (Component c in Mix_To_T100_Comp)
+        foreach (Component c in Mix_To_T100.Comp)
         {
             Composition_IDs.Add(c.ID);
             Composition_Values.Add(c.Value);
@@ -579,20 +640,20 @@ public class PhaseOpt_KAR
             }
         );
 
-        for (int i = 0; i < Mix_To_T100_Cricondenbar_Tags.Count; i++)
+        if (!Composition_Result_T100[0].Equals(double.NaN) && !Composition_Result_T100[1].Equals(double.NaN))
         {
-            if (!Composition_Result_T100[i].Equals(double.NaN))
+            lock (locker)
             {
-                lock (locker)
-                {
-                    DB_Connection.Write_Value(Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
-                }
+                DB_Connection.Write_Value(Mix_To_T100.Cricondenbar.temperature_tag, Composition_Result_T100[0]);
+                DB_Connection.Write_Value(Mix_To_T100.Cricondenbar.pressure_tag, Composition_Result_T100[1]);
             }
-            Log_File.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
-#if DEBUG
-            Console.WriteLine("{0}\t{1}", Mix_To_T100_Cricondenbar_Tags[i], Composition_Result_T100[i]);
-#endif
         }
+        Log_File.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.temperature_tag, Composition_Result_T100[0]);
+        Log_File.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.pressure_tag, Composition_Result_T100[1]);
+#if DEBUG
+        Console.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.temperature_tag, Composition_Result_T100[0]);
+        Console.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.pressure_tag, Composition_Result_T100[1]);
+#endif
 
         for (int i = 0; i < Mix_To_T410_Cricondenbar_Tags.Count; i++)
         {
@@ -826,7 +887,7 @@ public class PhaseOpt_KAR
         Composition_IDs.Clear();
         Composition_Values.Clear();
 
-        foreach (Component c in Mix_To_T100_Comp)
+        foreach (Component c in Mix_To_T100.Comp)
         {
             Composition_IDs.Add(c.ID);
             Composition_Values.Add(c.Value);
@@ -931,6 +992,8 @@ public class PhaseOpt_KAR
         settings.IgnoreWhitespace = true;
 
         XmlReader reader = XmlReader.Create(Config_File, settings);
+
+
 
         try
         {
@@ -1119,18 +1182,18 @@ public class PhaseOpt_KAR
                                     break;
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
-                                    Mix_To_T100_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                    Mix_To_T100.Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
                                                                        reader.GetAttribute("tag"),
                                                                        XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
                                 {
-                                    Mix_To_T100_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
-                                    Mix_To_T100_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
+                                    Mix_To_T100.Cricondenbar.pressure_tag = reader.GetAttribute("pressure-tag");
+                                    Mix_To_T100.Cricondenbar.temperature_tag = reader.GetAttribute("temperature-tag");
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "molweight")
                                 {
-                                    Mix_To_T100_Molweight_Tag = reader.GetAttribute("tag");
+                                    Mix_To_T100.Molweight_Tag = reader.GetAttribute("tag");
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "mass-flow")
                                 {
@@ -1140,14 +1203,22 @@ public class PhaseOpt_KAR
                                             break;
                                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                         {
-                                            Mix_To_T100_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
+                                            Mix_To_T100.Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
                                         }
                                     }
                                 }
-                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
+                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "operating-points")
                                 {
-                                    Mix_To_T100_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
-                                    Mix_To_T100_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
+                                    while (reader.Read())
+                                    {
+                                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "operating-points")
+                                            break;
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "point")
+                                        {
+                                            Mix_To_T100.Operating_Points.Add(new PT_Point(reader.GetAttribute("pressure-tag"),
+                                                reader.GetAttribute("temperature-tag"), reader.GetAttribute("result-tag")));
+                                        }
+                                    }
                                 }
                             }
                         }

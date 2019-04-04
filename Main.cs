@@ -243,13 +243,13 @@ namespace Main
                     Console.WriteLine("{0}: Bad flow Statpipe cross over B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Statpipe cross over B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 }
-                if (Molweight_Stdev(PO_A.Mix_To_T100_Flow, GC_A_Mix_To_T100_Flow) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_A.Mix_To_T100.Flow, GC_A_Mix_To_T100_Flow) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_A++;
                 }
-                if (Molweight_Stdev(PO_B.Mix_To_T100_Flow, GC_B_Mix_To_T100_Flow) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_B.Mix_To_T100.Flow, GC_B_Mix_To_T100_Flow) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
