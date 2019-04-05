@@ -186,7 +186,7 @@ WHERE
         }
         catch
         {
-            Console.WriteLine("Insert_Value failed");
+            Console.WriteLine("Insert_Value failed, Tag {0}, Value {1}", Tag_Name, Value);
         }
     }
 

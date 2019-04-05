@@ -114,18 +114,33 @@
       <cricondenbar temperature-tag="T_20TY7146_A" pressure-tag="T_20PY7146_A"/>
 
       <liquid-dropout update-interval="180">
-        <temperature values="-25.0, -22.5, -20.0, -17.5, -15.0, -12.5, -10.0, -7.5, -5.0, -2.5, 0.0, 2.5, 5.0" tag="PO_E_T"/>
-        <dew-point           tag="PO_E_P_0"/>
-        <dropout value="0.1" tag="PO_E_P_1"/>
-        <dropout value="0.5" tag="PO_E_P_2"/>
-        <dropout value="1.0" tag="PO_E_P_3"/>
-        <dropout value="2.0" tag="PO_E_P_4"/>
-        <dropout value="3.0" tag="PO_E_P_5"/>
+        <temperature tag="T_PO_E_T">
+		  <value>-25.0</value>
+		  <value>-22.5</value>
+		  <value>-20.0</value>
+		  <value>-17.5</value>
+		  <value>-15.0</value>
+		  <value>-12.5</value>
+		  <value>-10.0</value>
+		  <value> -7.5</value>
+		  <value> -5.0</value>
+		  <value> -2.5</value>
+		  <value>  0.0</value>
+		  <value>  2.5</value>
+		  <value>  5.0</value>
+		</temperature>
+
+        <dew-point           tag="T_PO_E_P0"/>
+        <dropout value="0.1" tag="T_PO_E_P1"/>
+        <dropout value="0.5" tag="T_PO_E_P2"/>
+        <dropout value="1.0" tag="T_PO_E_P3"/>
+        <dropout value="2.0" tag="T_PO_E_P4"/>
+        <dropout value="5.0" tag="T_PO_E_P5"/>
 
         <operating-points update-interval="30">
-          <point name="point 1" temperature-tag="21TI5044" pressure-tag="21PI5108"/>
-          <point name="point 2" temperature-tag="20TIXXXX" pressure-tag="20PIXXXX"/>
-          <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230"/>
+          <point name="point 1" temperature-tag="21TI5044" pressure-tag="21PI5108" result-tag="T_PO_OP0"/>
+          <point name="point 2" temperature-tag="21TI5206" pressure-tag="21PI5108" result-tag="T_PO_OP1"/>
+          <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230" result-tag="T_PO_OP2"/>
         </operating-points>
 
       </liquid-dropout>
@@ -165,11 +180,13 @@
       <molweight tag="15AM5626V"/>
       <cricondenbar temperature-tag="T_15TY5626_A" pressure-tag="T_15PY5626_A"/>
 
-	  <operating-points update-interval="30">
-        <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="T_PO_OP3"/>
-        <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="T_PO_OP4"/>
-        <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="T_PO_OP5"/>
-      </operating-points>
+	    <liquid-dropout update-interval="180">
+	      <dropout-points update-interval="30">
+          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="T_PO_LD3"/>
+          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="T_PO_LD4"/>
+          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="T_PO_LD5"/>
+          </dropout-points>
+	    </liquid-dropout>
     </stream>
   </streams>
 </phaseopt>

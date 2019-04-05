@@ -433,6 +433,7 @@ namespace Main
                 Sleep_Time = (Start_Time.AddSeconds(150) - DateTime.Now).TotalMilliseconds;
                 if (Sleep_Time > 1.0)
                 {
+                    Console.WriteLine("Waiting {0} seconds", Sleep_Time / 1000.0);
                     System.Threading.Thread.Sleep((int)Sleep_Time);
                 }
             }
