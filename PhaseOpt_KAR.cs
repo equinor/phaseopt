@@ -140,9 +140,6 @@ public class PhaseOpt_KAR
 
     public readonly object locker = new object();
 
-    // Dropout curve operation points
-    private double[,] Operation_Point = new double[3, 2]; // [Pressure, Temperature]
-
     public List<Component> Statpipe_Comp = new List<Component>();
     public List<Component> Statpipe_Comp_Kalsto = new List<Component>();
     public List<double> Composition_Values_Statpipe_Current = new List<double>();
@@ -160,17 +157,7 @@ public class PhaseOpt_KAR
     private double Statpipe_Cross_Over_Mol_Flow;
 
     public Stream Mix_To_T410 = new Stream();
-    //private List<Component> Mix_To_T410_Comp = new List<Component>();
-    //private List<string> Mix_To_T410_Cricondenbar_Tags = new List<string>();
-
     public Stream Mix_To_T100 = new Stream();
-
-    //private List<Component> Mix_To_T100_Comp = new List<Component>();
-    //private List<string> Mix_To_T100_Cricondenbar_Tags = new List<string>();
-    //private List<string> Mix_To_T100_Mass_Flow_Tags = new List<string>();
-    //public double Mix_To_T100_Flow;
-    //private string Mix_To_T100_Molweight_Tag;
-    //private double Mix_To_T100_Mol_Flow;
 
     private string IP21_Host;
     private string IP21_Port;
@@ -187,8 +174,6 @@ public class PhaseOpt_KAR
     private bool Cross_Over_Status = false;
 
     public IP21_Comm DB_Connection;
-
-    //private Thread IP_21_Reader_Thread = new Thread(IP21_Reader());
 
     public PhaseOpt_KAR(string Log_File_Name)
     {
@@ -546,7 +531,6 @@ public class PhaseOpt_KAR
                 CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
                 CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
             }
-
         }
         else
         {
@@ -793,19 +777,13 @@ public class PhaseOpt_KAR
 
     public void Calculate_Dropout_Curves()
     {
-        List<Int32> Composition_IDs = new List<Int32>();
-        List<double> Composition_Values = new List<double>();
 
         // Mix to T400 dropout
         foreach (Component c in Mix_To_T410.Comp)
         {
-            Composition_IDs.Add(c.ID);
-            Composition_Values.Add(c.Value);
             Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
 
-        //double[] Temperature = Mix_To_T410.Curve.Temperature.ToArray();
-        //double[] Dropout = new double[Mix_To_T410.Curve.Dropout.Count];
         double[,] Pres = new double[Mix_To_T410.Curve.Dropout.Count + 1, Mix_To_T410.Curve.Temperature.Count];
         
         T400.Fluid_Tune();
@@ -825,7 +803,6 @@ public class PhaseOpt_KAR
                 System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Mix_To_T410.Curve.Dropout[i].Value, Mix_To_T410.Curve.Temperature[j], Pres[i + 1, j] - 1.01325);
             });
         }
-
         
         DateTime Start_Time = DateTime.Now;
         Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
@@ -853,10 +830,8 @@ public class PhaseOpt_KAR
                 DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
 
                 Result = T400.Dropout(Mix_To_T410.Curve.Operating_Points[j].pressure + 1.01325, Mix_To_T410.Curve.Operating_Points[j].temperature + 273.15)[0] * 100.0;
-                lock (locker)
-                {
-                    DB_Connection.Write_Value("T_PO_LD" + (j).ToString(), Result);
-                }
+
+                DB_Connection.Write_Value("T_PO_LD" + (j).ToString(), Result);
             }
 
             Start_Time = Start_Time.AddSeconds(-(Interval * Mix_To_T410.Curve.Operating_Points.Count + 1) );
@@ -879,13 +854,8 @@ public class PhaseOpt_KAR
         }
 
         // Mix to T100/200 dropout
-        Composition_IDs.Clear();
-        Composition_Values.Clear();
-
         foreach (Component c in Mix_To_T100.Comp)
         {
-            Composition_IDs.Add(c.ID);
-            Composition_Values.Add(c.Value);
             Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
 
@@ -903,78 +873,6 @@ public class PhaseOpt_KAR
         }
     }
 
-    /*
-    public void Draw_Dropout_Curves()
-    {
-        DateTime Time_Stamp;
-        Hashtable OP;
-        DateTime Start_Time;
-        DateTime Front_Time;
-        String Tag;
-        Int32 Interval;
-
-        while (true)
-        {
-            Time_Stamp = DateTime.Now.AddSeconds(-15);
-            OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5044" }, Time_Stamp);
-            Curve.Operation_Point[0, 0] = Convert.ToDouble(OP["21PI5108"]);
-            Curve.Operation_Point[0, 1] = Convert.ToDouble(OP["21TI5044"]);
-
-            OP = DB_Connection.Read_Values(new string[] { "21PI5108", "21TI5206" }, Time_Stamp);
-            Curve.Operation_Point[1, 0] = Convert.ToDouble(OP["21PI5108"]);
-            Curve.Operation_Point[1, 1] = Convert.ToDouble(OP["21TI5206"]);
-
-            OP = DB_Connection.Read_Values(new string[] { "21PI5230", "21TC5236" }, Time_Stamp);
-            Curve.Operation_Point[2, 0] = Convert.ToDouble(OP["21PI5230"]);
-            Curve.Operation_Point[2, 1] = Convert.ToDouble(OP["21TC5236"]);
-
-            Start_Time = DateTime.Now;
-            Start_Time = Start_Time.AddMilliseconds(-Start_Time.Millisecond);
-            Front_Time = Start_Time;
-            Interval = 3;
-
-            for (int j = 0; j < Curve.Operation_Point.GetUpperBound(0) + 1; j++)
-            {
-                if (j == 0)
-                {
-                    DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time);
-                    DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time);
-                }
-
-                DB_Connection.Insert_Value("PO_OP" + (j).ToString(), Curve.Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 1)));
-                DB_Connection.Insert_Value("PO_E_T", Curve.Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 1)));
-
-                DB_Connection.Insert_Value("PO_OP" + (j).ToString(), Curve.Operation_Point[j, 0], Start_Time.AddSeconds(-(Interval * j + 2)));
-                DB_Connection.Insert_Value("PO_E_T", Curve.Operation_Point[j, 1], Start_Time.AddSeconds(-(Interval * j + 2)));
-
-                DB_Connection.Insert_Value("PO_OP" + (j).ToString(), double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
-                DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
-            }
-
-            Start_Time = Start_Time.AddSeconds(-(Interval * (Curve.Operation_Point.GetUpperBound(0) + 1) + 1));
-            Interval = 5;
-            for (int j = 0; j < Curve.Temperature.Length; j++)
-            {
-                if (j == 0) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * j));
-                DB_Connection.Insert_Value("PO_E_T", Curve.Temperature[j], Start_Time.AddSeconds(-Interval * (j + 1)));
-
-                for (int i = 0; i < Curve.Dropout.Length + 1; i++)
-                {
-                    Tag = "PO_E_P" + (i).ToString();
-                    if (j == 0) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
-                    DB_Connection.Insert_Value(Tag, Curve.Pres[i, j] - 1.01325, Start_Time.AddSeconds(-Interval * (j + 1)));
-                    if (j == Curve.Temperature.Length - 1) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
-                }
-                if (j == Curve.Temperature.Length - 1) DB_Connection.Insert_Value("PO_E_T", double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
-            }
-
-            while ((DateTime.Now - Front_Time) < (Front_Time - Start_Time))
-            {
-                Thread.Sleep(Interval * 1000);
-            }
-        }
-    }
-*/
     public void Read_Config(string Config_File)
     {
         XmlReaderSettings settings = new XmlReaderSettings();
