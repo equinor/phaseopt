@@ -44,7 +44,7 @@
       <mass-flow>
         <component name="Stasjon Masse strøm" tag="20FI7195SM"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0157_A" pressure-tag="31PY0157_A"/>
+      <cricondenbar temperature-tag="T_31TY0157_A" pressure-tag="T_31PY0157_A"/>
     </stream>
 
     <stream name="asgard" type="input">
@@ -81,7 +81,7 @@
       <mass-flow>
         <component name="Åsgard rikgass før X-over" tag="20FI5506"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0161_A" pressure-tag="31PY0161_A"/>
+      <cricondenbar temperature-tag="T_31TY0161_A" pressure-tag="T_31PY0161_A"/>
     </stream>
 
     <stream name="DIXO-mix to T410/T420/DPCU" type="output">
@@ -114,7 +114,7 @@
       <cricondenbar temperature-tag="T_20TY7146_A" pressure-tag="T_20PY7146_A"/>
 
       <liquid-dropout update-interval="180">
-        <temperature tag="PO_E_T">
+        <temperature tag="T_PO_E_T">
 		  <value>-25.0</value>
 		  <value>-22.5</value>
 		  <value>-20.0</value>
@@ -130,17 +130,17 @@
 		  <value>  5.0</value>
 		</temperature>
 
-        <dew-point           tag="PO_E_P0"/>
-        <dropout value="0.1" tag="PO_E_P1"/>
-        <dropout value="0.5" tag="PO_E_P2"/>
-        <dropout value="1.0" tag="PO_E_P3"/>
-        <dropout value="2.0" tag="PO_E_P4"/>
-        <dropout value="5.0" tag="PO_E_P5"/>
+        <dew-point           tag="T_PO_E_P0"/>
+        <dropout value="0.1" tag="T_PO_E_P1"/>
+        <dropout value="0.5" tag="T_PO_E_P2"/>
+        <dropout value="1.0" tag="T_PO_E_P3"/>
+        <dropout value="2.0" tag="T_PO_E_P4"/>
+        <dropout value="5.0" tag="T_PO_E_P5"/>
 
         <operating-points update-interval="30">
-          <point name="point 1" temperature-tag="21TI5044" pressure-tag="21PI5108" result-tag="PO_OP0"/>
-          <point name="point 2" temperature-tag="21TI5206" pressure-tag="21PI5108" result-tag="PO_OP1"/>
-          <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230" result-tag="PO_OP2"/>
+          <point name="point 1" temperature-tag="21TI5044" pressure-tag="21PI5108" result-tag="T_PO_OP0"/>
+          <point name="point 2" temperature-tag="21TI5206" pressure-tag="21PI5108" result-tag="T_PO_OP1"/>
+          <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230" result-tag="T_PO_OP2"/>
         </operating-points>
 
       </liquid-dropout>
@@ -178,13 +178,13 @@
       </mass-flow>
 
       <molweight tag="15AM5626V"/>
-      <cricondenbar temperature-tag="15TY5626_A" pressure-tag="15PY5626_A"/>
+      <cricondenbar temperature-tag="T_15TY5626_A" pressure-tag="T_15PY5626_A"/>
 
 	    <liquid-dropout update-interval="180">
 	      <dropout-points update-interval="30">
-          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="PO_LD3"/>
-          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="PO_LD4"/>
-          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="PO_LD5"/>
+          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="T_PO_LD3"/>
+          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="T_PO_LD4"/>
+          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="T_PO_LD5"/>
           </dropout-points>
 	    </liquid-dropout>
     </stream>

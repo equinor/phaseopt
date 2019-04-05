@@ -91,16 +91,28 @@ namespace Main
             }
 
             System.IO.StreamWriter Log_File;
+#if DEBUG
+            Log_File = System.IO.File.AppendText(@"PhaseOpt_Kar_Main_Test.log");
+#else
             Log_File = System.IO.File.AppendText(@"PhaseOpt_Kar_Main.log");
+#endif
 
             Log_File.WriteLine("{0}: PhaseOpt startup", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
 
+#if DEBUG
+            PhaseOpt_KAR PO_A = new PhaseOpt_KAR(@"PhaseOpt_Kar_A_Test.log");
+            PhaseOpt_KAR PO_B = new PhaseOpt_KAR(@"PhaseOpt_Kar_B_Test.log");
+
+            PO_A.Read_Config("PhaseOpt_A_Test.xml");
+            PO_B.Read_Config("PhaseOpt_B_Test.xml");
+#else
             PhaseOpt_KAR PO_A = new PhaseOpt_KAR(@"PhaseOpt_Kar_A.log");
             PhaseOpt_KAR PO_B = new PhaseOpt_KAR(@"PhaseOpt_Kar_B.log");
 
             PO_A.Read_Config("PhaseOpt_A.xml");
             PO_B.Read_Config("PhaseOpt_B.xml");
 
+#endif
             PO_A.Connect_DB();
             PO_B.Connect_DB();
 
