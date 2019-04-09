@@ -169,25 +169,25 @@ namespace Main
                 Log_File.WriteLine("{0}: Read composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 Log_File.WriteLine("{0}: Read composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
 
-                if (Check_Composition(PO_A.Asgard_Comp) == false)
+                if (Check_Composition(PO_A.Asgard.Comp) == false)
                 {
                     Console.WriteLine("Bad composition Asgard A");
                     Log_File.WriteLine("{0}: Bad composition Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_A++;
                 }
-                if (Check_Composition(PO_A.Statpipe_Comp) == false)
+                if (Check_Composition(PO_A.Statpipe.Comp) == false)
                 {
                     Console.WriteLine("Bad composition Statpipe A");
                     Log_File.WriteLine("{0}: Bad composition Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_A++;
                 }
-                if (Check_Composition(PO_B.Asgard_Comp) == false)
+                if (Check_Composition(PO_B.Asgard.Comp) == false)
                 {
                     Console.WriteLine("Bad composition Asgard B");
                     Log_File.WriteLine("{0}: Bad composition Asgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_B++;
                 }
-                if (Check_Composition(PO_B.Statpipe_Comp) == false)
+                if (Check_Composition(PO_B.Statpipe.Comp) == false)
                 {
                     Console.WriteLine("Bad composition Statpipe B");
                     Log_File.WriteLine("{0}: Bad composition Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
@@ -197,25 +197,25 @@ namespace Main
                 Log_File.WriteLine("{0}: Read from IP21 A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 Log_File.WriteLine("{0}: Read from IP21 B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
 
-                if (Molweight_Stdev(PO_A.Asgard_Molweight, GC_A_Molweight_Asgard) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_A.Asgard.Molweight, GC_A_Molweight_Asgard) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad molweight Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad molweight Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_A++;
                 }
-                if (Molweight_Stdev(PO_A.Statpipe_Molweight, GC_A_Molweight_Statpipe) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_A.Statpipe.Molweight, GC_A_Molweight_Statpipe) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad molweight Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad molweight Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_A++;
                 }
-                if (Molweight_Stdev(PO_B.Asgard_Molweight, GC_B_Molweight_Asgard) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_B.Asgard.Molweight, GC_B_Molweight_Asgard) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad molweight Asgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad molweight Asgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_B++;
                 }
-                if (Molweight_Stdev(PO_B.Statpipe_Molweight, GC_B_Molweight_Statpipe) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_B.Statpipe.Molweight, GC_B_Molweight_Statpipe) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad molweight Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad molweight Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();

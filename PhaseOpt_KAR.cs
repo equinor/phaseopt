@@ -119,18 +119,11 @@ public class PhaseOpt_KAR
     private List<string> Tags;
     private Hashtable Comp_Values;
 
-    public List<Component> Asgard_Comp = new List<Component>();
     public List<Component> Asgard_Comp_Kalsto = new List<Component>();
     public List<double> Composition_Values_Asgard_Current = new List<double>();
     private List<Int32> Composition_IDs_Asgard = new List<Int32>();
-    private List<string> Asgard_Velocity_Tags = new List<string>();
-    private List<string> Asgard_Mass_Flow_Tags = new List<string>();
     public double Asgard_Transport_Flow;
     private double Asgard_Pipe_Length;
-    private string Asgard_Molweight_Tag;
-    public double Asgard_Molweight;
-    private double Asgard_Mol_Flow;
-    private List<string> Asgard_Cricondenbar_Tags = new List<string>();
     private List<string> Asgard_Status_Tags = new List<string>();
 
     PhaseOpt.PhaseOpt T100 = new PhaseOpt.PhaseOpt();
@@ -140,24 +133,19 @@ public class PhaseOpt_KAR
 
     public readonly object locker = new object();
 
-    public List<Component> Statpipe_Comp = new List<Component>();
     public List<Component> Statpipe_Comp_Kalsto = new List<Component>();
     public List<double> Composition_Values_Statpipe_Current = new List<double>();
     private List<Int32> Composition_IDs_Statpipe = new List<Int32>();
-    private List<string> Statpipe_Velocity_Tags = new List<string>();
-    private List<string> Statpipe_Mass_Flow_Tags = new List<string>();
     public double Statpipe_Transport_Flow;
     private double Statpipe_Pipe_Length;
-    private string Statpipe_Molweight_Tag;
-    public double Statpipe_Molweight;
-    private double Statpipe_Mol_Flow;
-    private List<string> Statpipe_Cricondenbar_Tags = new List<string>();
     private List<string> Statpipe_Status_Tags = new List<string>();
     public double Statpipe_Cross_Over_Flow;
     private double Statpipe_Cross_Over_Mol_Flow;
 
     public Stream Mix_To_T410 = new Stream();
     public Stream Mix_To_T100 = new Stream();
+    public Stream Asgard = new Stream();
+    public Stream Statpipe = new Stream();
 
     private string IP21_Host;
     private string IP21_Port;
@@ -212,11 +200,11 @@ public class PhaseOpt_KAR
         double Asgard_Average_Velocity = 0.0;
         try
         {
-            A_Velocity = DB_Connection.Read_Values(Asgard_Velocity_Tags.ToArray(), Timestamp);
-            Asgard_Average_Velocity = (Convert.ToDouble(A_Velocity[Asgard_Velocity_Tags[0]]) +
-                                       Convert.ToDouble(A_Velocity[Asgard_Velocity_Tags[1]])) / 2.0;
-            Asgard_Velocity[0] = Convert.ToDouble(A_Velocity[Asgard_Velocity_Tags[0]]);
-            Asgard_Velocity[1] = Convert.ToDouble(A_Velocity[Asgard_Velocity_Tags[1]]);
+            A_Velocity = DB_Connection.Read_Values(Asgard.Velocity_Tags.ToArray(), Timestamp);
+            Asgard_Average_Velocity = (Convert.ToDouble(A_Velocity[Asgard.Velocity_Tags[0]]) +
+                                       Convert.ToDouble(A_Velocity[Asgard.Velocity_Tags[1]])) / 2.0;
+            Asgard_Velocity[0] = Convert.ToDouble(A_Velocity[Asgard.Velocity_Tags[0]]);
+            Asgard_Velocity[1] = Convert.ToDouble(A_Velocity[Asgard.Velocity_Tags[1]]);
             Log_File.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
@@ -224,18 +212,18 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} and/or {1} not valid", Asgard_Velocity_Tags[0], Asgard_Velocity_Tags[1]);
+            Log_File.WriteLine("Tag {0} and/or {1} not valid", Asgard.Velocity_Tags[0], Asgard.Velocity_Tags[1]);
             Log_File.Flush();
         }
         double Statpipe_Average_Velocity = 0.0;
         Hashtable S_Velocity;
         try
         {
-            S_Velocity = DB_Connection.Read_Values(Statpipe_Velocity_Tags.ToArray(), Timestamp);
-            Statpipe_Average_Velocity = (Convert.ToDouble(S_Velocity[Statpipe_Velocity_Tags[0]]) +
-                                                Convert.ToDouble(S_Velocity[Statpipe_Velocity_Tags[1]])) / 2.0;
-            Statpipe_Velocity[0] = Convert.ToDouble(S_Velocity[Statpipe_Velocity_Tags[0]]);
-            Statpipe_Velocity[1] = Convert.ToDouble(S_Velocity[Statpipe_Velocity_Tags[1]]);
+            S_Velocity = DB_Connection.Read_Values(Statpipe.Velocity_Tags.ToArray(), Timestamp);
+            Statpipe_Average_Velocity = (Convert.ToDouble(S_Velocity[Statpipe.Velocity_Tags[0]]) +
+                                                Convert.ToDouble(S_Velocity[Statpipe.Velocity_Tags[1]])) / 2.0;
+            Statpipe_Velocity[0] = Convert.ToDouble(S_Velocity[Statpipe.Velocity_Tags[0]]);
+            Statpipe_Velocity[1] = Convert.ToDouble(S_Velocity[Statpipe.Velocity_Tags[1]]);
             Log_File.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
 #if DEBUG
             Console.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
@@ -243,7 +231,7 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} and/or {1} not valid", Statpipe_Velocity_Tags[0], Statpipe_Velocity_Tags[1]);
+            Log_File.WriteLine("Tag {0} and/or {1} not valid", Statpipe.Velocity_Tags[0], Statpipe.Velocity_Tags[1]);
             Log_File.Flush();
         }
         double Velocity_Threshold = 0.1;
@@ -295,7 +283,7 @@ public class PhaseOpt_KAR
 
         if (Asgard_Stat)
         {
-            foreach (Component c in Asgard_Comp)
+            foreach (Component c in Asgard.Comp)
             {
                 Tags.Add(c.Tag);
             }
@@ -303,7 +291,7 @@ public class PhaseOpt_KAR
             try
             {
                 Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Asgard_Timestamp);
-                foreach (Component c in Asgard_Comp)
+                foreach (Component c in Asgard.Comp)
                 {
                     Tag_Name = c.Tag;
                     c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
@@ -341,14 +329,14 @@ public class PhaseOpt_KAR
 
         if (Statpipe_Stat)
         {
-            foreach (Component c in Statpipe_Comp)
+            foreach (Component c in Statpipe.Comp)
             {
                 Tags.Add(c.Tag);
             }
             try
             {
                 Comp_Values = DB_Connection.Read_Values(Tags.ToArray(), Statpipe_Timestamp);
-                foreach (Component c in Statpipe_Comp)
+                foreach (Component c in Statpipe.Comp)
                 {
                     Tag_Name = c.Tag;
                     c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
@@ -380,26 +368,26 @@ public class PhaseOpt_KAR
 
         // Read molweight
         Hashtable Molweight;
-        Asgard_Molweight = 0.0;
+        Asgard.Molweight = 0.0;
         try
         {
-            Molweight = DB_Connection.Read_Values(new string[] { Asgard_Molweight_Tag }, Asgard_Timestamp);
-            Asgard_Molweight = Convert.ToDouble(Molweight[Asgard_Molweight_Tag]);
+            Molweight = DB_Connection.Read_Values(new string[] { Asgard.Molweight_Tag }, Asgard_Timestamp);
+            Asgard.Molweight = Convert.ToDouble(Molweight[Asgard.Molweight_Tag]);
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Asgard_Molweight_Tag);
+            Log_File.WriteLine("Tag {0} not valid", Asgard.Molweight_Tag);
             Log_File.Flush();
         }
-        Statpipe_Molweight = 0.0;
+        Statpipe.Molweight = 0.0;
         try
         {
-            Molweight = DB_Connection.Read_Values(new string[] { Statpipe_Molweight_Tag }, Statpipe_Timestamp);
-            Statpipe_Molweight = Convert.ToDouble(Molweight[Statpipe_Molweight_Tag]);
+            Molweight = DB_Connection.Read_Values(new string[] { Statpipe.Molweight_Tag }, Statpipe_Timestamp);
+            Statpipe.Molweight = Convert.ToDouble(Molweight[Statpipe.Molweight_Tag]);
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Statpipe_Molweight_Tag);
+            Log_File.WriteLine("Tag {0} not valid", Statpipe.Molweight_Tag);
             Log_File.Flush();
         }
         double Mix_To_T100_Molweight = 0.0;
@@ -419,34 +407,34 @@ public class PhaseOpt_KAR
         Asgard_Transport_Flow = 0.0;
         try
         {
-            Mass_Flow = DB_Connection.Read_Values(Asgard_Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
-            Asgard_Transport_Flow = Convert.ToDouble(Mass_Flow[Asgard_Mass_Flow_Tags[0]]);
+            Mass_Flow = DB_Connection.Read_Values(Asgard.Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
+            Asgard_Transport_Flow = Convert.ToDouble(Mass_Flow[Asgard.Mass_Flow_Tags[0]]);
 #if DEBUG
-            Console.WriteLine("\nÅsgard flow: {0}\t{1}", Asgard_Mass_Flow_Tags[0], Asgard_Transport_Flow);
+            Console.WriteLine("\nÅsgard flow: {0}\t{1}", Asgard.Mass_Flow_Tags[0], Asgard_Transport_Flow);
 #endif
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Asgard_Mass_Flow_Tags[0]);
+            Log_File.WriteLine("Tag {0} not valid", Asgard.Mass_Flow_Tags[0]);
             Log_File.Flush();
         }
-        Asgard_Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard_Molweight;
+        Asgard.Mol_Flow = Asgard_Transport_Flow * 1000 / Asgard.Molweight;
 
         Statpipe_Transport_Flow = 0.0;
         try
         {
-            Mass_Flow = DB_Connection.Read_Values(Statpipe_Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
-            Statpipe_Transport_Flow = Convert.ToDouble(Mass_Flow[Statpipe_Mass_Flow_Tags[0]]);
+            Mass_Flow = DB_Connection.Read_Values(Statpipe.Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
+            Statpipe_Transport_Flow = Convert.ToDouble(Mass_Flow[Statpipe.Mass_Flow_Tags[0]]);
 #if DEBUG
-            Console.WriteLine("\nStatpipe flow: {0}\t{1}", Statpipe_Mass_Flow_Tags[0], Statpipe_Transport_Flow);
+            Console.WriteLine("\nStatpipe flow: {0}\t{1}", Statpipe.Mass_Flow_Tags[0], Statpipe_Transport_Flow);
 #endif
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Statpipe_Mass_Flow_Tags[0]);
+            Log_File.WriteLine("Tag {0} not valid", Statpipe.Mass_Flow_Tags[0]);
             Log_File.Flush();
         }
-        Statpipe_Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe_Molweight;
+        Statpipe.Mol_Flow = Statpipe_Transport_Flow * 1000 / Statpipe.Molweight;
 
         Mix_To_T100.Flow = 0.0;
         Statpipe_Cross_Over_Flow = 0.0;
@@ -465,11 +453,11 @@ public class PhaseOpt_KAR
 
         if (Cross_Over_Status)
         {
-            Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Statpipe_Molweight;
+            Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Statpipe.Molweight;
         }
         else
         {
-            Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Asgard_Molweight;
+            Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Asgard.Molweight;
         }
 
         // Read operation points
@@ -497,18 +485,18 @@ public class PhaseOpt_KAR
         // Calculate mixed compositions at Kårstø
         List<Component> Asgard_Component_Flow = new List<Component>();
         double Asgard_Component_Flow_Sum = 0.0;
-        foreach (Component c in Asgard_Comp)
+        foreach (Component c in Asgard.Comp)
         {
-            Asgard_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Asgard_Mol_Flow * c.Value / 100.0));
-            Asgard_Component_Flow_Sum += Asgard_Mol_Flow * c.Value / 100.0;
+            Asgard_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Asgard.Mol_Flow * c.Value / 100.0));
+            Asgard_Component_Flow_Sum += Asgard.Mol_Flow * c.Value / 100.0;
         }
 
         List<Component> Statpipe_Component_Flow = new List<Component>();
         double Statpipe_Component_Flow_Sum = 0.0;
-        foreach (Component c in Statpipe_Comp)
+        foreach (Component c in Statpipe.Comp)
         {
-            Statpipe_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Mol_Flow * c.Value / 100.0));
-            Statpipe_Component_Flow_Sum += Statpipe_Mol_Flow * c.Value / 100.0;
+            Statpipe_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe.Mol_Flow * c.Value / 100.0));
+            Statpipe_Component_Flow_Sum += Statpipe.Mol_Flow * c.Value / 100.0;
         }
 
         foreach (Component c in Mix_To_T410.Comp)
@@ -526,7 +514,7 @@ public class PhaseOpt_KAR
 
         if (Cross_Over_Status)
         {
-            foreach (Component c in Statpipe_Comp)
+            foreach (Component c in Statpipe.Comp)
             {
                 CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
                 CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
@@ -534,7 +522,7 @@ public class PhaseOpt_KAR
         }
         else
         {
-            foreach (Component c in Asgard_Comp)
+            foreach (Component c in Asgard.Comp)
             {
                 CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
                 CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
@@ -734,22 +722,20 @@ public class PhaseOpt_KAR
         Asgard_Kalsto.Fluid_Tune();
         double[] Composition_Result = Asgard_Kalsto.Cricondenbar();
 
-        //double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Asgard.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Asgard.ToArray(), Composition_Values_Asgard_Current.ToArray()));
-
-        for (int i = 0; i < Asgard_Cricondenbar_Tags.Count; i++)
+        if (!Composition_Result[0].Equals(double.NaN) && !Composition_Result[1].Equals(double.NaN))
         {
-            if (!Composition_Result[i].Equals(double.NaN))
+            lock (locker)
             {
-                lock (locker)
-                {
-                    DB_Connection.Write_Value(Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
-                }
+                DB_Connection.Write_Value(Asgard.Cricondenbar.pressure_tag, Composition_Result[0]);
+                DB_Connection.Write_Value(Asgard.Cricondenbar.temperature_tag, Composition_Result[1]);
             }
-            Log_File.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
-#if DEBUG
-            Console.WriteLine("{0}\t{1}", Asgard_Cricondenbar_Tags[i], Composition_Result[i]);
-#endif
         }
+        Log_File.WriteLine("{0}\t{1}", Asgard.Cricondenbar.pressure_tag, Composition_Result[0]);
+        Log_File.WriteLine("{0}\t{1}", Asgard.Cricondenbar.temperature_tag, Composition_Result[1]);
+#if DEBUG
+        Console.WriteLine("{0}\t{1}", Asgard.Cricondenbar.pressure_tag, Composition_Result[0]);
+        Console.WriteLine("{0}\t{1}", Asgard.Cricondenbar.temperature_tag, Composition_Result[1]);
+#endif
     }
 
     public void Calculate_Kalsto_Statpipe()
@@ -760,23 +746,20 @@ public class PhaseOpt_KAR
         Statpipe_Kalsto.Fluid_Tune();
         double[] Composition_Result = Statpipe_Kalsto.Cricondenbar();
 
-        //double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
-
-        for (int i = 0; i < Statpipe_Cricondenbar_Tags.Count; i++)
+        if (!Composition_Result[0].Equals(double.NaN) && !Composition_Result[1].Equals(double.NaN))
         {
-            if (!Composition_Result[i].Equals(double.NaN))
+            lock (locker)
             {
-                lock (locker)
-                {
-                    DB_Connection.Write_Value(Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
-                }
+                DB_Connection.Write_Value(Statpipe.Cricondenbar.pressure_tag, Composition_Result[0]);
+                DB_Connection.Write_Value(Statpipe.Cricondenbar.temperature_tag, Composition_Result[1]);
             }
-            Log_File.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
-#if DEBUG
-            Console.WriteLine("{0}\t{1}", Statpipe_Cricondenbar_Tags[i], Composition_Result[i]);
-#endif
         }
-
+        Log_File.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.pressure_tag, Composition_Result[0]);
+        Log_File.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.temperature_tag, Composition_Result[1]);
+#if DEBUG
+        Console.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.pressure_tag, Composition_Result[0]);
+        Console.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.temperature_tag, Composition_Result[1]);
+#endif
     }
 
     public void Calculate_Dropout_Curves()
@@ -934,7 +917,7 @@ public class PhaseOpt_KAR
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
-                                    Asgard_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                    Asgard.Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
                                                              reader.GetAttribute("tag"),
                                                              XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
                                     Asgard_Comp_Kalsto.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
@@ -943,8 +926,8 @@ public class PhaseOpt_KAR
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "velocity")
                                 {
-                                    Asgard_Velocity_Tags.Add(reader.GetAttribute("kalsto-tag"));
-                                    Asgard_Velocity_Tags.Add(reader.GetAttribute("karsto-tag"));
+                                    Asgard.Velocity_Tags.Add(reader.GetAttribute("kalsto-tag"));
+                                    Asgard.Velocity_Tags.Add(reader.GetAttribute("karsto-tag"));
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "length")
                                 {
@@ -953,7 +936,7 @@ public class PhaseOpt_KAR
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "molweight")
                                 {
-                                    Asgard_Molweight_Tag = reader.GetAttribute("tag");
+                                    Asgard.Molweight_Tag = reader.GetAttribute("tag");
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "mass-flow")
                                 {
@@ -963,14 +946,14 @@ public class PhaseOpt_KAR
                                             break;
                                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                         {
-                                            Asgard_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
+                                            Asgard.Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
                                         }
                                     }
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
                                 {
-                                    Asgard_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
-                                    Asgard_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
+                                    Asgard.Cricondenbar.pressure_tag = reader.GetAttribute("pressure-tag");
+                                    Asgard.Cricondenbar.temperature_tag = reader.GetAttribute("temperature-tag");
                                 }
                             }
                         }
@@ -986,7 +969,7 @@ public class PhaseOpt_KAR
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                 {
-                                    Statpipe_Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
+                                    Statpipe.Comp.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
                                                                reader.GetAttribute("tag"),
                                                                XmlConvert.ToDouble(reader.GetAttribute("scale-factor"))));
                                     Statpipe_Comp_Kalsto.Add(new Component(XmlConvert.ToInt32(reader.GetAttribute("id")),
@@ -996,8 +979,8 @@ public class PhaseOpt_KAR
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "velocity")
                                 {
-                                    Statpipe_Velocity_Tags.Add(reader.GetAttribute("kalsto-tag"));
-                                    Statpipe_Velocity_Tags.Add(reader.GetAttribute("karsto-tag"));
+                                    Statpipe.Velocity_Tags.Add(reader.GetAttribute("kalsto-tag"));
+                                    Statpipe.Velocity_Tags.Add(reader.GetAttribute("karsto-tag"));
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "length")
                                 {
@@ -1006,7 +989,7 @@ public class PhaseOpt_KAR
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "molweight")
                                 {
-                                    Statpipe_Molweight_Tag = reader.GetAttribute("tag");
+                                    Statpipe.Molweight_Tag = reader.GetAttribute("tag");
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "mass-flow")
                                 {
@@ -1016,14 +999,14 @@ public class PhaseOpt_KAR
                                             break;
                                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                         {
-                                            Statpipe_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
+                                            Statpipe.Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
                                         }
                                     }
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cricondenbar")
                                 {
-                                    Statpipe_Cricondenbar_Tags.Add(reader.GetAttribute("pressure-tag"));
-                                    Statpipe_Cricondenbar_Tags.Add(reader.GetAttribute("temperature-tag"));
+                                    Statpipe.Cricondenbar.pressure_tag = reader.GetAttribute("pressure-tag");
+                                    Statpipe.Cricondenbar.temperature_tag = reader.GetAttribute("temperature-tag");
                                 }
                             }
                         }
@@ -1052,7 +1035,7 @@ public class PhaseOpt_KAR
                                             break;
                                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "component")
                                         {
-                                            Statpipe_Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
+                                            Mix_To_T410.Mass_Flow_Tags.Add(reader.GetAttribute("tag"));
                                         }
                                     }
                                 }
