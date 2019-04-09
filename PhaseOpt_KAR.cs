@@ -116,6 +116,9 @@ public class PT_Point
 
 public class PhaseOpt_KAR
 {
+    private const double to_bara = 1.01325;
+    private const double to_Kelvin = 273.15;
+
     private List<string> Tags;
     private Hashtable Comp_Values;
 
@@ -776,16 +779,16 @@ public class PhaseOpt_KAR
         // Dew point line. We use this later to set the max value when searching for drop out pressures
         Parallel.For (0, Mix_To_T410.Curve.Temperature.Count, i =>
         {
-            Pres[0, i] = T400.DewP(Mix_To_T410.Curve.Temperature[i] + 273.15);
-            System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", Mix_To_T410.Curve.Temperature[i], Pres[0, i] - 1.01325);
+            Pres[0, i] = T400.DewP(Mix_To_T410.Curve.Temperature[i] + to_Kelvin);
+            System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", Mix_To_T410.Curve.Temperature[i], Pres[0, i] - to_bara);
         });
 
         for (int i = 0; i < Mix_To_T410.Curve.Dropout.Count; i++)
         {
             Parallel.For(0, Mix_To_T410.Curve.Temperature.Count, j =>
             {
-                Pres[i + 1, j] = T400.Dropout_Search(Mix_To_T410.Curve.Dropout[i].Value, Mix_To_T410.Curve.Temperature[j] + 273.15, Pres[0, j], 0.01);
-                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Mix_To_T410.Curve.Dropout[i].Value, Mix_To_T410.Curve.Temperature[j], Pres[i + 1, j] - 1.01325);
+                Pres[i + 1, j] = T400.Dropout_Search(Mix_To_T410.Curve.Dropout[i].Value, Mix_To_T410.Curve.Temperature[j] + to_Kelvin, Pres[0, j], 0.01);
+                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Mix_To_T410.Curve.Dropout[i].Value, Mix_To_T410.Curve.Temperature[j], Pres[i + 1, j] - to_bara);
             });
         }
         
@@ -814,7 +817,7 @@ public class PhaseOpt_KAR
                 DB_Connection.Insert_Value(Mix_To_T410.Curve.Operating_Points[j].result_tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
                 DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
 
-                Result = T400.Dropout(Mix_To_T410.Curve.Operating_Points[j].pressure + 1.01325, Mix_To_T410.Curve.Operating_Points[j].temperature + 273.15)[0] * 100.0;
+                Result = T400.Dropout(Mix_To_T410.Curve.Operating_Points[j].pressure + to_bara, Mix_To_T410.Curve.Operating_Points[j].temperature + to_Kelvin)[0] * 100.0;
 
                 DB_Connection.Write_Value("T_PO_LD" + (j).ToString(), Result);
             }
@@ -831,7 +834,7 @@ public class PhaseOpt_KAR
                     if (i == 0) Tag = Mix_To_T410.Curve.Dew_Point_Tag;
                     else Tag = Mix_To_T410.Curve.Dropout[i-1].Tag;
                     if (j == 0) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
-                    DB_Connection.Insert_Value(Tag, Pres[i, j] - 1.01325, Start_Time.AddSeconds(-Interval * (j + 1)));
+                    DB_Connection.Insert_Value(Tag, Pres[i, j] - to_bara, Start_Time.AddSeconds(-Interval * (j + 1)));
                     if (j == Mix_To_T410.Curve.Temperature.Count - 1) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
                 }
                 if (j == Mix_To_T410.Curve.Temperature.Count - 1) DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
@@ -848,7 +851,7 @@ public class PhaseOpt_KAR
 
         foreach (PT_Point p in Mix_To_T100.Dropout_Points)
         {
-            Result = T100.Dropout(p.pressure + 1.01325, p.temperature + 273.15)[0] * 100.0;
+            Result = T100.Dropout(p.pressure + to_bara, p.temperature + to_Kelvin)[0] * 100.0;
             lock (locker)
             {
                 DB_Connection.Write_Value(p.result_tag, Result);
