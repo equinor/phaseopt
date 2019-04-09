@@ -613,11 +613,13 @@ public class PhaseOpt_KAR
         Parallel.Invoke(
             () =>
             {
+                T100.Fluid_Tune();
                 Composition_Result_T100 = T100.Cricondenbar();
             },
 
             () =>
             {
+                T400.Fluid_Tune();
                 Composition_Result_T400 = T400.Cricondenbar();
             }
         );
@@ -729,6 +731,7 @@ public class PhaseOpt_KAR
         Asgard_Kalsto.Composition_IDs = Composition_IDs_Asgard.ToArray();
         Asgard_Kalsto.Composition_Values = Composition_Values_Asgard_Current.ToArray();
 
+        Asgard_Kalsto.Fluid_Tune();
         double[] Composition_Result = Asgard_Kalsto.Cricondenbar();
 
         //double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Asgard.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Asgard.ToArray(), Composition_Values_Asgard_Current.ToArray()));
@@ -754,6 +757,7 @@ public class PhaseOpt_KAR
         Statpipe_Kalsto.Composition_IDs = Composition_IDs_Statpipe.ToArray();
         Statpipe_Kalsto.Composition_Values = Composition_Values_Statpipe_Current.ToArray();
 
+        Statpipe_Kalsto.Fluid_Tune();
         double[] Composition_Result = Statpipe_Kalsto.Cricondenbar();
 
         //double[] Composition_Result = PhaseOpt.PhaseOpt.Cricondenbar(Composition_IDs_Statpipe.ToArray(), PhaseOpt.PhaseOpt.Fluid_Tune(Composition_IDs_Statpipe.ToArray(), Composition_Values_Statpipe_Current.ToArray()));
@@ -785,8 +789,6 @@ public class PhaseOpt_KAR
         }
 
         double[,] Pres = new double[Mix_To_T410.Curve.Dropout.Count + 1, Mix_To_T410.Curve.Temperature.Count];
-        
-        T400.Fluid_Tune();
         
         // Dew point line. We use this later to set the max value when searching for drop out pressures
         Parallel.For (0, Mix_To_T410.Curve.Temperature.Count, i =>
@@ -858,8 +860,6 @@ public class PhaseOpt_KAR
         {
             Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
-
-        T100.Fluid_Tune();
 
         Result = 0.0;
 
