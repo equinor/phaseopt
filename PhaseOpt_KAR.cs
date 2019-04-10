@@ -106,10 +106,6 @@ public class Stream
         return tag;
     }
 
-    public void read_composition()
-    {
-
-    }
 }
 
 public class PT_Point
@@ -705,8 +701,8 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Asgard()
     {
-        Asgard_Kalsto.Composition_IDs = Asgard.Composition_IDs().ToArray();
-        Asgard_Kalsto.Composition_Values = Asgard.Composition_Values().ToArray();
+        Asgard_Kalsto.Composition_IDs = Asgard_Current.Composition_IDs().ToArray();
+        Asgard_Kalsto.Composition_Values = Asgard_Current.Composition_Values().ToArray();
 
         Asgard_Kalsto.Fluid_Tune();
         double[] Composition_Result = Asgard_Kalsto.Cricondenbar();
@@ -729,8 +725,8 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Statpipe()
     {
-        Statpipe_Kalsto.Composition_IDs = Statpipe.Composition_IDs().ToArray();
-        Statpipe_Kalsto.Composition_Values = Statpipe.Composition_Values().ToArray();
+        Statpipe_Kalsto.Composition_IDs = Statpipe_Current.Composition_IDs().ToArray();
+        Statpipe_Kalsto.Composition_Values = Statpipe_Current.Composition_Values().ToArray();
 
         Statpipe_Kalsto.Fluid_Tune();
         double[] Composition_Result = Statpipe_Kalsto.Cricondenbar();
