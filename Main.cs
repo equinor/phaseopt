@@ -221,25 +221,25 @@ namespace Main
                     Log_File.WriteLine("{0}: Bad molweight Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_B++;
                 }
-                if (Molweight_Stdev(PO_A.Asgard_Transport_Flow, GC_A_Asgard_Flow) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_A.Asgard.Mass_Flow, GC_A_Asgard_Flow) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad flow Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_A++;
                 }
-                if (Molweight_Stdev(PO_A.Statpipe_Transport_Flow, GC_A_Statpipe_Flow) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_A.Statpipe.Mass_Flow, GC_A_Statpipe_Flow) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad flow Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_A++;
                 }
-                if (Molweight_Stdev(PO_B.Asgard_Transport_Flow, GC_B_Asgard_Flow) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_B.Asgard.Mass_Flow, GC_B_Asgard_Flow) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad flow Asgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Asgard B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_B++;
                 }
-                if (Molweight_Stdev(PO_B.Statpipe_Transport_Flow, GC_B_Statpipe_Flow) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_B.Statpipe.Mass_Flow, GC_B_Statpipe_Flow) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad flow Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Statpipe B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
@@ -255,13 +255,13 @@ namespace Main
                     Console.WriteLine("{0}: Bad flow Statpipe cross over B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Statpipe cross over B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                 }
-                if (Molweight_Stdev(PO_A.Mix_To_T100.Flow, GC_A_Mix_To_T100_Flow) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_A.Mix_To_T100.Mass_Flow, GC_A_Mix_To_T100_Flow) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
                     errors_A++;
                 }
-                if (Molweight_Stdev(PO_B.Mix_To_T100.Flow, GC_B_Mix_To_T100_Flow) < Stdev_Low_Limit)
+                if (Molweight_Stdev(PO_B.Mix_To_T100.Mass_Flow, GC_B_Mix_To_T100_Flow) < Stdev_Low_Limit)
                 {
                     Console.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     Log_File.WriteLine("{0}: Bad flow Mix to T100 flow B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
@@ -359,8 +359,8 @@ namespace Main
                     {
                         lock (PO_A.locker)
                         {
-                            if (Composition_Stdev(PO_A.Composition_Values_Statpipe_Current, GC_A_Comp_Statpipe) > Stdev_Low_Limit &&
-                                                Check_Composition(PO_A.Composition_Values_Statpipe_Current))
+                            if (Composition_Stdev(PO_A.Statpipe.Composition_Values(), GC_A_Comp_Statpipe) > Stdev_Low_Limit &&
+                                                Check_Composition(PO_A.Statpipe.Composition_Values()))
                             {
                                 PO_A.Calculate_Kalsto_Statpipe();
                                 PO_A.DB_Connection.Write_Value("T_31XI0157_A", 1);
@@ -378,8 +378,8 @@ namespace Main
                     {
                         lock (PO_A.locker)
                         {
-                            if (Composition_Stdev(PO_A.Composition_Values_Asgard_Current, GC_A_Comp_Asgard) > Stdev_Low_Limit &&
-                                Check_Composition(PO_A.Composition_Values_Asgard_Current))
+                            if (Composition_Stdev(PO_A.Asgard.Composition_Values(), GC_A_Comp_Asgard) > Stdev_Low_Limit &&
+                                Check_Composition(PO_A.Asgard.Composition_Values()))
                             {
                                 PO_A.Calculate_Kalsto_Asgard();
                                 PO_A.DB_Connection.Write_Value("T_31XI0161_A", 1);
@@ -397,8 +397,8 @@ namespace Main
                     {
                         lock (PO_B.locker)
                         {
-                            if (Composition_Stdev(PO_B.Composition_Values_Statpipe_Current, GC_B_Comp_Statpipe) > Stdev_Low_Limit &&
-                                Check_Composition(PO_B.Composition_Values_Statpipe_Current))
+                            if (Composition_Stdev(PO_B.Statpipe.Composition_Values(), GC_B_Comp_Statpipe) > Stdev_Low_Limit &&
+                                Check_Composition(PO_B.Statpipe.Composition_Values()))
                             {
                                 PO_B.Calculate_Kalsto_Statpipe();
                                 PO_B.DB_Connection.Write_Value("T_31XI0157_B", 1);
@@ -416,8 +416,8 @@ namespace Main
                     {
                         lock (PO_B.locker)
                         {
-                            if (Composition_Stdev(PO_B.Composition_Values_Asgard_Current, GC_B_Comp_Asgard) > Stdev_Low_Limit &&
-                                Check_Composition(PO_B.Composition_Values_Asgard_Current))
+                            if (Composition_Stdev(PO_B.Asgard.Composition_Values(), GC_B_Comp_Asgard) > Stdev_Low_Limit &&
+                                Check_Composition(PO_B.Asgard.Composition_Values()))
                             {
                                 PO_B.Calculate_Kalsto_Asgard();
                                 PO_B.DB_Connection.Write_Value("T_31XI0161_B", 1);
@@ -442,7 +442,7 @@ namespace Main
                     PO_A.Calculate_Dropout_Curves();
                 }
 
-                Sleep_Time = (Start_Time.AddSeconds(150) - DateTime.Now).TotalMilliseconds;
+                Sleep_Time = (Start_Time.AddSeconds(150.0) - DateTime.Now).TotalMilliseconds;
                 if (Sleep_Time > 1.0)
                 {
                     Console.WriteLine("Waiting {0} seconds", Sleep_Time / 1000.0);

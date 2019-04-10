@@ -44,7 +44,7 @@
       <mass-flow>
         <component name="Stasjon Masse strøm" tag="20FI7195SM"/>
       </mass-flow>
-      <cricondenbar temperature-tag="T_31TY0157_A" pressure-tag="T_31PY0157_A"/>
+      <cricondenbar temperature-tag="T_31TY0157_A" pressure-tag="T_31PY0157_A" status-tag="T_31XI0157_A"/>
     </stream>
 
     <stream name="asgard" type="input">
@@ -81,7 +81,7 @@
       <mass-flow>
         <component name="Åsgard rikgass før X-over" tag="20FI5506"/>
       </mass-flow>
-      <cricondenbar temperature-tag="T_31TY0161_A" pressure-tag="T_31PY0161_A"/>
+      <cricondenbar temperature-tag="T_31TY0161_A" pressure-tag="T_31PY0161_A" status-tag="T_31XI0161_A"/>
     </stream>
 
     <stream name="DIXO-mix to T410/T420/DPCU" type="output">
