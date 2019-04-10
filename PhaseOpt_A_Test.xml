@@ -111,7 +111,7 @@
       <component name="C9A / m-xylene"  id="809"  tag="20AY7146A_54" scale-factor="10000.0"/>
       <component name="nC10"            id="1016" tag="20AY7146A_05" scale-factor="10000.0"/>
 
-      <cricondenbar temperature-tag="T_20TY7146_A" pressure-tag="T_20PY7146_A"/>
+      <cricondenbar temperature-tag="T_20TY7146_A" pressure-tag="T_20PY7146_A" status-tag="T_20XI7146_A"/>
 
       <liquid-dropout update-interval="180">
         <temperature tag="T_PO_E_T">
@@ -178,7 +178,7 @@
       </mass-flow>
 
       <molweight tag="15AM5626V"/>
-      <cricondenbar temperature-tag="T_15TY5626_A" pressure-tag="T_15PY5626_A"/>
+      <cricondenbar temperature-tag="T_15TY5626_A" pressure-tag="T_15PY5626_A" status-tag="T_15XI5626_A"/>
 
 	    <liquid-dropout update-interval="180">
 	      <dropout-points update-interval="30">

@@ -5,6 +5,7 @@ using System.Xml;
 using System.Threading;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Linq;
 
 public class Component
 {
@@ -119,14 +120,16 @@ public class PT_Point
     public string pressure_tag;
     public string temperature_tag;
     public string result_tag;
+    public string status_tag;
 
     public PT_Point() { }
 
-    public PT_Point(string pt, string tt, string rt)
+    public PT_Point(string pt, string tt, string rt, string st = "")
     {
         pressure_tag = pt;
         temperature_tag = tt;
         result_tag = rt;
+        status_tag = st;
     }
 }
 
@@ -169,6 +172,20 @@ public class PhaseOpt_KAR
     private bool Cross_Over_Status = false;
 
     public IP21_Comm DB_Connection;
+
+    Queue GC_Comp_Asgard = new Queue();
+    Queue GC_Comp_Statpipe = new Queue();
+    Queue GC_Molweight_Asgard = new Queue();
+    Queue GC_Molweight_Statpipe = new Queue();
+    Queue GC_Asgard_Flow = new Queue();
+    Queue GC_Statpipe_Flow = new Queue();
+    Queue GC_Statpipe_Cross_Over_Flow = new Queue();
+    Queue GC_Mix_To_T100_Flow = new Queue();
+    Queue Velocity_1_Asgard = new Queue();
+    Queue Velocity_2_Asgard = new Queue();
+    Queue Velocity_1_Statpipe = new Queue();
+    Queue Velocity_2_Statpipe = new Queue();
+
 
     public PhaseOpt_KAR(string Log_File_Name)
     {
@@ -926,6 +943,7 @@ public class PhaseOpt_KAR
                                 {
                                     Asgard.Cricondenbar.pressure_tag = reader.GetAttribute("pressure-tag");
                                     Asgard.Cricondenbar.temperature_tag = reader.GetAttribute("temperature-tag");
+                                    Asgard.Cricondenbar.status_tag = reader.GetAttribute("status-tag");
                                 }
                             }
                         }
@@ -978,6 +996,7 @@ public class PhaseOpt_KAR
                                 {
                                     Statpipe.Cricondenbar.pressure_tag = reader.GetAttribute("pressure-tag");
                                     Statpipe.Cricondenbar.temperature_tag = reader.GetAttribute("temperature-tag");
+                                    Statpipe.Cricondenbar.status_tag = reader.GetAttribute("status-tag");
                                 }
                             }
                         }
@@ -997,6 +1016,7 @@ public class PhaseOpt_KAR
                                 {
                                     Mix_To_T410.Cricondenbar.pressure_tag = reader.GetAttribute("pressure-tag");
                                     Mix_To_T410.Cricondenbar.temperature_tag = reader.GetAttribute("temperature-tag");
+                                    Mix_To_T410.Cricondenbar.status_tag = reader.GetAttribute("status-tag");
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "mass-flow")
                                 {
@@ -1073,6 +1093,7 @@ public class PhaseOpt_KAR
                                 {
                                     Mix_To_T100.Cricondenbar.pressure_tag = reader.GetAttribute("pressure-tag");
                                     Mix_To_T100.Cricondenbar.temperature_tag = reader.GetAttribute("temperature-tag");
+                                    Mix_To_T100.Cricondenbar.status_tag = reader.GetAttribute("status-tag");
                                 }
                                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "molweight")
                                 {
@@ -1124,4 +1145,211 @@ public class PhaseOpt_KAR
             Environment.Exit(1);
         }
     }
+
+    public int Validate()
+    {
+        int errors = 0;
+        double Stdev_Low_Limit = 1.0E-10;
+
+        if (Check_Composition(Asgard.Comp) == false)
+        {
+            Console.WriteLine("Bad composition Asgard A");
+            Log_File.WriteLine("{0}: Bad composition Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Check_Composition(Statpipe_Current.Comp) == false)
+        {
+            Console.WriteLine("Bad composition Statpipe A");
+            Log_File.WriteLine("{0}: Bad composition Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Check_Composition(Asgard_Current.Comp) == false)
+        {
+            Console.WriteLine("Bad composition Asgard A");
+            Log_File.WriteLine("{0}: Bad composition Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Check_Composition(Statpipe.Comp) == false)
+        {
+            Console.WriteLine("Bad composition Statpipe A");
+            Log_File.WriteLine("{0}: Bad composition Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Asgard.Molweight, GC_Molweight_Asgard) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad molweight Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad molweight Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Statpipe.Molweight, GC_Molweight_Statpipe) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad molweight Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad molweight Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Asgard.Mass_Flow, GC_Asgard_Flow) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad flow Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad flow Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Statpipe.Mass_Flow, GC_Statpipe_Flow) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad flow Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad flow Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Statpipe_Cross_Over_Flow, GC_Statpipe_Cross_Over_Flow) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad flow Statpipe cross over A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad flow Statpipe cross over A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+        }
+        if (Molweight_Stdev(Mix_To_T100.Mass_Flow, GC_Mix_To_T100_Flow) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad flow Mix to T100 flow A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Asgard_Velocity[0], Velocity_1_Asgard, 30) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad gas velocity Åsgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad gas velocity Åsgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Asgard_Velocity[1], Velocity_2_Asgard, 30) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad gas velocity Åsgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad gas velocity Åsgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Statpipe_Velocity[0], Velocity_1_Statpipe, 30) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad gas velocity Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad gas velocity Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Molweight_Stdev(Statpipe_Velocity[1], Velocity_2_Statpipe, 30) < Stdev_Low_Limit)
+        {
+            Console.WriteLine("{0}: Bad gas velocity Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            Log_File.WriteLine("{0}: Bad gas velocity Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+
+        return errors;
+    }
+    public static bool Check_Composition(List<Component> Composition)
+    {
+        bool Return_Value = true;
+        double Expected_Sum = 100.0;
+        double Sum_Deviation_Limit = 1.0;
+        double Sum = 0.0;
+
+        double Lower_Limit = 10E-9;
+        int Number_Below_Lower_Limit = 0; // Composition.Count * 25 / 100;
+        int Below = 0;
+
+        foreach (Component c in Composition)
+        {
+            Sum += c.Value;
+            if (c.Value < Lower_Limit)
+                Below++;
+        }
+
+        if (Math.Abs(Expected_Sum - Sum) > Sum_Deviation_Limit)
+            Return_Value = false;
+        if (Below > Number_Below_Lower_Limit)
+            Return_Value = false;
+
+        return Return_Value;
+    }
+
+    public static double Molweight_Stdev(double MW, Queue GC_Comp, int memory = 5)
+    {
+        double Lowest_Stdev = double.MaxValue;
+        List<double> Values = new List<double>();
+
+        GC_Comp.Enqueue(MW);
+
+        while (GC_Comp.Count > memory)
+        {
+            GC_Comp.Dequeue();
+        }
+
+        if (GC_Comp.Count >= memory)
+        {
+            foreach (double v in GC_Comp)
+            {
+                Values.Add(v);
+            }
+            double stdev = CalculateStdDev(Values);
+            if (stdev < Lowest_Stdev)
+            {
+                Lowest_Stdev = stdev;
+            }
+        }
+
+        return Lowest_Stdev;
+    }
+
+    public static double Composition_Stdev(List<double> PO, Queue GC_Comp, int memory = 10)
+    {
+        double Lowest_Stdev = double.MaxValue;
+        List<double> Values = new List<double>();
+        Dictionary<int, List<double>> CA = new Dictionary<int, List<double>>();
+
+        foreach (double v in PO)
+        {
+            Values.Add(v);
+        }
+        GC_Comp.Enqueue(Values.ToArray());
+
+        while (GC_Comp.Count > memory)
+        {
+            GC_Comp.Dequeue();
+        }
+
+        for (int i = 0; i < PO.Count; i++)
+        {
+            CA.Add(i, new List<double>());
+        }
+
+        foreach (double[] cl in GC_Comp)
+        {
+            int i = 0;
+            foreach (double v in cl)
+            {
+                CA[i].Add(v);
+                i++;
+            }
+        }
+
+        if (GC_Comp.Count >= memory)
+        {
+            foreach (List<double> cl in CA.Values)
+            {
+                double stdev = CalculateStdDev(cl);
+                if (stdev < Lowest_Stdev)
+                {
+                    Lowest_Stdev = stdev;
+                }
+            }
+        }
+        return Lowest_Stdev;
+    }
+
+    private static double CalculateStdDev(IEnumerable<double> values)
+    {
+        double ret = 0;
+        if (values.Count() > 0)
+        {
+            //Compute the Average
+            double avg = values.Average();
+            //Perform the Sum of (value-avg)_2_2
+            double sum = values.Sum(d => Math.Pow(d - avg, 2));
+            //Put it all together
+            ret = Math.Sqrt((sum) / (values.Count() - 1));
+        }
+        return ret;
+    }
+
 }
