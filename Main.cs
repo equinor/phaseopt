@@ -103,6 +103,8 @@ namespace Main
             PhaseOpt_KAR PO_A = new PhaseOpt_KAR(@"PhaseOpt_Kar_A_Test.log");
             PhaseOpt_KAR PO_B = new PhaseOpt_KAR(@"PhaseOpt_Kar_B_Test.log");
 
+            PO_A.Name = "GC A";
+            PO_B.Name = "GC B";
             PO_A.Read_Config("PhaseOpt_A_Test.xml");
             PO_B.Read_Config("PhaseOpt_B_Test.xml");
 #else
