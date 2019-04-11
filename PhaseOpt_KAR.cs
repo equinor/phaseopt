@@ -625,6 +625,7 @@ public class PhaseOpt_KAR
             {
                 DB_Connection.Write_Value(Mix_To_T100.Cricondenbar.pressure_tag, Composition_Result_T100[0]);
                 DB_Connection.Write_Value(Mix_To_T100.Cricondenbar.temperature_tag, Composition_Result_T100[1]);
+                DB_Connection.Write_Value(Mix_To_T100.Cricondenbar.status_tag, 1);
             }
         }
         Log_File.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.pressure_tag, Composition_Result_T100[0]);
@@ -640,6 +641,7 @@ public class PhaseOpt_KAR
             {
                 DB_Connection.Write_Value(Mix_To_T410.Cricondenbar.pressure_tag, Composition_Result_T400[0]);
                 DB_Connection.Write_Value(Mix_To_T410.Cricondenbar.temperature_tag, Composition_Result_T400[1]);
+                DB_Connection.Write_Value(Mix_To_T410.Cricondenbar.status_tag, 1);
             }
         }
         Log_File.WriteLine("{0}\t{1}", Mix_To_T410.Cricondenbar.pressure_tag, Composition_Result_T400[0]);
@@ -713,6 +715,7 @@ public class PhaseOpt_KAR
             {
                 DB_Connection.Write_Value(Asgard.Cricondenbar.pressure_tag, Composition_Result[0]);
                 DB_Connection.Write_Value(Asgard.Cricondenbar.temperature_tag, Composition_Result[1]);
+                DB_Connection.Write_Value(Asgard.Cricondenbar.status_tag, 1);
             }
         }
         Log_File.WriteLine("{0}\t{1}", Asgard.Cricondenbar.pressure_tag, Composition_Result[0]);
@@ -737,6 +740,7 @@ public class PhaseOpt_KAR
             {
                 DB_Connection.Write_Value(Statpipe.Cricondenbar.pressure_tag, Composition_Result[0]);
                 DB_Connection.Write_Value(Statpipe.Cricondenbar.temperature_tag, Composition_Result[1]);
+                DB_Connection.Write_Value(Statpipe.Cricondenbar.status_tag, 1);
             }
         }
         Log_File.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.pressure_tag, Composition_Result[0]);
@@ -1142,24 +1146,36 @@ public class PhaseOpt_KAR
         }
     }
 
+    public int Validate_Current()
+    {
+        int errors = 0;
+        double Stdev_Low_Limit = 1.0E-10;
+
+        if (Composition_Stdev(Statpipe_Current.Comp, GC_Comp_Statpipe) < Stdev_Low_Limit
+            || Check_Composition(Statpipe_Current.Comp) == false)
+        {
+            DB_Connection.Write_Value(Statpipe.Cricondenbar.status_tag, 0);
+            Console.WriteLine("Bad composition Statpipe A");
+            Log_File.WriteLine("{0}: Bad composition Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+        if (Composition_Stdev(Asgard_Current.Comp, GC_Comp_Asgard) < Stdev_Low_Limit
+            || Check_Composition(Asgard_Current.Comp) == false)
+        {
+            DB_Connection.Write_Value(Asgard.Cricondenbar.status_tag, 0);
+            Console.WriteLine("Bad composition Asgard A");
+            Log_File.WriteLine("{0}: Bad composition Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            errors++;
+        }
+
+        return errors;
+    }
     public int Validate()
     {
         int errors = 0;
         double Stdev_Low_Limit = 1.0E-10;
 
         if (Check_Composition(Asgard.Comp) == false)
-        {
-            Console.WriteLine("Bad composition Asgard A");
-            Log_File.WriteLine("{0}: Bad composition Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-            errors++;
-        }
-        if (Check_Composition(Statpipe_Current.Comp) == false)
-        {
-            Console.WriteLine("Bad composition Statpipe A");
-            Log_File.WriteLine("{0}: Bad composition Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-            errors++;
-        }
-        if (Check_Composition(Asgard_Current.Comp) == false)
         {
             Console.WriteLine("Bad composition Asgard A");
             Log_File.WriteLine("{0}: Bad composition Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
@@ -1231,6 +1247,12 @@ public class PhaseOpt_KAR
             errors++;
         }
 
+        if (errors > 0)
+        {
+            DB_Connection.Write_Value(Mix_To_T100.Cricondenbar.status_tag, 0);
+            DB_Connection.Write_Value(Mix_To_T410.Cricondenbar.status_tag, 0);
+        }
+
         return errors;
     }
     public static bool Check_Composition(List<Component> Composition)
@@ -1287,15 +1309,15 @@ public class PhaseOpt_KAR
         return Lowest_Stdev;
     }
 
-    public static double Composition_Stdev(List<double> PO, Queue GC_Comp, int memory = 10)
+    public static double Composition_Stdev(List<Component> PO, Queue GC_Comp, int memory = 10)
     {
         double Lowest_Stdev = double.MaxValue;
         List<double> Values = new List<double>();
         Dictionary<int, List<double>> CA = new Dictionary<int, List<double>>();
 
-        foreach (double v in PO)
+        foreach (Component v in PO)
         {
-            Values.Add(v);
+            Values.Add(v.Value);
         }
         GC_Comp.Enqueue(Values.ToArray());
 
