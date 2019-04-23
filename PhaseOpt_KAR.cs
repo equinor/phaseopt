@@ -360,6 +360,7 @@ public class PhaseOpt_KAR
             }
         }
 
+
         // Read_From_IP21()
         // Read Cross over selector
         Hashtable Crossover_Status;
@@ -367,6 +368,7 @@ public class PhaseOpt_KAR
         {
             Crossover_Status = DB_Connection.Read_Values(new string[] { "15HS0105" }, Timestamp);
             Cross_Over_Status = Convert.ToBoolean(Crossover_Status["15HS0105"]);
+
         }
         catch
         {
@@ -457,6 +459,7 @@ public class PhaseOpt_KAR
             Log_File.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100.Mass_Flow_Tags[0], Mix_To_T100.Mass_Flow_Tags[1]);
             Log_File.Flush();
         }
+
         Mix_To_T100.Mol_Flow = Mix_To_T100.Mass_Flow * 1000 / Mix_To_T100_Molweight;
 
         if (Cross_Over_Status)
@@ -467,6 +470,7 @@ public class PhaseOpt_KAR
         {
             Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Asgard.Molweight;
         }
+
 
         // Calculate mixed compositions at Kårstø
         List<Component> Asgard_Component_Flow = new List<Component>();
@@ -509,6 +513,7 @@ public class PhaseOpt_KAR
         else
         {
             foreach (Component c in Asgard.Comp)
+
             {
                 CY2007_Component_Flow.Add(new Component(c.ID, c.Tag, 1.0, Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0));
                 CY2007_Component_Flow_Sum += Statpipe_Cross_Over_Mol_Flow * c.Value / 100.0;
