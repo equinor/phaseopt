@@ -85,7 +85,7 @@
     </stream>
 
     <stream name="DIXO-mix to T410/T420/DPCU" type="output">
-	  <status tag="20XI7146_A"/>
+      <status tag="20XI7146_A"/>
 
       <component name="CO2"  id="1"   tag="20AY7146A_K" scale-factor="1.0"/>
       <component name="N2"   id="2"   tag="20AY7146A_J" scale-factor="1.0"/>
@@ -115,20 +115,20 @@
 
       <liquid-dropout update-interval="180">
         <temperature tag="PO_E_T">
-		  <value>-25.0</value>
-		  <value>-22.5</value>
-		  <value>-20.0</value>
-		  <value>-17.5</value>
-		  <value>-15.0</value>
-		  <value>-12.5</value>
-		  <value>-10.0</value>
-		  <value> -7.5</value>
-		  <value> -5.0</value>
-		  <value> -2.5</value>
-		  <value>  0.0</value>
-		  <value>  2.5</value>
-		  <value>  5.0</value>
-		</temperature>
+          <value>-25.0</value>
+          <value>-22.5</value>
+          <value>-20.0</value>
+          <value>-17.5</value>
+          <value>-15.0</value>
+          <value>-12.5</value>
+          <value>-10.0</value>
+          <value> -7.5</value>
+          <value> -5.0</value>
+          <value> -2.5</value>
+          <value>  0.0</value>
+          <value>  2.5</value>
+          <value>  5.0</value>
+        </temperature>
 
         <dew-point           tag="PO_E_P0"/>
         <dropout value="0.1" tag="PO_E_P1"/>
@@ -180,13 +180,13 @@
       <molweight tag="15AM5626V"/>
       <cricondenbar temperature-tag="15TY5626_A" pressure-tag="15PY5626_A"/>
 
-	    <liquid-dropout update-interval="180">
-	      <dropout-points update-interval="30">
+      <liquid-dropout update-interval="180">
+        <dropout-points update-interval="30">
           <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="PO_LD3"/>
           <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="PO_LD4"/>
           <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="PO_LD5"/>
-          </dropout-points>
-	    </liquid-dropout>
+        </dropout-points>
+      </liquid-dropout>
     </stream>
   </streams>
 </phaseopt>

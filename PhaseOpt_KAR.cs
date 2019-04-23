@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
 using System.Threading;
-using System.Globalization;
 using System.Threading.Tasks;
 using System.Linq;
 
@@ -197,17 +196,6 @@ public class PhaseOpt_KAR
         DB_Connection.Connect();
     }
 
-    public void IP21_Reader()
-    {
-        while (DB_Connection.isConnected())
-        {
-            Read_Composition();
-            Read_Current_Kalsto_Composition();
-
-            Thread.Sleep(500);
-        }
-    }
-
     public void Read_Composition()
     {
         // Read velocities
@@ -363,6 +351,7 @@ public class PhaseOpt_KAR
 
         // Read_From_IP21()
         // Read Cross over selector
+        // TODO: Get tag from config
         Hashtable Crossover_Status;
         try
         {
@@ -470,7 +459,6 @@ public class PhaseOpt_KAR
         {
             Statpipe_Cross_Over_Mol_Flow = Statpipe_Cross_Over_Flow * 1000 / Asgard.Molweight;
         }
-
 
         // Calculate mixed compositions at Kårstø
         List<Component> Asgard_Component_Flow = new List<Component>();
@@ -859,8 +847,6 @@ public class PhaseOpt_KAR
         settings.IgnoreWhitespace = true;
 
         XmlReader reader = XmlReader.Create(Config_File, settings);
-
-
 
         try
         {
@@ -1375,5 +1361,4 @@ public class PhaseOpt_KAR
         }
         return ret;
     }
-
 }
