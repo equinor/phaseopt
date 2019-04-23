@@ -9,6 +9,8 @@
     <uid>STATOIL-NET\f_aspenip21_ka</uid>
   </IP21-connection>
 
+  <cross-over-status tag="15HS0105"/>
+
   <streams>
     <stream name="statpipe" type="input">
       <status name="Application 1" tag="31XI0157_21"/>
@@ -181,6 +183,32 @@
       <cricondenbar temperature-tag="T_15TY5626_A" pressure-tag="T_15PY5626_A" status-tag="T_15XI5626_A"/>
 
       <liquid-dropout update-interval="180">
+        <temperature tag="T_PO_E_T">
+          <value>-25.0</value>
+          <value>-22.5</value>
+          <value>-20.0</value>
+          <value>-17.5</value>
+          <value>-15.0</value>
+          <value>-12.5</value>
+          <value>-10.0</value>
+          <value> -7.5</value>
+          <value> -5.0</value>
+          <value> -2.5</value>
+          <value>  0.0</value>
+          <value>  2.5</value>
+          <value>  5.0</value>
+        </temperature>
+
+        <dew-point           tag="T_PO_E_P0"/>
+        <dropout value="2.0" tag="T_PO_E_P4"/>
+        <dropout value="5.0" tag="T_PO_E_P5"/>
+
+        <operating-points update-interval="30">
+          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="T_PO_OP0"/>
+          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="T_PO_OP1"/>
+          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="T_PO_OP2"/>
+        </operating-points>
+
         <dropout-points update-interval="30">
           <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="T_PO_LD3"/>
           <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="T_PO_LD4"/>

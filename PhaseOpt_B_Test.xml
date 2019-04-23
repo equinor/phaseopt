@@ -9,6 +9,8 @@
     <uid>STATOIL-NET\f_aspenip21_ka</uid>
   </IP21-connection>
 
+  <cross-over-status tag="15HS0105"/>
+
   <streams>
     <stream name="statpipe" type="input">
       <status name="Application 1" tag="31XI0161_21"/>

@@ -165,6 +165,7 @@ public class PhaseOpt_KAR
     public List<double> Asgard_Velocity = new List<double>();
     public List<double> Statpipe_Velocity = new List<double>();
 
+    private string Cross_Over_Tag;
     private bool Cross_Over_Status = false;
 
     public IP21_Comm DB_Connection;
@@ -348,20 +349,18 @@ public class PhaseOpt_KAR
             }
         }
 
-
         // Read_From_IP21()
         // Read Cross over selector
-        // TODO: Get tag from config
         Hashtable Crossover_Status;
         try
         {
-            Crossover_Status = DB_Connection.Read_Values(new string[] { "15HS0105" }, Timestamp);
-            Cross_Over_Status = Convert.ToBoolean(Crossover_Status["15HS0105"]);
+            Crossover_Status = DB_Connection.Read_Values(new string[] { Cross_Over_Tag }, Timestamp);
+            Cross_Over_Status = Convert.ToBoolean(Crossover_Status[Cross_Over_Tag]);
 
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", "15HS0105");
+            Log_File.WriteLine("Tag {0} not valid", Cross_Over_Tag);
             Log_File.Flush();
         }
 
@@ -879,6 +878,10 @@ public class PhaseOpt_KAR
                             IP21_Pwd = reader.Value;
                         }
                     }
+                }
+                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cross-over-status")
+                {
+                    Cross_Over_Tag = reader.GetAttribute("tag");
                 }
                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "streams")
                 {
