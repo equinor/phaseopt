@@ -8,14 +8,16 @@ public class IP21_Comm: IDisposable
     public string IP21_Host;
     public string IP21_Port;
     public bool IP21_Read_Only;
-    private System.Data.Odbc.OdbcCommand Cmd;
+    private System.Data.Odbc.OdbcCommand Cmdr;
+    private System.Data.Odbc.OdbcCommand Cmdw;
 
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
         {
             // dispose managed resources
-            Cmd.Dispose();
+            Cmdr.Dispose();
+            Cmdw.Dispose();
         }
     }
 
@@ -32,24 +34,50 @@ public class IP21_Comm: IDisposable
         IP21_Read_Only = Read_Only;
     }
 
+    public bool isConnected()
+    {
+        return Cmdr.Connection.State == System.Data.ConnectionState.Open &&
+            Cmdw.Connection.State == System.Data.ConnectionState.Open;
+    }
     public void Connect()
     {
         string Conn = @"DRIVER={AspenTech SQLplus};HOST=" + IP21_Host + @";PORT=" + IP21_Port;
-        Cmd = new System.Data.Odbc.OdbcCommand();
-        Cmd.Connection = new System.Data.Odbc.OdbcConnection(Conn);
-        Cmd.Connection.Open();
+        Cmdr = new System.Data.Odbc.OdbcCommand();
+        Cmdr.Connection = new System.Data.Odbc.OdbcConnection(Conn);
+        Cmdr.CommandTimeout = 15;
+
+        Cmdw = new System.Data.Odbc.OdbcCommand();
+        Cmdw.Connection = new System.Data.Odbc.OdbcConnection(Conn);
+        Cmdw.CommandTimeout = 15;
+
+        try
+        {
+            Cmdr.Connection.Open();
+            Cmdw.Connection.Open();
+        }
+        catch(System.Data.Odbc.OdbcException e)
+        {
+            Console.WriteLine("Connection failed {0}", e.Message);
+        }
     }
 
     public void Disconnect()
     {
-        if (Cmd.Connection.State == System.Data.ConnectionState.Open)
+        if (Cmdr.Connection.State == System.Data.ConnectionState.Open)
         {
-            Cmd.Connection.Close();
+            Cmdr.Connection.Close();
         }
+
+        if (Cmdw.Connection.State == System.Data.ConnectionState.Open)
+        {
+            Cmdw.Connection.Close();
+        }
+
     }
 
     public Hashtable Read_Values(string[] Tag_Name, DateTime Time_Stamp)
     {
+        Hashtable Result = new Hashtable();
         string Tag_cond = "(FALSE"; // Makes it easier to add OR conditions.
         foreach (string Tag in Tag_Name)
         {
@@ -59,7 +87,7 @@ public class IP21_Comm: IDisposable
             }
         }
         Tag_cond += ")";
-        Cmd.CommandText =
+        Cmdr.CommandText =
 @"SELECT
   NAME, VALUE, STATUS
 FROM
@@ -71,65 +99,95 @@ WHERE
   AND PERIOD = 000:0:01.0;
 ";
 
-        System.Data.Odbc.OdbcDataReader DR = Cmd.ExecuteReader();
-        Hashtable Result = new Hashtable();
-        while (DR.Read())
-        {
-            if (DR.GetValue(2).ToString() == "0") // if status is good
+        System.Data.Odbc.OdbcDataReader DR = Cmdr.ExecuteReader(System.Data.CommandBehavior.SingleResult);
+
+        //if (DR.HasRows)
+        //{
+            while (DR.Read())
             {
-                Result.Add(DR.GetValue(0).ToString(), DR.GetValue(1));
+                if (DR.GetValue(2).ToString() == "0") // if status is good
+                {
+                    Result.Add(DR.GetValue(0).ToString(), DR.GetValue(1));
+                }
             }
-        }
+        //}
 
         DR.Close();
+
         return Result;
     }
 
     public void Write_Value(string Tag_Name, double Value, string Quality = "Good")
     {
-        Cmd.CommandText =
+        Cmdw.CommandText =
 @"UPDATE ip_analogdef
   SET ip_input_value = " + Value.ToString("G", CultureInfo.InvariantCulture) + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        if (!IP21_Read_Only) Cmd.ExecuteNonQuery();
+        try
+        {
+            if (!IP21_Read_Only) Cmdw.ExecuteNonQuery();
+        }
+        catch
+        {
+            Console.WriteLine("Write_Value failed");
+        }
     }
 
     public void Write_Value(string Tag_Name, int Value, string Quality = "Good")
     {
-        Cmd.CommandText =
+        Cmdw.CommandText =
 @"UPDATE ip_discretedef
   SET ip_input_value = " + Value.ToString() + @", ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        if (!IP21_Read_Only) Cmd.ExecuteNonQuery();
+        try
+        {
+            if (!IP21_Read_Only) Cmdw.ExecuteNonQuery();
+        }
+        catch
+        {
+            Console.WriteLine("Write_Value failed");
+        }
     }
 
     public void Write_Value(string Tag_Name, string Value, string Quality = "Good")
     {
-        Cmd.CommandText =
+        Cmdw.CommandText =
 @"UPDATE ip_textdef
   SET ip_input_value = '" + Value + @"', ip_input_quality = '" + Quality + @"'
   WHERE name = '" + Tag_Name + @"'";
 
-        if (!IP21_Read_Only) Cmd.ExecuteNonQuery();
+        try
+        {
+            if (!IP21_Read_Only) Cmdw.ExecuteNonQuery();
+        }
+        catch
+        { }
     }
 
     public void Insert_Value(string Tag_Name, double Value, DateTime Time_Stamp)
     {
-        Cmd.CommandText =
+        Cmdw.CommandText =
 @"INSERT INTO " + Tag_Name + @"(IP_TREND_TIME, IP_TREND_VALUE)
   VALUES (CAST('" + Time_Stamp.ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS'), "
                   + Value.ToString("G", CultureInfo.InvariantCulture) + @");";
 
         if (double.IsNaN(Value))
         {
-            Cmd.CommandText =
+            Cmdw.CommandText =
 @"INSERT INTO " + Tag_Name + @"(IP_TREND_TIME, IP_TREND_VALUE)
   VALUES (CAST('" + Time_Stamp.ToString("yyyy-MM-dd HH:mm:ss") + @"' AS TIMESTAMP FORMAT 'YYYY-MM-DD HH:MI:SS'), 0.0/0.0);";
         }
 
-        if (!IP21_Read_Only) Cmd.ExecuteNonQuery();
+        try
+        {
+            if (!IP21_Read_Only) Cmdw.ExecuteNonQuery();
+        }
+        catch
+        {
+            Console.WriteLine("Insert_Value failed, Tag {0}, Value {1}", Tag_Name, Value);
+        }
     }
 
     private bool Sanitize(string stringValue)

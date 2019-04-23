@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PhaseOpt")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("PhaseOpt calculation")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Statoil")]
+[assembly: AssemblyCompany("Equinor")]
 [assembly: AssemblyProduct("Console.Properties")]
-[assembly: AssemblyCopyright("Copyright © Statoil 2016")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
