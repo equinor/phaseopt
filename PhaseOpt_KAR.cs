@@ -131,6 +131,7 @@ public class PT_Point
 public class PhaseOpt_KAR
 {
     public string Name;
+    private string Watchdog_Tag;
     private const double to_bara = 1.01325;
     private const double to_Kelvin = 273.15;
 
@@ -197,6 +198,13 @@ public class PhaseOpt_KAR
         DB_Connection.Connect();
     }
 
+    public void Trigger_Watchdog()
+    {
+        lock (locker)
+        {
+            DB_Connection.Write_Value(Watchdog_Tag, Timestamp.ToString("yyy-MM-dd HH:mm:ss"));
+        }
+    }
     public void Read_Composition()
     {
         // Read velocities
@@ -882,6 +890,10 @@ public class PhaseOpt_KAR
                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "cross-over-status")
                 {
                     Cross_Over_Tag = reader.GetAttribute("tag");
+                }
+                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "watchdog-timestamp")
+                {
+                    Watchdog_Tag = reader.GetAttribute("tag");
                 }
                 else if (reader.NodeType == XmlNodeType.Element && reader.Name == "streams")
                 {
