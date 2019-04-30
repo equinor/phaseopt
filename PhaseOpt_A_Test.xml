@@ -10,7 +10,7 @@
   </IP21-connection>
 
   <cross-over-status tag="15HS0105"/>
-  <watchdog-timestamp tag="PhaseOpt.ST"/>
+  <watchdog-timestamp tag="T_PhaseOpt.ST"/>
 
   <streams>
     <stream name="statpipe" type="input">
