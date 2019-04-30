@@ -809,10 +809,6 @@ public class PhaseOpt_KAR
 
                 DB_Connection.Insert_Value(st.Curve.Operating_Points[j].result_tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
                 DB_Connection.Insert_Value(st.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
-
-                Result = po.Dropout(st.Curve.Operating_Points[j].pressure + to_bara, st.Curve.Operating_Points[j].temperature + to_Kelvin)[0] * 100.0;
-
-                DB_Connection.Write_Value("T_PO_LD" + (j).ToString(), Result);
             }
 
             Start_Time = Start_Time.AddSeconds(-(Interval * st.Curve.Operating_Points.Count + 1) );
@@ -832,24 +828,13 @@ public class PhaseOpt_KAR
                 }
                 if (j == st.Curve.Temperature.Count - 1) DB_Connection.Insert_Value(st.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
             }
+
+            foreach (PT_Point p in st.Dropout_Points)
+            {
+                Result = po.Dropout(p.pressure + to_bara, p.temperature + to_Kelvin)[0] * 100.0;
+                DB_Connection.Insert_Value(p.result_tag, Result, Start_Time);
+            }
         }
-
-        //// Mix to T100/200 dropout
-        //foreach (Component c in Mix_To_T100.Comp)
-        //{
-        //    Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
-        //}
-
-        //Result = 0.0;
-
-        //foreach (PT_Point p in Mix_To_T100.Dropout_Points)
-        //{
-        //    Result = T100.Dropout(p.pressure + to_bara, p.temperature + to_Kelvin)[0] * 100.0;
-        //    lock (locker)
-        //    {
-        //        DB_Connection.Write_Value(p.result_tag, Result);
-        //    }
-        //}
     }
 
     public void Read_Config(string Config_File)
@@ -1086,6 +1071,20 @@ public class PhaseOpt_KAR
                                                 }
                                             }
                                         }
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "dropout-points")
+                                        {
+                                            while (reader.Read())
+                                            {
+                                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "dropout-points")
+                                                    break;
+                                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "point")
+                                                {
+                                                    Mix_To_T410.Dropout_Points.Add(new PT_Point(reader.GetAttribute("pressure-tag"),
+                                                        reader.GetAttribute("temperature-tag"), reader.GetAttribute("result-tag")));
+                                                }
+                                            }
+                                        }
+
                                     }
                                 }
                             }

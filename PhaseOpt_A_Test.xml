@@ -146,6 +146,11 @@
           <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230" result-tag="T_PO_OP2"/>
         </operating-points>
 
+        <dropout-points update-interval="30">
+          <point name="point 1" temperature-tag="21TI5044" pressure-tag="21PI5108" result-tag="T_PO_LD0"/>
+          <point name="point 2" temperature-tag="21TI5206" pressure-tag="21PI5108" result-tag="T_PO_LD1"/>
+          <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230" result-tag="T_PO_LD2"/>
+        </dropout-points>
       </liquid-dropout>
 
     </stream>
@@ -211,9 +216,9 @@
         </operating-points>
 
         <dropout-points update-interval="30">
-          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="T_PO_LD3"/>
-          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="T_PO_LD4"/>
-          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="T_PO_LD5"/>
+          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="T_PO_LD2_0"/>
+          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="T_PO_LD2_1"/>
+          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="T_PO_LD2_2"/>
         </dropout-points>
       </liquid-dropout>
     </stream>
