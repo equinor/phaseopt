@@ -137,8 +137,8 @@ public class PhaseOpt_KAR
 
     private Hashtable Comp_Values;
 
-    PhaseOpt.PhaseOpt T100 = new PhaseOpt.PhaseOpt();
-    PhaseOpt.PhaseOpt T400 = new PhaseOpt.PhaseOpt();
+    public PhaseOpt.PhaseOpt T100 = new PhaseOpt.PhaseOpt();
+    public PhaseOpt.PhaseOpt T400 = new PhaseOpt.PhaseOpt();
     PhaseOpt.PhaseOpt Asgard_Kalsto = new PhaseOpt.PhaseOpt();
     PhaseOpt.PhaseOpt Statpipe_Kalsto = new PhaseOpt.PhaseOpt();
 
@@ -558,6 +558,14 @@ public class PhaseOpt_KAR
             p.temperature = Convert.ToDouble(OP[p.temperature_tag]);
         }
 
+        foreach (PT_Point p in Mix_To_T100.Curve.Operating_Points)
+        {
+            OP = DB_Connection.Read_Values(new string[] { p.pressure_tag,
+            p.temperature_tag}, Timestamp);
+            p.pressure = Convert.ToDouble(OP[p.pressure_tag]);
+            p.temperature = Convert.ToDouble(OP[p.temperature_tag]);
+        }
+
         foreach (PT_Point p in Mix_To_T100.Dropout_Points)
         {
             OP = DB_Connection.Read_Values(new string[] { p.pressure_tag,
@@ -752,30 +760,28 @@ public class PhaseOpt_KAR
 #endif
     }
 
-    public void Calculate_Dropout_Curves()
+    public void Calculate_Dropout_Curves(Stream st, PhaseOpt.PhaseOpt po)
     {
-
-        // Mix to T400 dropout
-        foreach (Component c in Mix_To_T410.Comp)
+        foreach (Component c in st.Comp)
         {
             Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
         }
 
-        double[,] Pres = new double[Mix_To_T410.Curve.Dropout.Count + 1, Mix_To_T410.Curve.Temperature.Count];
+        double[,] Pres = new double[st.Curve.Dropout.Count + 1, st.Curve.Temperature.Count];
         
         // Dew point line. We use this later to set the max value when searching for drop out pressures
-        Parallel.For (0, Mix_To_T410.Curve.Temperature.Count, i =>
+        Parallel.For (0, st.Curve.Temperature.Count, i =>
         {
-            Pres[0, i] = T400.DewP(Mix_To_T410.Curve.Temperature[i] + to_Kelvin);
-            System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", Mix_To_T410.Curve.Temperature[i], Pres[0, i] - to_bara);
+            Pres[0, i] = po.DewP(st.Curve.Temperature[i] + to_Kelvin);
+            System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", st.Curve.Temperature[i], Pres[0, i] - to_bara);
         });
 
-        for (int i = 0; i < Mix_To_T410.Curve.Dropout.Count; i++)
+        for (int i = 0; i < st.Curve.Dropout.Count; i++)
         {
-            Parallel.For(0, Mix_To_T410.Curve.Temperature.Count, j =>
+            Parallel.For(0, st.Curve.Temperature.Count, j =>
             {
-                Pres[i + 1, j] = T400.Dropout_Search(Mix_To_T410.Curve.Dropout[i].Value, Mix_To_T410.Curve.Temperature[j] + to_Kelvin, Pres[0, j], 0.01);
-                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", Mix_To_T410.Curve.Dropout[i].Value, Mix_To_T410.Curve.Temperature[j], Pres[i + 1, j] - to_bara);
+                Pres[i + 1, j] = po.Dropout_Search(st.Curve.Dropout[i].Value, st.Curve.Temperature[j] + to_Kelvin, Pres[0, j], 0.01);
+                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", st.Curve.Dropout[i].Value, st.Curve.Temperature[j], Pres[i + 1, j] - to_bara);
             });
         }
         
@@ -787,61 +793,46 @@ public class PhaseOpt_KAR
 
         lock (locker)
         {
-            for (int j = 0; j < Mix_To_T410.Curve.Operating_Points.Count; j++)
+            for (int j = 0; j < st.Curve.Operating_Points.Count; j++)
             {
                 if (j == 0)
                 {
-                    DB_Connection.Insert_Value(Mix_To_T410.Curve.Operating_Points[j].result_tag , double.NaN, Start_Time);
-                    DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, double.NaN, Start_Time);
+                    DB_Connection.Insert_Value(st.Curve.Operating_Points[j].result_tag , double.NaN, Start_Time);
+                    DB_Connection.Insert_Value(st.Curve.Temperature_Tag, double.NaN, Start_Time);
                 }
 
-                DB_Connection.Insert_Value(Mix_To_T410.Curve.Operating_Points[j].result_tag , Mix_To_T410.Curve.Operating_Points[j].pressure, Start_Time.AddSeconds(-(Interval * j + 1)));
-                DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, Mix_To_T410.Curve.Operating_Points[j].temperature, Start_Time.AddSeconds(-(Interval * j + 1)));
+                DB_Connection.Insert_Value(st.Curve.Operating_Points[j].result_tag , st.Curve.Operating_Points[j].pressure, Start_Time.AddSeconds(-(Interval * j + 1)));
+                DB_Connection.Insert_Value(st.Curve.Temperature_Tag, st.Curve.Operating_Points[j].temperature, Start_Time.AddSeconds(-(Interval * j + 1)));
 
-                DB_Connection.Insert_Value(Mix_To_T410.Curve.Operating_Points[j].result_tag , Mix_To_T410.Curve.Operating_Points[j].pressure, Start_Time.AddSeconds(-(Interval * j + 2)));
-                DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, Mix_To_T410.Curve.Operating_Points[j].temperature, Start_Time.AddSeconds(-(Interval * j + 2)));
+                DB_Connection.Insert_Value(st.Curve.Operating_Points[j].result_tag , st.Curve.Operating_Points[j].pressure, Start_Time.AddSeconds(-(Interval * j + 2)));
+                DB_Connection.Insert_Value(st.Curve.Temperature_Tag, st.Curve.Operating_Points[j].temperature, Start_Time.AddSeconds(-(Interval * j + 2)));
 
-                DB_Connection.Insert_Value(Mix_To_T410.Curve.Operating_Points[j].result_tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
-                DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
-
-                Result = T400.Dropout(Mix_To_T410.Curve.Operating_Points[j].pressure + to_bara, Mix_To_T410.Curve.Operating_Points[j].temperature + to_Kelvin)[0] * 100.0;
-
-                DB_Connection.Write_Value("T_PO_LD" + (j).ToString(), Result);
+                DB_Connection.Insert_Value(st.Curve.Operating_Points[j].result_tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
+                DB_Connection.Insert_Value(st.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-(Interval * j + 3)));
             }
 
-            Start_Time = Start_Time.AddSeconds(-(Interval * Mix_To_T410.Curve.Operating_Points.Count + 1) );
+            Start_Time = Start_Time.AddSeconds(-(Interval * st.Curve.Operating_Points.Count + 1) );
             Interval = 5;
-            for (int j = 0; j < Mix_To_T410.Curve.Temperature.Count; j++)
+            for (int j = 0; j < st.Curve.Temperature.Count; j++)
             {
-                if (j == 0) DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
-                DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, Mix_To_T410.Curve.Temperature[j], Start_Time.AddSeconds(-Interval * (j + 1)));
+                if (j == 0) DB_Connection.Insert_Value(st.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
+                DB_Connection.Insert_Value(st.Curve.Temperature_Tag, st.Curve.Temperature[j], Start_Time.AddSeconds(-Interval * (j + 1)));
 
-                for (int i = 0; i < Mix_To_T410.Curve.Dropout.Count + 1; i++)
+                for (int i = 0; i < st.Curve.Dropout.Count + 1; i++)
                 {
-                    if (i == 0) Tag = Mix_To_T410.Curve.Dew_Point_Tag;
-                    else Tag = Mix_To_T410.Curve.Dropout[i-1].Tag;
+                    if (i == 0) Tag = st.Curve.Dew_Point_Tag;
+                    else Tag = st.Curve.Dropout[i-1].Tag;
                     if (j == 0) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * j));
                     DB_Connection.Insert_Value(Tag, Pres[i, j] - to_bara, Start_Time.AddSeconds(-Interval * (j + 1)));
-                    if (j == Mix_To_T410.Curve.Temperature.Count - 1) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
+                    if (j == st.Curve.Temperature.Count - 1) DB_Connection.Insert_Value(Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
                 }
-                if (j == Mix_To_T410.Curve.Temperature.Count - 1) DB_Connection.Insert_Value(Mix_To_T410.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
+                if (j == st.Curve.Temperature.Count - 1) DB_Connection.Insert_Value(st.Curve.Temperature_Tag, double.NaN, Start_Time.AddSeconds(-Interval * (j + 2)));
             }
-        }
 
-        // Mix to T100/200 dropout
-        foreach (Component c in Mix_To_T100.Comp)
-        {
-            Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
-        }
-
-        Result = 0.0;
-
-        foreach (PT_Point p in Mix_To_T100.Dropout_Points)
-        {
-            Result = T100.Dropout(p.pressure + to_bara, p.temperature + to_Kelvin)[0] * 100.0;
-            lock (locker)
+            foreach (PT_Point p in st.Dropout_Points)
             {
-                DB_Connection.Write_Value(p.result_tag, Result);
+                Result = po.Dropout(p.pressure + to_bara, p.temperature + to_Kelvin)[0] * 100.0;
+                DB_Connection.Insert_Value(p.result_tag, Result, Start_Time);
             }
         }
     }
@@ -1080,6 +1071,20 @@ public class PhaseOpt_KAR
                                                 }
                                             }
                                         }
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "dropout-points")
+                                        {
+                                            while (reader.Read())
+                                            {
+                                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "dropout-points")
+                                                    break;
+                                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "point")
+                                                {
+                                                    Mix_To_T410.Dropout_Points.Add(new PT_Point(reader.GetAttribute("pressure-tag"),
+                                                        reader.GetAttribute("temperature-tag"), reader.GetAttribute("result-tag")));
+                                                }
+                                            }
+                                        }
+
                                     }
                                 }
                             }
@@ -1124,6 +1129,43 @@ public class PhaseOpt_KAR
                                     {
                                         if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "liquid-dropout")
                                             break;
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "temperature")
+                                        {
+                                            Mix_To_T100.Curve.Temperature_Tag = reader.GetAttribute("tag");
+
+                                            while (reader.Read())
+                                            {
+                                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "temperature")
+                                                    break;
+                                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "value")
+                                                {
+                                                    reader.Read();
+                                                    Mix_To_T100.Curve.Temperature.Add(XmlConvert.ToDouble(reader.Value));
+                                                }
+                                            }
+                                        }
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "dew-point")
+                                        {
+                                            Mix_To_T100.Curve.Dew_Point_Tag = reader.GetAttribute("tag");
+                                        }
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "dropout")
+                                        {
+                                            Mix_To_T100.Curve.Dropout.Add(new Dropout_Curve.Dropout_Point
+                                                (XmlConvert.ToDouble(reader.GetAttribute("value")), reader.GetAttribute("tag")));
+                                        }
+                                        else if (reader.NodeType == XmlNodeType.Element && reader.Name == "operating-points")
+                                        {
+                                            while (reader.Read())
+                                            {
+                                                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "operating-points")
+                                                    break;
+                                                else if (reader.NodeType == XmlNodeType.Element && reader.Name == "point")
+                                                {
+                                                    Mix_To_T100.Curve.Operating_Points.Add(new PT_Point(reader.GetAttribute("pressure-tag"),
+                                                        reader.GetAttribute("temperature-tag"), reader.GetAttribute("result-tag")));
+                                                }
+                                            }
+                                        }
                                         else if (reader.NodeType == XmlNodeType.Element && reader.Name == "dropout-points")
                                         {
                                             while (reader.Read())

@@ -186,7 +186,8 @@ namespace Main
 
                 if (errors_A < 1)
                 {
-                    PO_A.Calculate_Dropout_Curves();
+                    PO_A.Calculate_Dropout_Curves(PO_A.Mix_To_T410, PO_A.T400);
+                    PO_A.Calculate_Dropout_Curves(PO_A.Mix_To_T100, PO_A.T100);
                 }
 
                 Sleep_Time = (Start_Time.AddSeconds(150.0) - DateTime.Now).TotalMilliseconds;
