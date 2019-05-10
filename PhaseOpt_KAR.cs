@@ -688,7 +688,7 @@ public class PhaseOpt_KAR
             }
 
             // Statpipe
-            Comp_Values.Clear();
+            if (Comp_Values != null) Comp_Values.Clear();
             Log_File.WriteLine("Statpipe:");
             try
             {
