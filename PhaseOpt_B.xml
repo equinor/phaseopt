@@ -9,6 +9,8 @@
     <uid>STATOIL-NET\f_aspenip21_ka</uid>
   </IP21-connection>
 
+  <cross-over-status tag="15HS0105"/>
+
   <streams>
     <stream name="statpipe" type="input">
       <status name="Application 1" tag="31XI0161_21"/>
@@ -44,7 +46,7 @@
       <mass-flow>
         <component name="Stasjon Masse strøm" tag="20FI7195SM"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0157_B" pressure-tag="31PY0157_B"/>
+      <cricondenbar temperature-tag="31TY0157_B" pressure-tag="31PY0157_B" status-tag="31XI0157_B"/>
     </stream>
 
     <stream name="asgard" type="input">
@@ -81,7 +83,7 @@
       <mass-flow>
         <component name="Åsgard rikgass før X-over" tag="20FI5506"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0161_B" pressure-tag="31PY0161_B"/>
+      <cricondenbar temperature-tag="31TY0161_B" pressure-tag="31PY0161_B" status-tag="31XI0161_B"/>
     </stream>
 
     <stream name="DIXO-mix to T410/T420/DPCU" type="output">
@@ -109,7 +111,7 @@
       <component name="C9A / m-xylene"  id="809"  tag="20AY7146B_54" scale-factor="10000.0"/>
       <component name="nC10"            id="1016" tag="20AY7146B_05" scale-factor="10000.0"/>
 
-      <cricondenbar temperature-tag="20TY7146_B" pressure-tag="20PY7146_B"/>
+      <cricondenbar temperature-tag="20TY7146_B" pressure-tag="20PY7146_B" status-tag="20XI7146_B"/>
     </stream>
 
     <stream name="DIXO-mix to T100/T200" type="output">
@@ -143,7 +145,7 @@
       </mass-flow>
 
       <molweight tag="15AM5626V"/>
-      <cricondenbar temperature-tag="15TY5626_B" pressure-tag="15PY5626_B"/>
+      <cricondenbar temperature-tag="15TY5626_B" pressure-tag="15PY5626_B" status-tag="15XI5626_B"/>
     </stream>
   </streams>
 </phaseopt>

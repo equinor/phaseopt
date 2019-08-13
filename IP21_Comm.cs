@@ -99,20 +99,30 @@ WHERE
   AND PERIOD = 000:0:01.0;
 ";
 
+#if DEBUG
+        DateTime Start_Time = DateTime.Now;
+#endif
         System.Data.Odbc.OdbcDataReader DR = Cmdr.ExecuteReader(System.Data.CommandBehavior.SingleResult);
 
-        //if (DR.HasRows)
-        //{
-            while (DR.Read())
+        while (DR.Read())
+        {
+            if (DR.GetValue(2).ToString() == "0") // if status is good
             {
-                if (DR.GetValue(2).ToString() == "0") // if status is good
-                {
-                    Result.Add(DR.GetValue(0).ToString(), DR.GetValue(1));
-                }
+                Result.Add(DR.GetValue(0).ToString(), DR.GetValue(1));
             }
-        //}
+        }
 
         DR.Close();
+
+#if DEBUG
+        double Run_Time = (DateTime.Now - Start_Time).TotalMilliseconds;
+        Console.WriteLine("Read {0} tags from IP21 in {1} ms", Tag_Name.Length, Run_Time);
+
+        foreach (DictionaryEntry p in Result)
+        {
+            Console.WriteLine("{0}: {1}", p.Key, p.Value);
+        }
+#endif
 
         return Result;
     }

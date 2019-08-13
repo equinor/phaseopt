@@ -688,7 +688,7 @@ public class PhaseOpt_KAR
             }
 
             // Statpipe
-            Comp_Values.Clear();
+            if (Comp_Values != null) Comp_Values.Clear();
             Log_File.WriteLine("Statpipe:");
             try
             {
@@ -1204,16 +1204,16 @@ public class PhaseOpt_KAR
             || Check_Composition(Statpipe_Current.Comp) == false)
         {
             DB_Connection.Write_Value(Statpipe.Cricondenbar.status_tag, 0);
-            Console.WriteLine("Bad composition Statpipe A");
-            Log_File.WriteLine("{0}: Bad composition Statpipe A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            Console.WriteLine("Bad composition current Statpipe {0}", Name);
+            Log_File.WriteLine("{0}: Bad composition current Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
         if (Composition_Stdev(Asgard_Current.Comp, GC_Comp_Asgard) < Stdev_Low_Limit
             || Check_Composition(Asgard_Current.Comp) == false)
         {
             DB_Connection.Write_Value(Asgard.Cricondenbar.status_tag, 0);
-            Console.WriteLine("Bad composition Asgard A");
-            Log_File.WriteLine("{0}: Bad composition Asgard A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            Console.WriteLine("Bad composition current Asgard {0}", Name);
+            Log_File.WriteLine("{0}: Bad composition current Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
 
@@ -1223,16 +1223,17 @@ public class PhaseOpt_KAR
     {
         int errors = 0;
         double Stdev_Low_Limit = 1.0E-10;
+        double Flow_Rate_Low_Limit = 1.0E-1;
 
         if (Check_Composition(Asgard.Comp) == false)
         {
-            Console.WriteLine("Bad composition Asgard A");
+            Console.WriteLine("Bad composition Asgard {0}", Name);
             Log_File.WriteLine("{0}: Bad composition Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
         if (Check_Composition(Statpipe.Comp) == false)
         {
-            Console.WriteLine("Bad composition Statpipe A");
+            Console.WriteLine("Bad composition Statpipe {0}", Name);
             Log_File.WriteLine("{0}: Bad composition Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
@@ -1248,13 +1249,13 @@ public class PhaseOpt_KAR
             Log_File.WriteLine("{0}: Bad molweight Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
-        if (Molweight_Stdev(Asgard.Mass_Flow, GC_Asgard_Flow) < Stdev_Low_Limit)
+        if (Asgard.Mass_Flow > Flow_Rate_Low_Limit && Molweight_Stdev(Asgard.Mass_Flow, GC_Asgard_Flow) < Stdev_Low_Limit)
         {
             Console.WriteLine("{0}: Bad flow Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             Log_File.WriteLine("{0}: Bad flow Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
-        if (Molweight_Stdev(Statpipe.Mass_Flow, GC_Statpipe_Flow) < Stdev_Low_Limit)
+        if (Statpipe.Mass_Flow > Flow_Rate_Low_Limit && Molweight_Stdev(Statpipe.Mass_Flow, GC_Statpipe_Flow) < Stdev_Low_Limit)
         {
             Console.WriteLine("{0}: Bad flow Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             Log_File.WriteLine("{0}: Bad flow Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
@@ -1265,31 +1266,31 @@ public class PhaseOpt_KAR
             Console.WriteLine("{0}: Bad flow Statpipe cross over {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             Log_File.WriteLine("{0}: Bad flow Statpipe cross over {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
         }
-        if (Molweight_Stdev(Mix_To_T100.Mass_Flow, GC_Mix_To_T100_Flow) < Stdev_Low_Limit)
+        if (Mix_To_T100.Mass_Flow > Flow_Rate_Low_Limit && Molweight_Stdev(Mix_To_T100.Mass_Flow, GC_Mix_To_T100_Flow) < Stdev_Low_Limit)
         {
             Console.WriteLine("{0}: Bad flow Mix to T100 flow {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             Log_File.WriteLine("{0}: Bad flow Mix to T100 flow {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
-        if (Molweight_Stdev(Asgard_Velocity[0], Velocity_1_Asgard, 30) < Stdev_Low_Limit)
+        if (Asgard_Velocity[0] > Flow_Rate_Low_Limit && Molweight_Stdev(Asgard_Velocity[0], Velocity_1_Asgard, 30) < Stdev_Low_Limit)
         {
             Console.WriteLine("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             Log_File.WriteLine("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
-        if (Molweight_Stdev(Asgard_Velocity[1], Velocity_2_Asgard, 30) < Stdev_Low_Limit)
+        if (Asgard_Velocity[1] > Flow_Rate_Low_Limit && Molweight_Stdev(Asgard_Velocity[1], Velocity_2_Asgard, 30) < Stdev_Low_Limit)
         {
             Console.WriteLine("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             Log_File.WriteLine("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
-        if (Molweight_Stdev(Statpipe_Velocity[0], Velocity_1_Statpipe, 30) < Stdev_Low_Limit)
+        if (Statpipe_Velocity[0] > Flow_Rate_Low_Limit && Molweight_Stdev(Statpipe_Velocity[0], Velocity_1_Statpipe, 30) < Stdev_Low_Limit)
         {
             Console.WriteLine("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             Log_File.WriteLine("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
             errors++;
         }
-        if (Molweight_Stdev(Statpipe_Velocity[1], Velocity_2_Statpipe, 30) < Stdev_Low_Limit)
+        if (Statpipe_Velocity[1] > Flow_Rate_Low_Limit && Molweight_Stdev(Statpipe_Velocity[1], Velocity_2_Statpipe, 30) < Stdev_Low_Limit)
         {
             Console.WriteLine("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             Log_File.WriteLine("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();

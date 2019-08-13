@@ -9,6 +9,9 @@
     <uid>STATOIL-NET\f_aspenip21_ka</uid>
   </IP21-connection>
 
+  <cross-over-status tag="15HS0105"/>
+  <watchdog-timestamp tag="PhaseOpt.ST"/>
+
   <streams>
     <stream name="statpipe" type="input">
       <status name="Application 1" tag="31XI0157_21"/>
@@ -44,7 +47,7 @@
       <mass-flow>
         <component name="Stasjon Masse strøm" tag="20FI7195SM"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0157_A" pressure-tag="31PY0157_A"/>
+      <cricondenbar temperature-tag="31TY0157_A" pressure-tag="31PY0157_A" status-tag="31XI0157_A"/>
     </stream>
 
     <stream name="asgard" type="input">
@@ -81,7 +84,7 @@
       <mass-flow>
         <component name="Åsgard rikgass før X-over" tag="20FI5506"/>
       </mass-flow>
-      <cricondenbar temperature-tag="31TY0161_A" pressure-tag="31PY0161_A"/>
+      <cricondenbar temperature-tag="31TY0161_A" pressure-tag="31PY0161_A" status-tag="31XI0161_A"/>
     </stream>
 
     <stream name="DIXO-mix to T410/T420/DPCU" type="output">
@@ -111,7 +114,7 @@
       <component name="C9A / m-xylene"  id="809"  tag="20AY7146A_54" scale-factor="10000.0"/>
       <component name="nC10"            id="1016" tag="20AY7146A_05" scale-factor="10000.0"/>
 
-      <cricondenbar temperature-tag="T_20TY7146_A" pressure-tag="T_20PY7146_A"/>
+      <cricondenbar temperature-tag="20TY7146_A" pressure-tag="20PY7146_A" status-tag="20XI7146_A"/>
 
       <liquid-dropout update-interval="180">
         <temperature tag="PO_E_T">
@@ -143,6 +146,11 @@
           <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230" result-tag="PO_OP2"/>
         </operating-points>
 
+        <dropout-points update-interval="30">
+          <point name="point 1" temperature-tag="21TI5044" pressure-tag="21PI5108" result-tag="PO_LD0"/>
+          <point name="point 2" temperature-tag="21TI5206" pressure-tag="21PI5108" result-tag="PO_LD1"/>
+          <point name="point 3" temperature-tag="21TC5236" pressure-tag="21PI5230" result-tag="PO_LD2"/>
+        </dropout-points>
       </liquid-dropout>
 
     </stream>
@@ -178,13 +186,39 @@
       </mass-flow>
 
       <molweight tag="15AM5626V"/>
-      <cricondenbar temperature-tag="15TY5626_A" pressure-tag="15PY5626_A"/>
+      <cricondenbar temperature-tag="15TY5626_A" pressure-tag="15PY5626_A" status-tag="15XI5626_A"/>
 
       <liquid-dropout update-interval="180">
+        <temperature tag="PO_E_T2">
+          <value>-25.0</value>
+          <value>-22.5</value>
+          <value>-20.0</value>
+          <value>-17.5</value>
+          <value>-15.0</value>
+          <value>-12.5</value>
+          <value>-10.0</value>
+          <value> -7.5</value>
+          <value> -5.0</value>
+          <value> -2.5</value>
+          <value>  0.0</value>
+          <value>  2.5</value>
+          <value>  5.0</value>
+        </temperature>
+
+        <dew-point           tag="PO_E_P2_0"/>
+        <dropout value="2.0" tag="PO_E_P2_1"/>
+        <dropout value="5.0" tag="PO_E_P2_2"/>
+
+        <operating-points update-interval="30">
+          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="PO_OP2_0"/>
+          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="PO_OP2_1"/>
+          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="PO_OP2_2"/>
+        </operating-points>
+
         <dropout-points update-interval="30">
-          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="PO_LD3"/>
-          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="PO_LD4"/>
-          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="PO_LD5"/>
+          <point name="point 1" temperature-tag="21TI1025" pressure-tag="21PC1002A" result-tag="PO_LD2_0"/>
+          <point name="point 2" temperature-tag="21TI1015" pressure-tag="21PC1002A" result-tag="PO_LD2_1"/>
+          <point name="point 3" temperature-tag="21TC1017" pressure-tag="21PC1002A" result-tag="PO_LD2_2"/>
         </dropout-points>
       </liquid-dropout>
     </stream>
