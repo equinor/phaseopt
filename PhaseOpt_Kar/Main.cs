@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Main
 {
     public static class Main_Class
     {
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public static void Main(String[] args)
         {
             bool Test_UMR = false;
@@ -28,28 +30,17 @@ namespace Main
                 return;
             }
 
-            System.IO.StreamWriter Log_File;
-#if DEBUG
-            Log_File = System.IO.File.AppendText(@"PhaseOpt_Kar_Main_Test.log");
-#else
-            Log_File = System.IO.File.AppendText(@"PhaseOpt_Kar_Main.log");
-#endif
+            logger.Info("PhaseOpt startup");
 
-            Log_File.WriteLine("{0}: PhaseOpt startup", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+            PhaseOpt_KAR PO_A = new PhaseOpt_KAR();
+            PhaseOpt_KAR PO_B = new PhaseOpt_KAR();
 
 #if DEBUG
-            PhaseOpt_KAR PO_A = new PhaseOpt_KAR(@"PhaseOpt_Kar_A_Test.log");
-            PhaseOpt_KAR PO_B = new PhaseOpt_KAR(@"PhaseOpt_Kar_B_Test.log");
-
             PO_A.Read_Config("PhaseOpt_A_Test.xml");
             PO_B.Read_Config("PhaseOpt_B_Test.xml");
 #else
-            PhaseOpt_KAR PO_A = new PhaseOpt_KAR(@"PhaseOpt_Kar_A.log");
-            PhaseOpt_KAR PO_B = new PhaseOpt_KAR(@"PhaseOpt_Kar_B.log");
-
             PO_A.Read_Config("PhaseOpt_A.xml");
             PO_B.Read_Config("PhaseOpt_B.xml");
-
 #endif
             PO_A.Name = "GC A";
             PO_B.Name = "GC B";
@@ -73,11 +64,11 @@ namespace Main
             {
                 Start_Time = DateTime.Now;
 
-                Log_File.WriteLine("{0}: Read composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-                Log_File.WriteLine("{0}: Read composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                logger.Info("Read composition A");
+                logger.Info("Read composition B");
 
-                Log_File.WriteLine("{0}: Read from IP21 A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-                Log_File.WriteLine("{0}: Read from IP21 B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                logger.Info("Read from IP21 A");
+                logger.Info("Read from IP21 B");
 
                 Parallel.Invoke(
                     () =>
@@ -104,11 +95,11 @@ namespace Main
                         if (errors_A < 1)
                         {
                             PO_A.Calculate_Karsto();
-                            Log_File.WriteLine("{0}: Calculate CCB at Kårstø A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Info("Calculate CCB at Kårstø A");
                         }
                         else
                         {
-                            Log_File.WriteLine("{0}: Errors in A.", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Error("Errors in A.");
                         }
                     },
 
@@ -117,11 +108,11 @@ namespace Main
                         if (errors_B < 1)
                         {
                             PO_B.Calculate_Karsto();
-                            Log_File.WriteLine("{0}: Calculate CCB at Kårstø B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Info("Calculate CCB at Kårstø B");
                         }
                         else
                         {
-                            Log_File.WriteLine("{0}: Errors in B.", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Error("Errors in B.");
                         }
                     },
                     // Read and calculate cricondenbar for current
@@ -131,11 +122,11 @@ namespace Main
                         if (errors_A < 1)
                         {
                             PO_A.Calculate_Kalsto_Statpipe();
-                            Log_File.WriteLine("{0}: Calculate Statpipe stream at Kalstø A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Info("Calculate Statpipe stream at Kalstø A");
                         }
                         else
                         {
-                            Log_File.WriteLine("{0}: Errors in Statpipe current composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Error("Errors in Statpipe current composition A");
                         }
                     },
 
@@ -144,11 +135,11 @@ namespace Main
                         if (errors_A < 1)
                         {
                             PO_A.Calculate_Kalsto_Asgard();
-                            Log_File.WriteLine("{0}: Calculate Åsgard stream at Kalstø A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Info("Calculate Åsgard stream at Kalstø A");
                         }
                         else
                         {
-                            Log_File.WriteLine("{0}: Errors in Asgard current composition A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Error("Errors in Asgard current composition A");
                         }
                     },
 
@@ -157,11 +148,11 @@ namespace Main
                         if (errors_B < 1)
                         {
                             PO_B.Calculate_Kalsto_Statpipe();
-                            Log_File.WriteLine("{0}: Calculate Statpipe stream at Kalstø B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Info("Calculate Statpipe stream at Kalstø B");
                         }
                         else
                         {
-                            Log_File.WriteLine("{0}: Errors in Statpipe current composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Error("Errors in Statpipe current composition B");
                         }
                     },
 
@@ -170,17 +161,14 @@ namespace Main
                         if (errors_B < 1)
                         {
                             PO_B.Calculate_Kalsto_Asgard();
-                            Log_File.WriteLine("{0}: Calculate Åsgard stream at Kalstø B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Info("Calculate Åsgard stream at Kalstø B");
                         }
                         else
                         {
-                            Log_File.WriteLine("{0}: Errors in Asgard current composition B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
+                            logger.Error("Errors in Asgard current composition B");
                         }
                     }
                 );
-
-                Log_File.WriteLine("{0}: Read current composition from IP21 A", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
-                Log_File.WriteLine("{0}: Read current composition from IP21 B", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")); Log_File.Flush();
 
                 PO_A.Trigger_Watchdog();
 
@@ -193,7 +181,7 @@ namespace Main
                 Sleep_Time = (Start_Time.AddSeconds(150.0) - DateTime.Now).TotalMilliseconds;
                 if (Sleep_Time > 1.0)
                 {
-                    Console.WriteLine("Waiting {0} seconds", Sleep_Time / 1000.0);
+                    logger.Info(CultureInfo.InvariantCulture, "Waiting {0} seconds", Sleep_Time / 1000.0);
                     System.Threading.Thread.Sleep((int)Sleep_Time);
                 }
             }

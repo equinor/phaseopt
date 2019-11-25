@@ -5,6 +5,7 @@ using System.Xml;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Globalization;
 
 public class Component
 {
@@ -159,7 +160,7 @@ public class PhaseOpt_KAR
     private string IP21_Uid;
     private string IP21_Pwd;
 
-    private System.IO.StreamWriter Log_File;
+    private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
     private DateTime Timestamp;
     private DateTime Asgard_Timestamp;
     private DateTime Statpipe_Timestamp;
@@ -185,9 +186,8 @@ public class PhaseOpt_KAR
     Queue Velocity_2_Statpipe = new Queue();
 
 
-    public PhaseOpt_KAR(string Log_File_Name)
+    public PhaseOpt_KAR()
     {
-        Log_File = System.IO.File.AppendText(Log_File_Name);
         Asgard_Velocity.Add(0.0); Asgard_Velocity.Add(0.0);
         Statpipe_Velocity.Add(0.0); Statpipe_Velocity.Add(0.0);
     }
@@ -211,8 +211,6 @@ public class PhaseOpt_KAR
         // There might not be values in IP21 at Now, so we fetch slightly older values.
         Timestamp = DateTime.Now.AddSeconds(-15.0);
         Hashtable A_Velocity;
-        Log_File.WriteLine();
-        Log_File.WriteLine(Timestamp.ToString("yyyy-MM-dd HH:mm:ss"));
 
         double Asgard_Average_Velocity = 0.0;
         try
@@ -222,15 +220,11 @@ public class PhaseOpt_KAR
                                        Convert.ToDouble(A_Velocity[Asgard.Velocity_Tags[1]])) / 2.0;
             Asgard_Velocity[0] = Convert.ToDouble(A_Velocity[Asgard.Velocity_Tags[0]]);
             Asgard_Velocity[1] = Convert.ToDouble(A_Velocity[Asgard.Velocity_Tags[1]]);
-            Log_File.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
-#if DEBUG
-            Console.WriteLine("Åsgard velocity: {0}", Asgard_Average_Velocity);
-#endif
+            logger.Info("Åsgard velocity: {0}", Asgard_Average_Velocity);
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} and/or {1} not valid", Asgard.Velocity_Tags[0], Asgard.Velocity_Tags[1]);
-            Log_File.Flush();
+            logger.Info("Tag {0} and/or {1} not valid", Asgard.Velocity_Tags[0], Asgard.Velocity_Tags[1]);
         }
         double Statpipe_Average_Velocity = 0.0;
         Hashtable S_Velocity;
@@ -241,15 +235,11 @@ public class PhaseOpt_KAR
                                                 Convert.ToDouble(S_Velocity[Statpipe.Velocity_Tags[1]])) / 2.0;
             Statpipe_Velocity[0] = Convert.ToDouble(S_Velocity[Statpipe.Velocity_Tags[0]]);
             Statpipe_Velocity[1] = Convert.ToDouble(S_Velocity[Statpipe.Velocity_Tags[1]]);
-            Log_File.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
-#if DEBUG
-            Console.WriteLine("Statpipe velocity: {0}", Statpipe_Average_Velocity);
-#endif
+            logger.Info("Statpipe velocity: {0}", Statpipe_Average_Velocity);
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} and/or {1} not valid", Statpipe.Velocity_Tags[0], Statpipe.Velocity_Tags[1]);
-            Log_File.Flush();
+            logger.Info("Tag {0} and/or {1} not valid", Statpipe.Velocity_Tags[0], Statpipe.Velocity_Tags[1]);
         }
         double Velocity_Threshold = 0.1;
         if (Asgard_Average_Velocity < Velocity_Threshold && Statpipe_Average_Velocity > Velocity_Threshold)
@@ -258,20 +248,13 @@ public class PhaseOpt_KAR
             Statpipe_Average_Velocity = Asgard_Average_Velocity;
         if (Asgard_Average_Velocity < Velocity_Threshold && Statpipe_Average_Velocity < Velocity_Threshold)
         {
-            Log_File.WriteLine("Velocity below threshold 0.1 m/s");
-#if DEBUG
-            Console.WriteLine("Velocity below threshold 0.1 m/s");
-#endif
+            logger.Info("Velocity below threshold 0.1 m/s");
             return;
         }
         Asgard_Timestamp = DateTime.Now.AddSeconds(-(Asgard.Pipe_Length / Asgard_Average_Velocity));
         Statpipe_Timestamp = DateTime.Now.AddSeconds(-(Statpipe.Pipe_Length / Statpipe_Average_Velocity));
-        Log_File.WriteLine("Åsgard delay: {0}", Asgard.Pipe_Length / Asgard_Average_Velocity);
-        Log_File.WriteLine("Statpipe delay: {0}", Statpipe.Pipe_Length / Statpipe_Average_Velocity);
-#if DEBUG
-        Console.WriteLine("Åsgard delay: {0}", Asgard.Pipe_Length / Asgard_Average_Velocity);
-        Console.WriteLine("Statpipe delay: {0}", Statpipe.Pipe_Length / Statpipe_Average_Velocity);
-#endif
+        logger.Info(CultureInfo.InvariantCulture, "Åsgard delay: {0}", Asgard.Pipe_Length / Asgard_Average_Velocity);
+        logger.Info(CultureInfo.InvariantCulture, "Statpipe delay: {0}", Statpipe.Pipe_Length / Statpipe_Average_Velocity);
 
         // Read Åsgard composition
         bool Asgard_Stat = false;
@@ -291,9 +274,8 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} and/or {1} not valid", Asgard.Status_Tags[0], Asgard.Status_Tags[1]);
-            Log_File.WriteLine("GC bad status ");
-            Log_File.Flush();
+            logger.Info("Tag {0} and/or {1} not valid", Asgard.Status_Tags[0], Asgard.Status_Tags[1]);
+            logger.Info("GC bad status ");
         }
 
         string Tag_Name = "";
@@ -311,8 +293,7 @@ public class PhaseOpt_KAR
             }
             catch
             {
-                Log_File.WriteLine("Tag {0} not valid", Tag_Name);
-                Log_File.Flush();
+                logger.Info("Tag {0} not valid", Tag_Name);
             }
 
         }
@@ -334,9 +315,8 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} and/or {1} not valid", Statpipe.Status_Tags[0], Statpipe.Status_Tags[1]);
-            Log_File.WriteLine("GC bad status ");
-            Log_File.Flush();
+            logger.Info("Tag {0} and/or {1} not valid", Statpipe.Status_Tags[0], Statpipe.Status_Tags[1]);
+            logger.Info("GC bad status ");
         }
 
         if (Statpipe_Stat)
@@ -352,8 +332,7 @@ public class PhaseOpt_KAR
             }
             catch
             {
-                Log_File.WriteLine("Tag {0} not valid", Tag_Name);
-                Log_File.Flush();
+                logger.Info("Tag {0} not valid", Tag_Name);
             }
         }
 
@@ -368,8 +347,7 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Cross_Over_Tag);
-            Log_File.Flush();
+            logger.Info("Tag {0} not valid", Cross_Over_Tag);
         }
 
         // Read molweight
@@ -382,8 +360,7 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Asgard.Molweight_Tag);
-            Log_File.Flush();
+            logger.Info("Tag {0} not valid", Asgard.Molweight_Tag);
         }
         Statpipe.Molweight = 0.0;
         try
@@ -393,8 +370,7 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Statpipe.Molweight_Tag);
-            Log_File.Flush();
+            logger.Info("Tag {0} not valid", Statpipe.Molweight_Tag);
         }
         double Mix_To_T100_Molweight = 0.0;
         try
@@ -404,8 +380,7 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Mix_To_T100.Molweight_Tag);
-            Log_File.Flush();
+            logger.Info("Tag {0} not valid", Mix_To_T100.Molweight_Tag);
         }
 
         // Read mass flow
@@ -415,14 +390,10 @@ public class PhaseOpt_KAR
         {
             Mass_Flow = DB_Connection.Read_Values(Asgard.Mass_Flow_Tags.ToArray(), Asgard_Timestamp);
             Asgard.Mass_Flow = Convert.ToDouble(Mass_Flow[Asgard.Mass_Flow_Tags[0]]);
-#if DEBUG
-            Console.WriteLine("\nÅsgard flow: {0}\t{1}", Asgard.Mass_Flow_Tags[0], Asgard.Mass_Flow);
-#endif
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Asgard.Mass_Flow_Tags[0]);
-            Log_File.Flush();
+            logger.Info("Tag {0} not valid", Asgard.Mass_Flow_Tags[0]);
         }
         Asgard.Mol_Flow = Asgard.Mass_Flow * 1000 / Asgard.Molweight;
 
@@ -431,14 +402,11 @@ public class PhaseOpt_KAR
         {
             Mass_Flow = DB_Connection.Read_Values(Statpipe.Mass_Flow_Tags.ToArray(), Statpipe_Timestamp);
             Statpipe.Mass_Flow = Convert.ToDouble(Mass_Flow[Statpipe.Mass_Flow_Tags[0]]);
-#if DEBUG
-            Console.WriteLine("\nStatpipe flow: {0}\t{1}", Statpipe.Mass_Flow_Tags[0], Statpipe.Mass_Flow);
-#endif
+            logger.Info("Statpipe flow: {0}: {1}", Statpipe.Mass_Flow_Tags[0], Statpipe.Mass_Flow);
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} not valid", Statpipe.Mass_Flow_Tags[0]);
-            Log_File.Flush();
+            logger.Info("Tag {0} not valid", Statpipe.Mass_Flow_Tags[0]);
         }
         Statpipe.Mol_Flow = Statpipe.Mass_Flow * 1000 / Statpipe.Molweight;
 
@@ -452,8 +420,7 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Tag {0} and/or {1} not valid", Mix_To_T100.Mass_Flow_Tags[0], Mix_To_T100.Mass_Flow_Tags[1]);
-            Log_File.Flush();
+            logger.Info("Tag {0} and/or {1} not valid", Mix_To_T100.Mass_Flow_Tags[0], Mix_To_T100.Mass_Flow_Tags[1]);
         }
 
         Mix_To_T100.Mol_Flow = Mix_To_T100.Mass_Flow * 1000 / Mix_To_T100_Molweight;
@@ -583,15 +550,13 @@ public class PhaseOpt_KAR
         // Mix to T100 cricondenbar
         Composition_IDs.Clear();
         Composition_Values.Clear();
-        Log_File.WriteLine("Mix to T100:");
+        logger.Info("Mix to T100:");
         foreach (Component c in Mix_To_T100.Comp)
         {
             Composition_IDs.Add(c.ID);
             Composition_Values.Add(c.Value);
-            Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+            logger.Info("{0}\t{1}", c.ID, c.Value);
         }
-
-        Log_File.Flush();
 
         T100.Composition_IDs = Composition_IDs.ToArray();
         T100.Composition_Values = Composition_Values.ToArray();
@@ -599,15 +564,13 @@ public class PhaseOpt_KAR
         // Mix to T400 cricondenbar
         Composition_IDs.Clear();
         Composition_Values.Clear();
-        Log_File.WriteLine("Mix to T400:");
+        logger.Info("Mix to T400:");
         foreach (Component c in Mix_To_T410.Comp)
         {
             Composition_IDs.Add(c.ID);
             Composition_Values.Add(c.Value);
-            Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+            logger.Info("{0}\t{1}", c.ID, c.Value);
         }
-
-        Log_File.Flush();
 
         T400.Composition_IDs = Composition_IDs.ToArray();
         T400.Composition_Values = Composition_Values.ToArray();
@@ -637,12 +600,8 @@ public class PhaseOpt_KAR
                 DB_Connection.Write_Value(Mix_To_T100.Cricondenbar.status_tag, 1);
             }
         }
-        Log_File.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.pressure_tag, Composition_Result_T100[0]);
-        Log_File.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.temperature_tag, Composition_Result_T100[1]);
-#if DEBUG
-        Console.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.pressure_tag, Composition_Result_T100[0]);
-        Console.WriteLine("{0}\t{1}", Mix_To_T100.Cricondenbar.temperature_tag, Composition_Result_T100[1]);
-#endif
+        logger.Info("{0}\t{1}", Mix_To_T100.Cricondenbar.pressure_tag, Composition_Result_T100[0]);
+        logger.Info("{0}\t{1}", Mix_To_T100.Cricondenbar.temperature_tag, Composition_Result_T100[1]);
 
         if (!Composition_Result_T400[0].Equals(double.NaN) && !Composition_Result_T400[1].Equals(double.NaN))
         {
@@ -653,14 +612,8 @@ public class PhaseOpt_KAR
                 DB_Connection.Write_Value(Mix_To_T410.Cricondenbar.status_tag, 1);
             }
         }
-        Log_File.WriteLine("{0}\t{1}", Mix_To_T410.Cricondenbar.pressure_tag, Composition_Result_T400[0]);
-        Log_File.WriteLine("{0}\t{1}", Mix_To_T410.Cricondenbar.temperature_tag, Composition_Result_T400[1]);
-#if DEBUG
-        Console.WriteLine("{0}\t{1}", Mix_To_T410.Cricondenbar.pressure_tag, Composition_Result_T400[0]);
-        Console.WriteLine("{0}\t{1}", Mix_To_T410.Cricondenbar.temperature_tag, Composition_Result_T400[1]);
-#endif
-
-        Log_File.Flush();
+        logger.Info("{0}\t{1}", Mix_To_T410.Cricondenbar.pressure_tag, Composition_Result_T400[0]);
+        logger.Info("{0}\t{1}", Mix_To_T410.Cricondenbar.temperature_tag, Composition_Result_T400[1]);
     }
 
     public void Read_Current_Kalsto_Composition()
@@ -669,7 +622,7 @@ public class PhaseOpt_KAR
         {
             // Åsgard
             if (Comp_Values != null) Comp_Values.Clear();
-            Log_File.WriteLine("Åsgard:");
+            logger.Info("Åsgard:");
             string Tag_Name = "";
             try
             {
@@ -678,18 +631,17 @@ public class PhaseOpt_KAR
                 {
                     Tag_Name = c.Tag;
                     c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
-                    Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+                    logger.Info("{0}\t{1}", c.ID, c.Value);
                 }
             }
             catch
             {
-                Log_File.WriteLine("Tag {0} not valid", Tag_Name);
-                Log_File.Flush();
+                logger.Info("Tag {0} not valid", Tag_Name);
             }
 
             // Statpipe
             if (Comp_Values != null) Comp_Values.Clear();
-            Log_File.WriteLine("Statpipe:");
+            logger.Info("Statpipe:");
             try
             {
                 Comp_Values = DB_Connection.Read_Values(Statpipe_Current.Composition_tags().ToArray(), Timestamp);
@@ -697,17 +649,14 @@ public class PhaseOpt_KAR
                 {
                     Tag_Name = c.Tag;
                     c.Value = Convert.ToDouble(Comp_Values[c.Tag]) * c.Scale_Factor;
-                    Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+                    logger.Info("{0}\t{1}", c.ID, c.Value);
                 }
             }
             catch
             {
-                Log_File.WriteLine("Tag {0} not valid", Tag_Name);
-                Log_File.Flush();
+                logger.Info("Tag {0} not valid", Tag_Name);
             }
         }
-
-        Log_File.Flush();
     }
 
     public void Calculate_Kalsto_Asgard()
@@ -727,12 +676,8 @@ public class PhaseOpt_KAR
                 DB_Connection.Write_Value(Asgard.Cricondenbar.status_tag, 1);
             }
         }
-        Log_File.WriteLine("{0}\t{1}", Asgard.Cricondenbar.pressure_tag, Composition_Result[0]);
-        Log_File.WriteLine("{0}\t{1}", Asgard.Cricondenbar.temperature_tag, Composition_Result[1]);
-#if DEBUG
-        Console.WriteLine("{0}\t{1}", Asgard.Cricondenbar.pressure_tag, Composition_Result[0]);
-        Console.WriteLine("{0}\t{1}", Asgard.Cricondenbar.temperature_tag, Composition_Result[1]);
-#endif
+        logger.Info("{0}\t{1}", Asgard.Cricondenbar.pressure_tag, Composition_Result[0]);
+        logger.Info("{0}\t{1}", Asgard.Cricondenbar.temperature_tag, Composition_Result[1]);
     }
 
     public void Calculate_Kalsto_Statpipe()
@@ -752,19 +697,15 @@ public class PhaseOpt_KAR
                 DB_Connection.Write_Value(Statpipe.Cricondenbar.status_tag, 1);
             }
         }
-        Log_File.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.pressure_tag, Composition_Result[0]);
-        Log_File.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.temperature_tag, Composition_Result[1]);
-#if DEBUG
-        Console.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.pressure_tag, Composition_Result[0]);
-        Console.WriteLine("{0}\t{1}", Statpipe.Cricondenbar.temperature_tag, Composition_Result[1]);
-#endif
+        logger.Info("{0}\t{1}", Statpipe.Cricondenbar.pressure_tag, Composition_Result[0]);
+        logger.Info("{0}\t{1}", Statpipe.Cricondenbar.temperature_tag, Composition_Result[1]);
     }
 
     public void Calculate_Dropout_Curves(Stream st, PhaseOpt.PhaseOpt po)
     {
         foreach (Component c in st.Comp)
         {
-            Log_File.WriteLine("{0}\t{1}", c.ID, c.Value);
+            logger.Info("{0}\t{1}", c.ID, c.Value);
         }
 
         double[,] Pres = new double[st.Curve.Dropout.Count + 1, st.Curve.Temperature.Count];
@@ -773,7 +714,7 @@ public class PhaseOpt_KAR
         Parallel.For (0, st.Curve.Temperature.Count, i =>
         {
             Pres[0, i] = po.DewP(st.Curve.Temperature[i] + to_Kelvin);
-            System.Console.WriteLine("Dew point: Temperture: {0}, Pressure: {1}", st.Curve.Temperature[i], Pres[0, i] - to_bara);
+            logger.Info("Dew point: Temperture: {0}, Pressure: {1}", st.Curve.Temperature[i], Pres[0, i] - to_bara);
         });
 
         for (int i = 0; i < st.Curve.Dropout.Count; i++)
@@ -781,7 +722,7 @@ public class PhaseOpt_KAR
             Parallel.For(0, st.Curve.Temperature.Count, j =>
             {
                 Pres[i + 1, j] = po.Dropout_Search(st.Curve.Dropout[i].Value, st.Curve.Temperature[j] + to_Kelvin, Pres[0, j], 0.01);
-                System.Console.WriteLine("Dropout: {0}, Temperture: {1}, Pressure: {2}", st.Curve.Dropout[i].Value, st.Curve.Temperature[j], Pres[i + 1, j] - to_bara);
+                logger.Info("Dropout: {0}, Temperture: {1}, Pressure: {2}", st.Curve.Dropout[i].Value, st.Curve.Temperature[j], Pres[i + 1, j] - to_bara);
             });
         }
         
@@ -1189,8 +1130,7 @@ public class PhaseOpt_KAR
         }
         catch
         {
-            Log_File.WriteLine("Error reading config file value {0}", reader.Value);
-            Log_File.Flush();
+            logger.Info("Error reading config file value {0}", reader.Value);
             Environment.Exit(1);
         }
     }
@@ -1204,16 +1144,14 @@ public class PhaseOpt_KAR
             || Check_Composition(Statpipe_Current.Comp) == false)
         {
             DB_Connection.Write_Value(Statpipe.Cricondenbar.status_tag, 0);
-            Console.WriteLine("Bad composition current Statpipe {0}", Name);
-            Log_File.WriteLine("{0}: Bad composition current Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad composition current Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Composition_Stdev(Asgard_Current.Comp, GC_Comp_Asgard) < Stdev_Low_Limit
             || Check_Composition(Asgard_Current.Comp) == false)
         {
             DB_Connection.Write_Value(Asgard.Cricondenbar.status_tag, 0);
-            Console.WriteLine("Bad composition current Asgard {0}", Name);
-            Log_File.WriteLine("{0}: Bad composition current Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad composition current Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
 
@@ -1227,73 +1165,61 @@ public class PhaseOpt_KAR
 
         if (Check_Composition(Asgard.Comp) == false)
         {
-            Console.WriteLine("Bad composition Asgard {0}", Name);
-            Log_File.WriteLine("{0}: Bad composition Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad composition Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Check_Composition(Statpipe.Comp) == false)
         {
-            Console.WriteLine("Bad composition Statpipe {0}", Name);
-            Log_File.WriteLine("{0}: Bad composition Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad composition Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Molweight_Stdev(Asgard.Molweight, GC_Molweight_Asgard) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad molweight Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad molweight Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad molweight Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Molweight_Stdev(Statpipe.Molweight, GC_Molweight_Statpipe) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad molweight Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad molweight Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad molweight Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Asgard.Mass_Flow > Flow_Rate_Low_Limit && Molweight_Stdev(Asgard.Mass_Flow, GC_Asgard_Flow) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad flow Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad flow Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad flow Asgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Statpipe.Mass_Flow > Flow_Rate_Low_Limit && Molweight_Stdev(Statpipe.Mass_Flow, GC_Statpipe_Flow) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad flow Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad flow Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad flow Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Molweight_Stdev(Statpipe_Cross_Over_Flow, GC_Statpipe_Cross_Over_Flow) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad flow Statpipe cross over {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad flow Statpipe cross over {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad flow Statpipe cross over {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
         }
         if (Mix_To_T100.Mass_Flow > Flow_Rate_Low_Limit && Molweight_Stdev(Mix_To_T100.Mass_Flow, GC_Mix_To_T100_Flow) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad flow Mix to T100 flow {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad flow Mix to T100 flow {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad flow Mix to T100 flow {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Asgard_Velocity[0] > Flow_Rate_Low_Limit && Molweight_Stdev(Asgard_Velocity[0], Velocity_1_Asgard, 30) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Asgard_Velocity[1] > Flow_Rate_Low_Limit && Molweight_Stdev(Asgard_Velocity[1], Velocity_2_Asgard, 30) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad gas velocity Åsgard {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Statpipe_Velocity[0] > Flow_Rate_Low_Limit && Molweight_Stdev(Statpipe_Velocity[0], Velocity_1_Statpipe, 30) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
         if (Statpipe_Velocity[1] > Flow_Rate_Low_Limit && Molweight_Stdev(Statpipe_Velocity[1], Velocity_2_Statpipe, 30) < Stdev_Low_Limit)
         {
-            Console.WriteLine("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
-            Log_File.WriteLine("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name); Log_File.Flush();
+            logger.Info("{0}: Bad gas velocity Statpipe {1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), Name);
             errors++;
         }
 
