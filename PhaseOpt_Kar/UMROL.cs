@@ -9,15 +9,15 @@ namespace PhaseOpt
         private const double Bara_To_Barg = 1.01325;
         private const double Kelvin_To_Celcius = 273.15;
 
-        public double[] Composition_Values;
-        public Int32[]  Composition_IDs;
+        public double[] CompositionValues { get; set; }
+        public Int32[]  CompositionIDs { get; set; }
 
         public UMROL()
         { }
         public UMROL(Int32[] IDs, double[] Values)
         {
-            Composition_IDs = IDs;
-            Composition_Values = Values;
+            CompositionIDs = IDs;
+            CompositionValues = Values;
         }
 
         /// <summary>
@@ -27,19 +27,19 @@ namespace PhaseOpt
         /// <param name="T">Temperature [K]</param>
         /// <returns>An array containing {Vapour density, Liquid density, Vapour compressibility factor, Liquid compressibility factor}.
         /// If there is only one phase the values for the non existing phase will be -1.</returns>
-        public double[] Calculate_Density_And_Compressibility(double P = 1.01325, double T = 288.15)
+        public double[] CalculateDensityAndCompressibility(double P = 1.01325, double T = 288.15)
         {
             double[] Results = new double[4];
             string Arguments = "-dens -id";
-            string output;
+            string output = "";
             Process umrol = new Process();
 
-            foreach (int i in Composition_IDs)
+            foreach (int i in CompositionIDs)
             {
-                Arguments += " " + i.ToString();
+                Arguments += " " + i.ToString(CultureInfo.InvariantCulture);
             }
             Arguments += " -z";
-            foreach (double v in Composition_Values)
+            foreach (double v in CompositionValues)
             {
                 // Make the value string into a Fortran style double presicion literal
                 string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
@@ -55,15 +55,32 @@ namespace PhaseOpt
             umrol.StartInfo.RedirectStandardOutput = true;
             umrol.StartInfo.FileName = "umrol.exe";
             umrol.StartInfo.Arguments = Arguments;
-            umrol.Start();
-            umrol.PriorityClass = ProcessPriorityClass.Idle;
-            output = umrol.StandardOutput.ReadToEnd();
-            umrol.WaitForExit();
+            try
+            {
+                umrol.Start();
+                umrol.PriorityClass = ProcessPriorityClass.Idle;
+                output = umrol.StandardOutput.ReadToEnd();
+                umrol.WaitForExit();
+            }
+            catch
+            {
+                Results[0] = 0.0;
+                Results[1] = 0.0;
+                Results[2] = 0.0;
+                Results[3] = 0.0;
+            }
+            finally
+            {
+                umrol.Dispose();
+            }
 
-            Results[0] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
-            Results[1] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
-            Results[2] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[2], CultureInfo.InvariantCulture);
-            Results[3] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3], CultureInfo.InvariantCulture);
+            if (output.Length > 0)
+            {
+                Results[0] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[0], CultureInfo.InvariantCulture);
+                Results[1] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1], CultureInfo.InvariantCulture);
+                Results[2] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[2], CultureInfo.InvariantCulture);
+                Results[3] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[3], CultureInfo.InvariantCulture);
+            }
 
             return Results;
         }
@@ -84,12 +101,12 @@ namespace PhaseOpt
 
             if (Units > 1) Units = 1;
 
-            foreach (int i in Composition_IDs)
+            foreach (int i in CompositionIDs)
             {
-                Arguments += " " + i.ToString();
+                Arguments += " " + i.ToString(CultureInfo.InvariantCulture);
             }
             Arguments += " -z";
-            foreach (double v in Composition_Values)
+            foreach (double v in CompositionValues)
             {
                 // Make the value string into a Fortran style double presicion literal
                 string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
@@ -114,6 +131,10 @@ namespace PhaseOpt
             {
                 CCBP = -1.0;
                 CCBT = -1.0;
+            }
+            finally
+            {
+                umrol.Dispose();
             }
 
             if (output.Length > 0)
@@ -148,12 +169,12 @@ namespace PhaseOpt
 
             if (Units > 1) Units = 1;
 
-            foreach (int i in Composition_IDs)
+            foreach (int i in CompositionIDs)
             {
-                Arguments += " " + i.ToString();
+                Arguments += " " + i.ToString(CultureInfo.InvariantCulture);
             }
             Arguments += " -z";
-            foreach (double v in Composition_Values)
+            foreach (double v in CompositionValues)
             {
                 // Make the value string into a Fortran style double presicion literal
                 string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
@@ -167,10 +188,22 @@ namespace PhaseOpt
             umrol.StartInfo.RedirectStandardOutput = true;
             umrol.StartInfo.FileName = "umrol.exe";
             umrol.StartInfo.Arguments = Arguments;
-            umrol.Start();
-            umrol.PriorityClass = ProcessPriorityClass.Idle;
-            output = umrol.StandardOutput.ReadToEnd();
-            umrol.WaitForExit();
+            try
+            {
+                umrol.Start();
+                umrol.PriorityClass = ProcessPriorityClass.Idle;
+                output = umrol.StandardOutput.ReadToEnd();
+                umrol.WaitForExit();
+            }
+            catch
+            {
+                CCTP = double.NaN;
+                CCTT = double.NaN;
+            }
+            finally
+            {
+                umrol.Dispose();
+            }
 
             if (output.Length > 0)
             {
@@ -201,12 +234,12 @@ namespace PhaseOpt
             string output = "";
             Process umrol = new Process();
 
-            foreach (int i in Composition_IDs)
+            foreach (int i in CompositionIDs)
             {
-                Arguments += " " + i.ToString();
+                Arguments += " " + i.ToString(CultureInfo.InvariantCulture);
             }
             Arguments += " -z";
-            foreach (double v in Composition_Values)
+            foreach (double v in CompositionValues)
             {
                 // Make the value string into a Fortran style double presicion literal
                 string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
@@ -222,10 +255,22 @@ namespace PhaseOpt
             umrol.StartInfo.RedirectStandardOutput = true;
             umrol.StartInfo.FileName = "umrol.exe";
             umrol.StartInfo.Arguments = Arguments;
-            umrol.Start();
-            umrol.PriorityClass = ProcessPriorityClass.Idle;
-            output = umrol.StandardOutput.ReadToEnd();
-            umrol.WaitForExit();
+            try
+            {
+                umrol.Start();
+                umrol.PriorityClass = ProcessPriorityClass.Idle;
+                output = umrol.StandardOutput.ReadToEnd();
+                umrol.WaitForExit();
+            }
+            catch
+            {
+                Results[0] = 0.0;
+                Results[1] = 0.0;
+            }
+            finally
+            {
+                umrol.Dispose();
+            }
 
             if (output.Length > 0)
             {
@@ -236,19 +281,19 @@ namespace PhaseOpt
             return Results;
         }
 
-        public double Dropout_Search(double wd, double T, double P_Max, double limit = 0.01, int max_iterations = 25)
+        public double DropoutSearch(double wd, double T, double PMax, double limit = 0.01, int maxIterations = 25)
         {
             double P = double.NaN;
             string Arguments = "-ds -id";
             string output = "";
             Process umrol = new Process();
 
-            foreach (int i in Composition_IDs)
+            foreach (int i in CompositionIDs)
             {
-                Arguments += " " + i.ToString();
+                Arguments += " " + i.ToString(CultureInfo.InvariantCulture);
             }
             Arguments += " -z";
-            foreach (double v in Composition_Values)
+            foreach (double v in CompositionValues)
             {
                 // Make the value string into a Fortran style double presicion literal
                 string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
@@ -258,10 +303,10 @@ namespace PhaseOpt
                 Arguments += val;
             }
             Arguments += " -wd "      + wd.ToString("G", CultureInfo.InvariantCulture)    + "D0";
-            Arguments += " -p "       + P_Max.ToString("G", CultureInfo.InvariantCulture) + "D0";
+            Arguments += " -p "       + PMax.ToString("G", CultureInfo.InvariantCulture) + "D0";
             Arguments += " -t "       + T.ToString("G", CultureInfo.InvariantCulture)     + "D0";
             Arguments += " -limit "   + limit.ToString("G", CultureInfo.InvariantCulture) + "D0";
-            Arguments += " -max-itr " + max_iterations.ToString();
+            Arguments += " -max-itr " + maxIterations.ToString(CultureInfo.InvariantCulture);
 
             umrol.StartInfo.UseShellExecute = false;
             umrol.StartInfo.RedirectStandardOutput = true;
@@ -277,6 +322,10 @@ namespace PhaseOpt
             catch
             {
                 P = double.NaN;
+            }
+            finally
+            {
+                umrol.Dispose();
             }
 
             if (output.Length > 0)
@@ -297,18 +346,16 @@ namespace PhaseOpt
         {
             double P1 = 0.0;
             double P2 = 0.0;
-            double[] XY1 = new double[100];
-            double[] XY2 = new double[100];
             string Arguments = "-dewp -id";
             string output = "";
             Process umrol = new Process();
 
-            foreach (int i in Composition_IDs)
+            foreach (int i in CompositionIDs)
             {
-                Arguments += " " + i.ToString();
+                Arguments += " " + i.ToString(CultureInfo.InvariantCulture);
             }
             Arguments += " -z";
-            foreach (double v in Composition_Values)
+            foreach (double v in CompositionValues)
             {
                 // Make the value string into a Fortran style double presicion literal
                 string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
@@ -323,10 +370,22 @@ namespace PhaseOpt
             umrol.StartInfo.RedirectStandardOutput = true;
             umrol.StartInfo.FileName = "umrol.exe";
             umrol.StartInfo.Arguments = Arguments;
-            umrol.Start();
-            umrol.PriorityClass = ProcessPriorityClass.Idle;
-            output = umrol.StandardOutput.ReadToEnd();
-            umrol.WaitForExit();
+            try
+            {
+                umrol.Start();
+                umrol.PriorityClass = ProcessPriorityClass.Idle;
+                output = umrol.StandardOutput.ReadToEnd();
+                umrol.WaitForExit();
+            }
+            catch
+            {
+                P1 = 0.0;
+                P2 = 0.0;
+            }
+            finally
+            {
+                umrol.Dispose();
+            }
 
             if (output.Length > 0)
             {
@@ -340,18 +399,18 @@ namespace PhaseOpt
             return Math.Max(P1, P2);
         }
 
-        public int Fluid_Tune()
+        public int FluidTune()
         {
             string Arguments = "-tf -id";
             string output = "";
             Process umrol = new Process();
 
-            foreach (int i in Composition_IDs)
+            foreach (int i in CompositionIDs)
             {
-                Arguments += " " + i.ToString();
+                Arguments += " " + i.ToString(CultureInfo.InvariantCulture);
             }
             Arguments += " -z";
-            foreach (double v in Composition_Values)
+            foreach (double v in CompositionValues)
             {
                 // Make the value string into a Fortran style double presicion literal
                 string val = " " + v.ToString("G", CultureInfo.InvariantCulture).Replace('E', 'D');
@@ -365,16 +424,23 @@ namespace PhaseOpt
             umrol.StartInfo.RedirectStandardOutput = true;
             umrol.StartInfo.FileName = "umrol.exe";
             umrol.StartInfo.Arguments = Arguments;
-            umrol.Start();
-            umrol.PriorityClass = ProcessPriorityClass.Idle;
-            output = umrol.StandardOutput.ReadToEnd();
-            umrol.WaitForExit();
+            try
+            {
+                umrol.Start();
+                umrol.PriorityClass = ProcessPriorityClass.Idle;
+                output = umrol.StandardOutput.ReadToEnd();
+                umrol.WaitForExit();
+            }
+            finally
+            {
+                umrol.Dispose();
+            }
 
             if (output.Length > 0)
             {
-                for (int i = 0; i < Composition_Values.Length; i++)
+                for (int i = 0; i < CompositionValues.Length; i++)
                 {
-                    Composition_Values[i] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[i], CultureInfo.InvariantCulture);
+                    CompositionValues[i] = Convert.ToDouble(output.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[i], CultureInfo.InvariantCulture);
                 }
             }
 

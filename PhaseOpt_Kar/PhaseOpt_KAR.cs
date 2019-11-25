@@ -558,8 +558,8 @@ public class PhaseOpt_KAR
             logger.Info("{0}\t{1}", c.ID, c.Value);
         }
 
-        T100.Composition_IDs = Composition_IDs.ToArray();
-        T100.Composition_Values = Composition_Values.ToArray();
+        T100.CompositionIDs = Composition_IDs.ToArray();
+        T100.CompositionValues = Composition_Values.ToArray();
 
         // Mix to T400 cricondenbar
         Composition_IDs.Clear();
@@ -572,21 +572,21 @@ public class PhaseOpt_KAR
             logger.Info("{0}\t{1}", c.ID, c.Value);
         }
 
-        T400.Composition_IDs = Composition_IDs.ToArray();
-        T400.Composition_Values = Composition_Values.ToArray();
+        T400.CompositionIDs = Composition_IDs.ToArray();
+        T400.CompositionValues = Composition_Values.ToArray();
 
         double[] Composition_Result_T100 = { 0.0, 0.0 };
         double[] Composition_Result_T400 = { 0.0, 0.0 };
         Parallel.Invoke(
             () =>
             {
-                T100.Fluid_Tune();
+                T100.FluidTune();
                 Composition_Result_T100 = T100.Cricondenbar();
             },
 
             () =>
             {
-                T400.Fluid_Tune();
+                T400.FluidTune();
                 Composition_Result_T400 = T400.Cricondenbar();
             }
         );
@@ -661,10 +661,10 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Asgard()
     {
-        Asgard_Kalsto.Composition_IDs = Asgard_Current.Composition_IDs().ToArray();
-        Asgard_Kalsto.Composition_Values = Asgard_Current.Composition_Values().ToArray();
+        Asgard_Kalsto.CompositionIDs = Asgard_Current.Composition_IDs().ToArray();
+        Asgard_Kalsto.CompositionValues = Asgard_Current.Composition_Values().ToArray();
 
-        Asgard_Kalsto.Fluid_Tune();
+        Asgard_Kalsto.FluidTune();
         double[] Composition_Result = Asgard_Kalsto.Cricondenbar();
 
         if (!Composition_Result[0].Equals(double.NaN) && !Composition_Result[1].Equals(double.NaN))
@@ -682,10 +682,10 @@ public class PhaseOpt_KAR
 
     public void Calculate_Kalsto_Statpipe()
     {
-        Statpipe_Kalsto.Composition_IDs = Statpipe_Current.Composition_IDs().ToArray();
-        Statpipe_Kalsto.Composition_Values = Statpipe_Current.Composition_Values().ToArray();
+        Statpipe_Kalsto.CompositionIDs = Statpipe_Current.Composition_IDs().ToArray();
+        Statpipe_Kalsto.CompositionValues = Statpipe_Current.Composition_Values().ToArray();
 
-        Statpipe_Kalsto.Fluid_Tune();
+        Statpipe_Kalsto.FluidTune();
         double[] Composition_Result = Statpipe_Kalsto.Cricondenbar();
 
         if (!Composition_Result[0].Equals(double.NaN) && !Composition_Result[1].Equals(double.NaN))
@@ -721,7 +721,7 @@ public class PhaseOpt_KAR
         {
             Parallel.For(0, st.Curve.Temperature.Count, j =>
             {
-                Pres[i + 1, j] = po.Dropout_Search(st.Curve.Dropout[i].Value, st.Curve.Temperature[j] + to_Kelvin, Pres[0, j], 0.01);
+                Pres[i + 1, j] = po.DropoutSearch(st.Curve.Dropout[i].Value, st.Curve.Temperature[j] + to_Kelvin, Pres[0, j], 0.01);
                 logger.Info("Dropout: {0}, Temperture: {1}, Pressure: {2}", st.Curve.Dropout[i].Value, st.Curve.Temperature[j], Pres[i + 1, j] - to_bara);
             });
         }
