@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 
 namespace PhaseOpt
 {
-    public static class Main_Class
+    public static class MainClass
     {
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        public static void Main(String[] args)
+        static void Main(String[] args)
         {
             bool Read_Only = false;
 
             foreach (string arg in args)
             {
-                if (arg.Equals(@"/r"))
+                if (arg.Equals(@"/r", StringComparison.Ordinal))
                 {
                     Read_Only = true;
                 }
