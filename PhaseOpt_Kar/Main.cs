@@ -9,25 +9,14 @@ namespace Main
         private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public static void Main(String[] args)
         {
-            bool Test_UMR = false;
             bool Read_Only = false;
 
             foreach (string arg in args)
             {
-                if (arg.Equals(@"/u"))
-                {
-                    Test_UMR = true;
-                }
                 if (arg.Equals(@"/r"))
                 {
                     Read_Only = true;
                 }
-            }
-
-            if (Test_UMR)
-            {
-                Test_Space.Testing.Main_Test();
-                return;
             }
 
             logger.Info("PhaseOpt startup");
