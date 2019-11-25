@@ -138,10 +138,10 @@ public class PhaseOpt_KAR
 
     private Hashtable Comp_Values;
 
-    public PhaseOpt.PhaseOpt T100 = new PhaseOpt.PhaseOpt();
-    public PhaseOpt.PhaseOpt T400 = new PhaseOpt.PhaseOpt();
-    PhaseOpt.PhaseOpt Asgard_Kalsto = new PhaseOpt.PhaseOpt();
-    PhaseOpt.PhaseOpt Statpipe_Kalsto = new PhaseOpt.PhaseOpt();
+    public PhaseOpt.UMROL T100 = new PhaseOpt.UMROL();
+    public PhaseOpt.UMROL T400 = new PhaseOpt.UMROL();
+    PhaseOpt.UMROL Asgard_Kalsto = new PhaseOpt.UMROL();
+    PhaseOpt.UMROL Statpipe_Kalsto = new PhaseOpt.UMROL();
 
     public readonly object locker = new object();
 
@@ -701,7 +701,7 @@ public class PhaseOpt_KAR
         logger.Info("{0}\t{1}", Statpipe.Cricondenbar.temperature_tag, Composition_Result[1]);
     }
 
-    public void Calculate_Dropout_Curves(Stream st, PhaseOpt.PhaseOpt po)
+    public void Calculate_Dropout_Curves(Stream st, PhaseOpt.UMROL po)
     {
         foreach (Component c in st.Comp)
         {

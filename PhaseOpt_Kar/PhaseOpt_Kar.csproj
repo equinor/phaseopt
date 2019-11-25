@@ -165,7 +165,7 @@
     <Compile Include="HistoryDb.cs" />
     <Compile Include="IP21_Comm.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="PhaseOpt.cs" />
+    <Compile Include="UMROL.cs" />
     <Compile Include="PhaseOpt_KAR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace PhaseOpt
 {
-    public class PhaseOpt
+    public class UMROL
     {
         private const double Bara_To_Barg = 1.01325;
         private const double Kelvin_To_Celcius = 273.15;
@@ -12,9 +12,9 @@ namespace PhaseOpt
         public double[] Composition_Values;
         public Int32[]  Composition_IDs;
 
-        public PhaseOpt()
+        public UMROL()
         { }
-        public PhaseOpt(Int32[] IDs, double[] Values)
+        public UMROL(Int32[] IDs, double[] Values)
         {
             Composition_IDs = IDs;
             Composition_Values = Values;
