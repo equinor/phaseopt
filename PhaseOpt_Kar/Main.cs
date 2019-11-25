@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Main
+namespace PhaseOpt
 {
     public static class Main_Class
     {

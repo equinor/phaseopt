@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhaseOpt_Kar", "PhaseOpt_Kar\PhaseOpt_Kar.csproj", "{10851CD3-8B1E-4B2D-9D62-D1C47434CC81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhaseOptTests", "PhaseOptTests\PhaseOptTests.csproj", "{0CCD457F-FB6E-4611-A264-FD17A4FB4B87}"
+	ProjectSection(ProjectDependencies) = postProject
+		{10851CD3-8B1E-4B2D-9D62-D1C47434CC81} = {10851CD3-8B1E-4B2D-9D62-D1C47434CC81}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
